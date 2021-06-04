@@ -2,7 +2,7 @@
 
 namespace hhnl.HomeAssistantNet.Entities
 {
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Class)]
     public class UniqueIdAttribute : Attribute
     {
         public UniqueIdAttribute(string value)

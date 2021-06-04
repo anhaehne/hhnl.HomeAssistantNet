@@ -30,10 +30,10 @@ namespace hhnl.HomeAssistantNet.SourceGenerator
         public void Execute(GeneratorExecutionContext context)
         {
 #if DEBUG
-            if (!Debugger.IsAttached)
-            {
-                Debugger.Launch();
-            }
+            // if (!Debugger.IsAttached)
+            // {
+            //     Debugger.Launch();
+            // }
 #endif
 
             if (!HomeAssistantConfigReader.TryGetConfig(context.AdditionalFiles,

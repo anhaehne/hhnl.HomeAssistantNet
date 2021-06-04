@@ -2,7 +2,7 @@
 
 namespace hhnl.HomeAssistantNet.Entities
 {
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Class)]
     public class SupportedFeaturesAttribute : Attribute
     {
         public object Features { get; }

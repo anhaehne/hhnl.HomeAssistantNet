@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace hhnl.HomeAssistantNet.Entities
 {
-    public class Light : Entity
+    public abstract class Light : Entity
     {
         public Light(string uniqueId) : base(uniqueId)
         {
@@ -13,21 +13,21 @@ namespace hhnl.HomeAssistantNet.Entities
 
         public async Task TurnOffAsync()
         {
-            
+
         }
-        
+
         public async Task TurnOnAsync()
         {
-            
+
         }
-        
+
         public async Task ToggleAsync()
         {
-            
+
         }
 
         [Flags]
-        public enum SupportedFeatures 
+        public enum SupportedFeatures
         {
             SupportBrightness = 1,
             SupportColorTemp = 2,

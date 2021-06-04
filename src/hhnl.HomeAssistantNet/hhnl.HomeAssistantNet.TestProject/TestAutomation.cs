@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Automation;
+using HomeAssistant;
 
 
 namespace hhnl.HomeAssistantNet.TestProject
@@ -22,8 +24,13 @@ namespace hhnl.HomeAssistantNet.TestProject
     public class TestAutomation2
     {
         [Automation]
-        public void Temp()
+        public async Task TurnOffLivingRoomWhenTurnedOn(Lights.AndreWohnzimmer wohnzimmer)
         {
+            if(wohnzimmer.IsOn && DateTime.Now.Hour < 20)
+            {
+                await wohnzimmer.TurnOffAsync();
+
+            }
             //var t = HomeAssistant.Lights.Badezimmer.AssumedState;
         }
     }

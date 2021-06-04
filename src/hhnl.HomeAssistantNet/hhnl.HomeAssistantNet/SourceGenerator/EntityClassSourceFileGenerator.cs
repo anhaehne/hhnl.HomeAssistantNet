@@ -11,21 +11,6 @@ namespace hhnl.HomeAssistantNet.SourceGenerator
     {
         private readonly GeneratorExecutionContext _context;
 
-        private readonly string sourceEnd = @"
-    }
-}";
-
-        private readonly string sourceMid = @"          
-    {
-";
-
-        private readonly string sourceStart = @"
-using System;
-using hhnl.HomeAssistantNet.Entities;
-namespace HomeAssistant
-{
-    public static class ";
-
         public EntityClassSourceFileGenerator(GeneratorExecutionContext context)
         {
             _context = context;
@@ -38,39 +23,47 @@ namespace HomeAssistant
             IEnumerable<StateObject> entities,
             bool removeDomain = true)
         {
-            var sb = new StringBuilder(sourceStart);
-            sb.Append(className);
-            sb.Append(sourceMid);
-
-            foreach (var entity in entities)
+            var entityClasses = entities.Select(entity =>
             {
-                sb.AppendLine("        /// <summary>");
+                var entityName = entity.Attributes.ContainsKey("friendly_name")
+                    ? $"{entity.Attributes["friendly_name"]} ({entity.EntityId})"
+                    : entity.EntityId;
 
-                sb.AppendLine(entity.Attributes.ContainsKey("friendly_name")
-                    ? $"        /// The entity {entity.Attributes["friendly_name"]} ({entity.EntityId})"
-                    : $"        /// The entity {entity.EntityId}");
+                var supportedFeatures = entity.Attributes.ContainsKey("supported_features") && supportedFeaturesType is not null
+                    ? string.Join(" | ", GetSupportedFeatures(entity, supportedFeaturesType))
+                    : "null";
 
-                sb.AppendLine("        /// </summary>");
-                sb.AppendLine($"        [UniqueId(\"{entity.EntityId}\")]");
+                var className = ToClassName(entity.EntityId);
+                
+                return $@"
+        /// <summary>
+        /// The entity {entityName}
+        /// </summary>
+        [UniqueId(""{entity.EntityId}"")]
+        [SupportedFeatures({supportedFeatures})]
+        public class {className}: {entityClass}
+        {{
+            public {className}() : base(""{entity.EntityId}"")
+            {{
+            }}
+        }}";
+            });
 
-                if (entity.Attributes.ContainsKey("supported_features") && supportedFeaturesType is not null)
-                {
-                    sb.Append("        [SupportedFeatures(");
-                    sb.Append(string.Join(" | ", GetSupportedFeatures(entity, supportedFeaturesType)));
-                    sb.AppendLine(")]");
-                }
 
-                sb.AppendLine(
-                    $"        public static {entityClass} {ToPropertyName(entity.EntityId)} {{ get; }} = new {entityClass}(\"{entity.EntityId}\");");
-            }
-
-            sb.AppendLine(sourceEnd);
-
-            var source = sb.ToString();
-
+            var source = @$"
+using System;
+using hhnl.HomeAssistantNet.Entities;
+namespace HomeAssistant
+{{
+    public static class {className}
+    {{
+        {string.Join(Environment.NewLine, entityClasses)}
+    }}
+}}";
+            
             _context.AddSource($"HomeAssistant_{className}", source);
 
-            string ToPropertyName(string entity)
+            string ToClassName(string entity)
             {
                 return string.Join("", RemoveDomain(entity).Split('.', '_', '-').Select(FirstToUpper));
             }

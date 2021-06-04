@@ -9,35 +9,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="92edb7be-ad27-4bc7-8604-0d905ad40b48" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.hhnl.HomeAssistantNet/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.hhnl.HomeAssistantNet/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/Startup.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/TestAutomation.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.vscode/launch.json" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/ha-config.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/hhnl.HomeAssistantNet.TestProject.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.sln" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.sln.DotSettings" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/AnalyzerReleases.Shipped.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/AnalyzerReleases.Unshipped.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationAttribute.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationMetaData.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationRunner.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationStartup.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Configuration/HomeAssistantConfig.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Configuration/HomeAssistantConfigReader.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Entity.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Light.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/RequiresSupportedFeatureAttribute.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeature.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeaturesAttribute.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/UniqueIdAttribute.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationClassMetadataFileGenerator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationClassSyntaxReceiver.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationMethodValidator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/EntityClassSourceFileGenerator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/HomeAssistantEntityGenerator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.hhnl.HomeAssistantNet/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.hhnl.HomeAssistantNet/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/TestAutomation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/TestAutomation.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Light.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Light.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeaturesAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeaturesAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/UniqueIdAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/UniqueIdAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/EntityClassSourceFileGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/EntityClassSourceFileGenerator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/HomeAssistantEntityGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/HomeAssistantEntityGenerator.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,29 +80,30 @@
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationProgramm.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationProgram.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/Program.cs" />
-      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/Startup.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeatures.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/RequiresSupportedFeatureAttribute.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeature.cs" />
-      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeaturesAttribute.cs" />
-      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Light.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Configuration/HomeAssistantConfig.cs" />
-      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/EntityClassSourceFileGenerator.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.csproj" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Configuration/HomeAssistantConfigReader.cs" />
-      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Entity.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationMethodValidation.cs" />
-      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationMethodValidator.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationAttribute.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationMetaData.cs" />
       <option value="$PROJECT_DIR$/ConsoleApp1/Program.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/hhnl.HomeAssistantNet.TestProject.csproj" />
-      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/TestAutomation.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationClassMetadataFileGenerator.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationStartup.cs" />
-      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationInfo.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationClassSyntaxReceiver.cs" />
+      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationInfo.cs" />
+      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Entity.cs" />
+      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/UniqueIdAttribute.cs" />
+      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeaturesAttribute.cs" />
+      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationMethodValidator.cs" />
+      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/Startup.cs" />
+      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Light.cs" />
+      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/EntityClassSourceFileGenerator.cs" />
       <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/HomeAssistantEntityGenerator.cs" />
+      <option value="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/TestAutomation.cs" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1tOL08VflKSf7Mvy1XlLytguuDu" />
@@ -137,7 +118,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
-    <property name="DebuggerViewTab_PTCS_FirstProportionKey" value="0.34995976" />
+    <property name="DebuggerViewTab_PTCS_FirstProportionKey" value="0.3501006" />
     <property name="DebuggerViewTab_PTCS_LastProportionKey" value="0.0" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
@@ -210,8 +191,17 @@
       <workItem from="1622705591532" duration="17290000" />
       <workItem from="1622796880050" duration="41000" />
       <workItem from="1622796955263" duration="51000" />
-      <workItem from="1622797057477" duration="16214000" />
+      <workItem from="1622797057477" duration="16395000" />
+      <workItem from="1622822587075" duration="2993000" />
     </task>
+    <task id="LOCAL-00001" summary="Initial commit">
+      <created>1622816106604</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1622816106605</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -234,23 +224,12 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="Initial commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="Initial commit" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationClassMetadataFileGenerator.cs</url>
-          <line>83</line>
-          <properties documentPath="C:\Repos\anhaehne\hhnl.HomeAssistantNet\src\hhnl.HomeAssistantNet\hhnl.HomeAssistantNet\SourceGenerator\AutomationClassMetadataFileGenerator.cs" initialLine="61" containingFunctionPresentation="method 'AddAutomationClassMetaData'">
-            <startOffsets>
-              <option value="2795" />
-            </startOffsets>
-            <endOffsets>
-              <option value="2861" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationStartup.cs</url>
           <line>20</line>
@@ -276,6 +255,19 @@
             </endOffsets>
           </properties>
           <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationClassSyntaxReceiver.cs</url>
+          <line>17</line>
+          <properties documentPath="C:\Repos\anhaehne\hhnl.HomeAssistantNet\src\hhnl.HomeAssistantNet\hhnl.HomeAssistantNet\SourceGenerator\AutomationClassSyntaxReceiver.cs" initialLine="17" containingFunctionPresentation="method 'OnVisitSyntaxNode'">
+            <startOffsets>
+              <option value="592" />
+            </startOffsets>
+            <endOffsets>
+              <option value="658" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="21" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
