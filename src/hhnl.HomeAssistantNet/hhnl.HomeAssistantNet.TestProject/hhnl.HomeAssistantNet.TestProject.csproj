@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\hhnl.HomeAssistantNet\hhnl.HomeAssistantNet.csproj" OutputItemType="Analyzer" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="ha-config.json" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>9.0</LangVersion>
+        <Version>0.1.0</Version>
+        
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Generator dependencies -->
+        <PackageReference Include="HADotNet.Core" Version="1.5.1" GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="Nullable" Version="1.3.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="RestSharp" Version="106.11.7" GeneratePathProperty="true" PrivateAssets="all" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="all" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <None Remove="AnalyzerReleases.Shipped.md" />
+      <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+      <None Remove="AnalyzerReleases.Unshipped.md" />
+      <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+    </PropertyGroup>
+
+    <Target Name="GetDependencyTargetPaths">
+        <ItemGroup>
+            <TargetPathWithTargetPlatformMoniker Include="$(PKGHADotNet_Core)\lib\netstandard2.0\HADotNet.Core.dll" IncludeRuntimeDependency="false" />
+            <TargetPathWithTargetPlatformMoniker Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" IncludeRuntimeDependency="false" />
+            <TargetPathWithTargetPlatformMoniker Include="$(PKGRestSharp)\lib\netstandard2.0\RestSharp.dll" IncludeRuntimeDependency="false" />
+        </ItemGroup>
+    </Target>
+</Project>

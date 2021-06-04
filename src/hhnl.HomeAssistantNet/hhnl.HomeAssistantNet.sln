@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hhnl.HomeAssistantNet", "hhnl.HomeAssistantNet\hhnl.HomeAssistantNet.csproj", "{3BEF15C0-8E09-4D21-9D33-9FEDC3F2BD4B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hhnl.HomeAssistantNet.TestProject", "hhnl.HomeAssistantNet.TestProject\hhnl.HomeAssistantNet.TestProject.csproj", "{AE7EB346-B15D-44FB-9708-5FC1CF4C5EFE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3BEF15C0-8E09-4D21-9D33-9FEDC3F2BD4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BEF15C0-8E09-4D21-9D33-9FEDC3F2BD4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BEF15C0-8E09-4D21-9D33-9FEDC3F2BD4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BEF15C0-8E09-4D21-9D33-9FEDC3F2BD4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE7EB346-B15D-44FB-9708-5FC1CF4C5EFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE7EB346-B15D-44FB-9708-5FC1CF4C5EFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE7EB346-B15D-44FB-9708-5FC1CF4C5EFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE7EB346-B15D-44FB-9708-5FC1CF4C5EFE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
