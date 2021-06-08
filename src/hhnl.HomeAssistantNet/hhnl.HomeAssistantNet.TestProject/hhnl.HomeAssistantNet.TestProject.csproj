@@ -7,11 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\hhnl.HomeAssistantNet\hhnl.HomeAssistantNet.csproj" OutputItemType="Analyzer" />
+      <ProjectReference Include="..\hhnl.HomeAssistantNet.Automations\hhnl.HomeAssistantNet.Automations.csproj" />
+      <ProjectReference Include="..\hhnl.HomeAssistantNet.Shared\hhnl.HomeAssistantNet.Shared.csproj" />
+      <ProjectReference Include="..\hhnl.HomeAssistantNet.Generator\hhnl.HomeAssistantNet.Generator.csproj" OutputItemType="Analyzer" />
     </ItemGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="ha-config.json" />
+      <AdditionalFiles Include="ha-config.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </AdditionalFiles>
     </ItemGroup>
 
 </Project>

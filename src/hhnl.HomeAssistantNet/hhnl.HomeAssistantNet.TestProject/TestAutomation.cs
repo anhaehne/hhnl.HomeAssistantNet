@@ -1,37 +1,20 @@
 ﻿using System;
 using System.Threading.Tasks;
-using hhnl.HomeAssistantNet.Automation;
+using hhnl.HomeAssistantNet.Shared.Automation;
 using HomeAssistant;
-
 
 namespace hhnl.HomeAssistantNet.TestProject
 {
-    public class TestAutomation
+    public class LivingRoomAutomations
     {
-        [Automation]
-        public void MyTestAutomation()
+        /// <summary>
+        /// Prevent the lights from being turned on before 8pm.
+        /// </summary>
+        [Automation(runOnStart: true, reentryPolicy:ReentryPolicy.Discard)]
+        public async Task TurnOffLivingRoomWhenTurnedOn(MyTestDependency t, Lights.AndreWohnzimmer livingroom)
         {
-            //var t = HomeAssistant.Lights.Badezimmer.AssumedState;
-        }
-        
-        [Automation]
-        public void MyTestAutomation2()
-        {
-            //var t = HomeAssistant.Lights.Badezimmer.AssumedState;
-        }
-    }
-    
-    public class TestAutomation2
-    {
-        [Automation]
-        public async Task TurnOffLivingRoomWhenTurnedOn(Lights.AndreWohnzimmer wohnzimmer)
-        {
-            if(wohnzimmer.IsOn && DateTime.Now.Hour < 20)
-            {
-                await wohnzimmer.TurnOffAsync();
-
-            }
-            //var t = HomeAssistant.Lights.Badezimmer.AssumedState;
+            if (livingroom.IsOn && DateTime.Now.Hour < 22)
+                await livingroom.TurnOffAsync();
         }
     }
 }

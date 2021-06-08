@@ -9,15 +9,54 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="92edb7be-ad27-4bc7-8604-0d905ad40b48" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.vscode/launch.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/ha-config.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/Automation/AutomationRegistry.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/Automation/AutomationRunInfo.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/Automation/AutomationRunner.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/Automation/AutomationStartup.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/Automation/StateChangedNotificationHandler.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/HomeAssistantConnection/EntityRegistry.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/HomeAssistantConnection/HomeAssistantClient.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/Utils/Initialization.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/Utils/JsonElementExtensions.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/hhnl.HomeAssistantNet.Automations.csproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/Configuration/HomeAssistantCompileTimeConfigReader.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/Configuration/HomeAssistantConfigReader.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/SourceGenerator/MetadataFileGenerator.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/SourceGenerator/TypeExtensions.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/Automation/ReentryPolicy.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/Configuration/HomeAssistantConfig.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/HomeAssistantConnection/IHomeAssistantClient.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/SourceGenerator/GeneratorConstants.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/SourceGenerator/IGeneratedMetaData.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/Utils/JsonElementExtensions.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/hhnl.HomeAssistantNet.Shared.csproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/MyTestDependency.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.hhnl.HomeAssistantNet/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.hhnl.HomeAssistantNet/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/Startup.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/Startup.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/TestAutomation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/TestAutomation.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Light.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Light.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeaturesAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeaturesAttribute.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/UniqueIdAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/UniqueIdAttribute.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/EntityClassSourceFileGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/EntityClassSourceFileGenerator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/HomeAssistantEntityGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/HomeAssistantEntityGenerator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/hhnl.HomeAssistantNet.TestProject.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/hhnl.HomeAssistantNet.TestProject.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet.sln" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/AnalyzerReleases.Shipped.md" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/AnalyzerReleases.Shipped.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/AnalyzerReleases.Unshipped.md" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/AnalyzerReleases.Unshipped.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/Automation/AutomationAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/Automation/AutomationInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationMetaData.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationRunner.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationStartup.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Configuration/HomeAssistantConfig.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Configuration/HomeAssistantConfigReader.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Entity.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/Entities/Entity.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/Light.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/Entities/Light.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/RequiresSupportedFeatureAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/Entities/RequiresSupportedFeatureAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeature.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/SupportedFeaturesAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/Entities/SupportedFeaturesAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/Entities/UniqueIdAttribute.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Shared/Entities/UniqueIdAttribute.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationClassMetadataFileGenerator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationClassSyntaxReceiver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/SourceGenerator/AutomationClassSyntaxReceiver.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationMethodValidator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/SourceGenerator/AutomationMethodValidator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/EntityClassSourceFileGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/SourceGenerator/EntityClassSourceFileGenerator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/HomeAssistantEntityGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/SourceGenerator/SourceGenerator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/hhnl.HomeAssistantNet.Generator.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,22 +82,52 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/5E372D5C-6193-4D59-9CCC-7C9E90F549A6/1F9/StringBuilder.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$USER_HOME$/AppData/Local/Temp/RiderSourceGeneratedDocuments/5639AF1E7CD6A4749B71F527/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.SourceGenerator.HomeAssistantEntityGenerator/HomeAssistant_Entities.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/E555ED69-FA1E-401C-8383-6F0AE686824A/3E6/Syntax.xml.Syntax.Generated.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/5E372D5C-6193-4D59-9CCC-7C9E90F549A6/3CE/Debugger.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$USER_HOME$/AppData/Local/Temp/RiderSourceGeneratedDocuments/5639AF1E7CD6A4749B71F527/hhnl.HomeAssistantNet.Client/hhnl.HomeAssistantNet.Client.HomeAssistantEntityGenerator/HomeAssistant.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/SourceGenerator/EntityClassSourceFileGenerator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/HomeAssistantConnection/HomeAssistantClient.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/D01EA799-E9C9-4F77-A043-C8ECB5387E2F/30/Where.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/D01EA799-E9C9-4F77-A043-C8ECB5387E2F/2E/ToCollection.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/7098AF0C-DC6C-4F63-90CD-1D6962396EC9/1B/Grouping.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/6E07346B-41B5-468F-9AFF-2BE4F8339F79/4/ImmutableArrayExtensions.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$USER_HOME$/AppData/Local/Temp/RiderSourceGeneratedDocuments/5639AF1E7CD6A4749B71F527/hhnl.HomeAssistantNet.Client/hhnl.HomeAssistantNet.Client.SourceGenerator.HomeAssistantEntityGenerator/HomeAssistant_Lights.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/Configuration/HomeAssistantConfigReader.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/E6E6B40B-308C-4FE1-9C93-7C26C144C865/40/String.Manipulation.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/AC13E7E5-17C0-4A7F-9E00-2BC26DD715E4/245/GeneratorContexts.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/Utils/JsonElementExtensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/3E024D10-0810-4AAC-9FE1-2198F4C68344/12/JsonElement.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/47E57047-4A1E-4AF2-82FD-1BF7248CDAAE/8/JsonDocument.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Local/Temp/RiderSourceGeneratedDocuments/5639AF1E7CD6A4749B71F527/hhnl.HomeAssistantNet.Client/hhnl.HomeAssistantNet.Client.SourceGenerator.HomeAssistantEntityGenerator/HomeAssistant_Lights.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/E6E6B40B-308C-4FE1-9C93-7C26C144C865/28/Enum.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/BF11CC53-0FD0-4E70-89CA-9786AF4B3E11/27C/CommonAttributeData.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/5E372D5C-6193-4D59-9CCC-7C9E90F549A6/24B/ExceptionDispatchInfo.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/Automation/AutomationStartup.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/SourceGenerator/AutomationClassSyntaxReceiver.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/3834795B-F41B-4E62-8161-509ECA0F5822/E/NotificationHandlerWrapper.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/5E372D5C-6193-4D59-9CCC-7C9E90F549A6/1F9/StringBuilder.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/E6E6B40B-308C-4FE1-9C93-7C26C144C865/233/ExceptionDispatchInfo.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/AC13E7E5-17C0-4A7F-9E00-2BC26DD715E4/06/9a824e5b/DiagnosticSeverity.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$USER_HOME$/AppData/Local/Temp/RiderSourceGeneratedDocuments/5639AF1E7CD6A4749B71F527/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.SourceGenerator.HomeAssistantEntityGenerator/HomeAssistant_Lights.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/E555ED69-FA1E-401C-8383-6F0AE686824A/3E6/Syntax.xml.Syntax.Generated.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/E6E6B40B-308C-4FE1-9C93-7C26C144C865/2EE/TaskAwaiter.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/0BA85151-3437-400A-B898-82D88B7FD227/1F/ServiceProviderEngineScope.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/5E372D5C-6193-4D59-9CCC-7C9E90F549A6/3CE/Debugger.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Local/Temp/RiderSourceGeneratedDocuments/5639AF1E7CD6A4749B71F527/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.SourceGenerator.HomeAssistantEntityGenerator/HomeAssistant_Entities.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/C7788B2B-C733-412D-8EE3-9C302FF7CE57/4/HostingHostBuilderExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/E6E6B40B-308C-4FE1-9C93-7C26C144C865/2C1/AsyncTaskMethodBuilder.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/3834795B-F41B-4E62-8161-509ECA0F5822/14/IPublisher.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Local/Temp/RiderDebuggerEmbeddedSources/EA246B910786B54C7C7BD018/hhnl.HomeAssistantNet.Generator/hhnl.HomeAssistantNet.Generator.SourceGenerator.SourceGenerator/GeneratedMetaData.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1BA52DC0-B103-422E-BA91-AD87A1AA9FE3/9/ServiceProviderServiceExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/7098AF0C-DC6C-4F63-90CD-1D6962396EC9/1B/Grouping.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/E6E6B40B-308C-4FE1-9C93-7C26C144C865/199/Monitor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/D01EA799-E9C9-4F77-A043-C8ECB5387E2F/26/Select.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/D01EA799-E9C9-4F77-A043-C8ECB5387E2F/46/ThrowHelper.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/AC13E7E5-17C0-4A7F-9E00-2BC26DD715E4/DB/DiagnosticDescriptor.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/C7788B2B-C733-412D-8EE3-9C302FF7CE57/3/HostBuilder.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/E6E6B40B-308C-4FE1-9C93-7C26C144C865/37/Object.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/6E07346B-41B5-468F-9AFF-2BE4F8339F79/4/ImmutableArrayExtensions.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/5E372D5C-6193-4D59-9CCC-7C9E90F549A6/24B/ExceptionDispatchInfo.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/AC13E7E5-17C0-4A7F-9E00-2BC26DD715E4/245/GeneratorContexts.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/BF11CC53-0FD0-4E70-89CA-9786AF4B3E11/27C/CommonAttributeData.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/SourceGenerator/MetadataFileGenerator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hhnl.HomeAssistantNet.Automations/Automation/AutomationRunner.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/BAF1C499-A2F8-458A-B9BD-7154E51A6DCF/7d/f18ff469/TextReader.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/E6E6B40B-308C-4FE1-9C93-7C26C144C865/E2/ThrowHelper.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/hhnl.HomeAssistantNet.Generator/SourceGenerator/AutomationMethodValidator.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
     <changedPaths>
@@ -118,32 +187,20 @@
   </component>
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
-    <property name="DebuggerViewTab_PTCS_FirstProportionKey" value="0.3501006" />
+    <property name="DebuggerViewTab_PTCS_FirstProportionKey" value="0.5426388" />
     <property name="DebuggerViewTab_PTCS_LastProportionKey" value="0.0" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="XThreadsFramesViewSplitterKey" value="0.3227003" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
     <property name="settings.editor.selected.configurable" value="project.propDebugger" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RunManager" selected=".NET Project.hhnl.HomeAssistantNet.TestProject">
-    <configuration name="ConsoleApp1" type="DotNetProject" factoryName=".NET Project">
-      <option name="EXE_PATH" value="" />
-      <option name="PROGRAM_PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="PASS_PARENT_ENVS" value="1" />
-      <option name="USE_EXTERNAL_CONSOLE" value="0" />
-      <option name="USE_MONO" value="0" />
-      <option name="RUNTIME_ARGUMENTS" value="" />
-      <option name="PROJECT_PATH" value="$PROJECT_DIR$/ConsoleApp1/ConsoleApp1.csproj" />
-      <option name="PROJECT_EXE_PATH_TRACKING" value="1" />
-      <option name="PROJECT_ARGUMENTS_TRACKING" value="1" />
-      <option name="PROJECT_WORKING_DIRECTORY_TRACKING" value="1" />
-      <option name="PROJECT_KIND" value="Unloaded" />
-      <option name="PROJECT_TFM" value="" />
-      <method v="2">
-        <option name="Build" />
-      </method>
-    </configuration>
     <configuration name="hhnl.HomeAssistantNet.TestProject" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="$PROJECT_DIR$/hhnl.HomeAssistantNet.TestProject/bin/Debug/net5.0/hhnl.HomeAssistantNet.TestProject.exe" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -173,7 +230,6 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue=".NET Project.ConsoleApp1" />
       <item itemvalue=".NET Project.hhnl.HomeAssistantNet.TestProject" />
       <item itemvalue="Native Executable.Debugger.Launch: dotnet.exe" />
     </list>
@@ -192,7 +248,14 @@
       <workItem from="1622796880050" duration="41000" />
       <workItem from="1622796955263" duration="51000" />
       <workItem from="1622797057477" duration="16395000" />
-      <workItem from="1622822587075" duration="2993000" />
+      <workItem from="1622822587075" duration="3276000" />
+      <workItem from="1623051987455" duration="14427000" />
+      <workItem from="1623076154185" duration="1796000" />
+      <workItem from="1623138009122" duration="180000" />
+      <workItem from="1623138202240" duration="443000" />
+      <workItem from="1623138662700" duration="4771000" />
+      <workItem from="1623143692045" duration="553000" />
+      <workItem from="1623144263319" duration="24453000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1622816106604</created>
@@ -201,12 +264,20 @@
       <option name="project" value="LOCAL" />
       <updated>1622816106605</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Changed entity generation. Now each entity is it's own class. This allows to inject entities via dependency injection.">
+      <created>1622829214479</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1622829214479</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="UnityUnitTestConfiguration" currentTestLauncher="NUnit" />
   <component name="Vcs.Log.Tabs.Properties">
@@ -225,51 +296,14 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Initial commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial commit" />
+    <MESSAGE value="Changed entity generation. Now each entity is it's own class. This allows to inject entities via dependency injection." />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed entity generation. Now each entity is it's own class. This allows to inject entities via dependency injection." />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/hhnl.HomeAssistantNet/Automation/AutomationStartup.cs</url>
-          <line>20</line>
-          <properties documentPath="C:\Repos\anhaehne\hhnl.HomeAssistantNet\src\hhnl.HomeAssistantNet\hhnl.HomeAssistantNet\Automation\AutomationStartup.cs" initialLine="20" containingFunctionPresentation="method 'Run'">
-            <startOffsets>
-              <option value="494" />
-            </startOffsets>
-            <endOffsets>
-              <option value="495" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="19" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationClassSyntaxReceiver.cs</url>
-          <line>20</line>
-          <properties documentPath="C:\Repos\anhaehne\hhnl.HomeAssistantNet\src\hhnl.HomeAssistantNet\hhnl.HomeAssistantNet\SourceGenerator\AutomationClassSyntaxReceiver.cs" initialLine="20" containingFunctionPresentation="method 'OnVisitSyntaxNode'">
-            <startOffsets>
-              <option value="696" />
-            </startOffsets>
-            <endOffsets>
-              <option value="750" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="20" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/hhnl.HomeAssistantNet/SourceGenerator/AutomationClassSyntaxReceiver.cs</url>
-          <line>17</line>
-          <properties documentPath="C:\Repos\anhaehne\hhnl.HomeAssistantNet\src\hhnl.HomeAssistantNet\hhnl.HomeAssistantNet\SourceGenerator\AutomationClassSyntaxReceiver.cs" initialLine="17" containingFunctionPresentation="method 'OnVisitSyntaxNode'">
-            <startOffsets>
-              <option value="592" />
-            </startOffsets>
-            <endOffsets>
-              <option value="658" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="21" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="Type#System.Exception" memberName="StackTrace" />
+      </pinned-members>
+    </pin-to-top-manager>
   </component>
 </project>
