@@ -29,7 +29,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             _homeAssistantClient = homeAssistantClient;
 
             _entities = metaData.EntityTypes.Select(type => (type, id: GetEntityId(type)))
-                .Where(t => automationRegistry.RelevantEntities.Contains(t.id))
+                .Where(t => t.id != Entity.AllEntityId && automationRegistry.RelevantEntities.Contains(t.id))
                 .ToDictionary(x => x.id,
                     x => (Entity)serviceProvider.GetRequiredService(x.type));
         }
@@ -66,7 +66,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             if (!_entities.TryGetValue(entityId, out var result))
                 return;
 
-            result.Update(json);
+            result.CurrentState = json;
         }
 
         private string GetEntityId(Type t)

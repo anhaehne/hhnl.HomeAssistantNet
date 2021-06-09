@@ -27,7 +27,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         public async Task RunAutomationAsync(AutomationRunInfo automationInfo)
         {
             using var scope = _provider.CreateScope();
-            await automationInfo.Info.RunAutomation(scope.ServiceProvider);
+            await automationInfo.Info.RunAutomation(scope.ServiceProvider, default);
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)

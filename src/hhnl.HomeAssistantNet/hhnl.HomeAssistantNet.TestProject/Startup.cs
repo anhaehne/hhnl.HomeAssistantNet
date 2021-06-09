@@ -24,17 +24,12 @@ namespace hhnl.HomeAssistantNet.TestProject
             // TODO: fix workaround
             if(args.Name.StartsWith("hhnl.HomeAssistantNet.Shared"))
             {
-                var path = Path.Combine(Path.GetDirectoryName(typeof(Startup).Assembly.Location), "hhnl.HomeAssistantNet.Shared.dll");
+                var path = Path.Combine(Path.GetDirectoryName(typeof(Startup).Assembly.Location)!, "hhnl.HomeAssistantNet.Shared.dll");
                 var assembly = Assembly.LoadFrom(path);
                 return assembly;
             }
 
             return null;
-        }
-
-        protected override void ConfigureServices(HostBuilderContext builderContext, IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<MyTestDependency>();
         }
     }
 }

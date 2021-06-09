@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using HADotNet.Core;
 using HADotNet.Core.Clients;
@@ -14,14 +14,6 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
     [Generator]
     public class SourceGenerator : ISourceGenerator
     {
-        private static readonly Dictionary<string, (string staticClass, Type EntityBaseClass, Type? supportedFeatures)> _knownEntityDomains =  new()
-        {
-            {
-                "light",
-                ("Lights", typeof(Light), typeof(Light.SupportedFeatures))
-            }
-        };
-
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new AutomationClassSyntaxReceiver());
@@ -55,18 +47,20 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
         private async Task Run(GeneratorExecutionContext context)
         {
             var entityFullNames = await GenerateEntityClasses(context);
-            
+
             GenerateAutomationMetaData(context, entityFullNames);
         }
 
-        private static void GenerateAutomationMetaData(GeneratorExecutionContext context, IReadOnlyCollection<string> entitiesFullNames)
+        private static void GenerateAutomationMetaData(
+            GeneratorExecutionContext context,
+            IReadOnlyCollection<string> entitiesFullNames)
         {
             var receiver = (AutomationClassSyntaxReceiver)context.SyntaxContextReceiver!;
-            
+
             var metaDataClassGenerator = new MetadataFileGenerator(context);
             metaDataClassGenerator.AddAutomationClassMetaData(receiver.AutomationMethods, entitiesFullNames);
         }
-        
+
         private static async Task<IReadOnlyCollection<string>> GenerateEntityClasses(GeneratorExecutionContext context)
         {
             var entityClassGenerator = new EntityClassSourceFileGenerator(context);
@@ -75,25 +69,37 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             var entities = (await entityClient.GetStates()).ToDictionary(x => x.EntityId);
 
             List<string> entitiesFullNames = new();
+            
+            var knownEntityDomains = typeof(Entity).Assembly.GetTypes().Where(t => typeof(Entity).IsAssignableFrom(t))
+                .Select(t => (Type: t, Attribute: t.GetCustomAttribute<HomeAssistantEntityAttribute>()))
+                .Where(t => t.Attribute is not null)
+                .ToDictionary(t => t.Attribute.Domain,
+                    t => (t.Attribute.ContainingEntityClass, EntityBaseClass: t.Type,
+                        t.Attribute.SupportedFeaturesEnumType, t.Attribute.SupportsAllEntity));
 
-            foreach (var knownEntityDomain in _knownEntityDomains)
+
+            foreach (var knownEntityDomain in knownEntityDomains)
             {
-                var entitiesOfDomain = entities.Where(x => x.Key.StartsWith(knownEntityDomain.Key)).Select(x => x.Value).ToList();
+                var entitiesOfDomain =
+                    entities.Where(x => x.Key.StartsWith(knownEntityDomain.Key)).Select(x => x.Value).ToList();
 
-                var typedFullNames = entityClassGenerator.AddEntityClass(knownEntityDomain.Value.staticClass,
+                var typedFullNames = entityClassGenerator.AddEntityClass(knownEntityDomain.Value.ContainingEntityClass,
                     knownEntityDomain.Value.EntityBaseClass,
-                    knownEntityDomain.Value.supportedFeatures,
-                    entitiesOfDomain);
-                
+                    knownEntityDomain.Value.SupportedFeaturesEnumType,
+                    entitiesOfDomain,
+                    supportsAllEntity: knownEntityDomain.Value.SupportsAllEntity);
+
                 entitiesFullNames.AddRange(typedFullNames);
 
                 foreach (var e in entitiesOfDomain)
+                {
                     entities.Remove(e.EntityId);
+                }
             }
 
             var fullNames = entityClassGenerator.AddEntityClass("Entities", typeof(Entity), null, entities.Values, false);
             entitiesFullNames.AddRange(fullNames);
-            
+
             return entitiesFullNames;
         }
     }

@@ -11,10 +11,13 @@ namespace hhnl.HomeAssistantNet.TestProject
         /// Prevent the lights from being turned on before 8pm.
         /// </summary>
         [Automation(runOnStart: true, reentryPolicy:ReentryPolicy.Discard)]
-        public async Task TurnOffLivingRoomWhenTurnedOn(MyTestDependency t, Lights.AndreWohnzimmer livingroom)
+        public async Task TurnOffLivingRoomWhenTurnedOn( Lights.AndreWohnzimmer livingroom, MediaPlayers.Bad bathroom)
         {
-            if (livingroom.IsOn && DateTime.Now.Hour < 22)
-                await livingroom.TurnOffAsync();
+            // if (livingroom.IsOn && DateTime.Now.Hour < 22)
+            //     await livingroom.TurnOffAsync();
+            //
+
+            await bathroom.SetVolumeAsync(0.5);
         }
     }
 }

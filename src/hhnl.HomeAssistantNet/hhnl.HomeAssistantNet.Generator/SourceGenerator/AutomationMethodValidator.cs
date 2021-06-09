@@ -160,14 +160,6 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                     "Automation methods must be public.");
             }
 
-            if (method.Parameters.Any())
-            {
-                return Diagnostic.Create(_invalidAutomationDeclaration,
-                    method.Locations.First(),
-                    DiagnosticSeverity.Warning,
-                    "Automation methods can not contain parameters.");
-            }
-
             return null;
         }
     }

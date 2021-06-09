@@ -83,6 +83,11 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 .ConfigureAppConfiguration(c => c.AddJsonFile("ha-config.json", true))
                 .ConfigureServices(ConfigureServices)
                 .ConfigureServices(ConfigureServiceInternal)
+                
+                #if DEBUG
+                .ConfigureLogging(x => x.SetMinimumLevel(LogLevel.Debug))
+                #endif
+                
                 .UseConsoleLifetime();
         }
 

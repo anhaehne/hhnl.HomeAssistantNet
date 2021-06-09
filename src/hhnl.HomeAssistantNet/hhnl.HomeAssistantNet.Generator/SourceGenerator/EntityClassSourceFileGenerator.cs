@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using HADotNet.Core.Models;
 using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
@@ -11,6 +12,17 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
     public class EntityClassSourceFileGenerator
     {
         public const string EntityNamespace = "HomeAssistant";
+
+        private readonly StateObject _allEntity = new()
+        {
+            EntityId = Entity.AllEntityId,
+            Attributes = new Dictionary<string, object>
+            {
+                { "friendly_name", "all. Represents all entities of this type." },
+                { "supported_features", -1 }
+            }
+        };
+
         private readonly GeneratorExecutionContext _context;
 
         public EntityClassSourceFileGenerator(GeneratorExecutionContext context)
@@ -23,9 +35,13 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             Type entityBaseClass,
             Type? supportedFeaturesType,
             IEnumerable<StateObject> entities,
-            bool removeDomain = true)
+            bool removeDomain = true,
+            bool supportsAllEntity = false)
         {
             List<string> entitiesFullNames = new();
+
+            if (supportsAllEntity)
+                entities = entities.Append(_allEntity);
 
             var entityClasses = entities.Select(entity =>
             {
@@ -40,7 +56,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                 var entityClassName = ToClassName(entity.EntityId);
 
                 entitiesFullNames.Add($"{className}.{entityClassName}");
-                
+
                 return $@"
         /// <summary>
         /// The entity {entityName}
@@ -106,16 +122,27 @@ namespace {EntityNamespace}
                 if (!int.TryParse(stringValue, out var intValue))
                     yield break;
 
+                // Special case for the 'all' entity. This should support all features.
+                if (intValue == -1)
+                {
+                    foreach (var value in Enum.GetValues(supportedFeaturesType).Cast<int>())
+                    {
+                        yield return GetEnumValueName(value);
+                    }
+                    yield break;
+                }
+                
                 if (intValue < 1)
                     yield break;
 
-                foreach (var value in Enum.GetValues(supportedFeaturesType))
+                foreach (var value in Enum.GetValues(supportedFeaturesType).Cast<int>())
                 {
-                    var currentIntValue = (int)value;
-
-                    if ((intValue & currentIntValue) == currentIntValue)
-                        yield return $"{GetFullAccessName(supportedFeaturesType)}.{Enum.GetName(supportedFeaturesType, value)}";
+                    if ((intValue & value) == value)
+                        yield return GetEnumValueName(value);
                 }
+
+                string GetEnumValueName(object value) =>
+                    $"{GetFullAccessName(supportedFeaturesType)}.{Enum.GetName(supportedFeaturesType, value)}";
             }
 
             static string GetFullAccessName(Type t)
