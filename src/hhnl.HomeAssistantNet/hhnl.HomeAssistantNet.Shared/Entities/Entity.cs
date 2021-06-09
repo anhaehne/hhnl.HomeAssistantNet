@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
 
 namespace hhnl.HomeAssistantNet.Shared.Entities
@@ -11,7 +9,7 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
     public class Entity
     {
         public const string AllEntityId = "all";
-        
+
         public Entity(string uniqueId, IHomeAssistantClient assistantClient)
         {
             HomeAssistantClient = assistantClient;

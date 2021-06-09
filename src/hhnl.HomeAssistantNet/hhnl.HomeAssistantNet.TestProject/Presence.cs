@@ -9,6 +9,17 @@ namespace hhnl.HomeAssistantNet.TestProject
 {
     public class Presence
     {
+        private readonly Lights.All _allLights;
+        private readonly MediaPlayers.All _allMediaPlayers;
+        private readonly IHomeAssistantClient _client;
+
+        public Presence(MediaPlayers.All allMediaPlayers, Lights.All allLights, IHomeAssistantClient client)
+        {
+            _allMediaPlayers = allMediaPlayers;
+            _allLights = allLights;
+            _client = client;
+        }
+
         [Automation(runOnStart: true)]
         public async Task AnyoneHome(
             Persons.Andre andre,
@@ -22,12 +33,7 @@ namespace hhnl.HomeAssistantNet.TestProject
         }
 
         [Automation(runOnStart: true)]
-        public async Task LeaveHome(
-            InputBooleans.LeaveHome leaveHome,
-            MediaPlayers.All allMediaPlayers,
-            Lights.All allLights,
-            IHomeAssistantClient client,
-            CancellationToken ct)
+        public async Task LeaveHome(InputBooleans.LeaveHome leaveHome)
         {
             // If leave home is turned off, we have nothing to do.
             if (leaveHome.IsOff)
@@ -36,24 +42,23 @@ namespace hhnl.HomeAssistantNet.TestProject
             // Turn off all the stuff we want to turn off.
 
             // Turn of media player
-            await allMediaPlayers.StopAsync(ct);
+            await _allMediaPlayers.StopAsync();
             // Turn of lights
-            await allLights.TurnOffAsync(ct);
+            await _allLights.TurnOffAsync();
 
             // Turn of the TV
-            await client.CallServiceAsync("webostv",
+            await _client.CallServiceAsync("webostv",
                 "command",
                 new
                 {
                     command = "system/turnOff"
-                },
-                ct);
+                });
 
             // Wait 5 secs
-            await Task.Delay(TimeSpan.FromSeconds(5), ct);
+            await Task.Delay(TimeSpan.FromSeconds(5));
 
             // Turn off the leave home input
-            await leaveHome.TurnOffAsync(ct);
+            await leaveHome.TurnOffAsync();
         }
     }
 }

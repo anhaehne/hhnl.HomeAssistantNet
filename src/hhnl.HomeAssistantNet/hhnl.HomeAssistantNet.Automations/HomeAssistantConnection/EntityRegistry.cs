@@ -17,6 +17,16 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 {
     public class EntityRegistry : IEntityRegistry, IHostedService
     {
+        private static readonly JsonElement _allEntity = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(new
+        {
+            entity_id = Entity.AllEntityId,
+            attributes = new
+            {
+                friendly_name = "all. Represents all entities of this type.",
+                supported_features = -1
+            }
+        }));
+
         private readonly Dictionary<string, Entity> _entities;
         private readonly IHomeAssistantClient _homeAssistantClient;
 
@@ -28,10 +38,20 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         {
             _homeAssistantClient = homeAssistantClient;
 
-            _entities = metaData.EntityTypes.Select(type => (type, id: GetEntityId(type)))
-                .Where(t => t.id != Entity.AllEntityId && automationRegistry.RelevantEntities.Contains(t.id))
+            var entityById = metaData.EntityTypes.Select(type => (type, id: GetEntityId(type))).ToList();
+
+            var allEntities = entityById.Where(t => t.id == Entity.AllEntityId).ToList();
+
+            _entities = entityById.Except(allEntities).Where(t => automationRegistry.RelevantEntities.Contains(t.id))
                 .ToDictionary(x => x.id,
                     x => (Entity)serviceProvider.GetRequiredService(x.type));
+
+            // Initialize all entities with a default state.
+            foreach (var allEntity in allEntities)
+            {
+                var entity = (Entity)serviceProvider.GetRequiredService(allEntity.type);
+                entity.CurrentState = _allEntity;
+            }
         }
 
         public async Task UpdateEntityAsync(string entityId, JsonElement json)
@@ -43,7 +63,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             await Initialization.WaitForHomeAssistantConnectionAsync();
-            
+
             var json = await _homeAssistantClient.FetchStatesAsync(cancellationToken);
 
             for (var i = 0; i < json.GetArrayLength(); i++)
