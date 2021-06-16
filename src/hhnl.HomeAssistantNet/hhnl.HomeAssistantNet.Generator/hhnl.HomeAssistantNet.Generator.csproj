@@ -4,10 +4,14 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <Nullable>enable</Nullable>
         <LangVersion>9.0</LangVersion>
-        <Version>0.1.0</Version>
+
+        <Authors>anhaehne</Authors>
+        <Version>0.1.2</Version>
+        <PackageProjectUrl>https://github.com/anhaehne/hhnl.HomeAssistantNet</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         
         <IncludeBuildOutput>false</IncludeBuildOutput>
-        
         <IsRoslynComponent>true</IsRoslynComponent>
     </PropertyGroup>
 
@@ -25,10 +29,20 @@
     <ItemGroup>
       <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
       <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Package DLLs -->
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(PKGHADotNet_Core)\lib\netstandard2.0\HADotNet.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(PKGRestSharp)\lib\netstandard2.0\RestSharp.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(TargetDir)\hhnl.HomeAssistantNet.Shared.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
     
     <ItemGroup>
-      <ProjectReference Include="..\hhnl.HomeAssistantNet.Shared\hhnl.HomeAssistantNet.Shared.csproj" PrivateAssets="all" />
+      <ProjectReference Include="..\hhnl.HomeAssistantNet.Shared\hhnl.HomeAssistantNet.Shared.csproj" />
     </ItemGroup>
 
     <PropertyGroup>

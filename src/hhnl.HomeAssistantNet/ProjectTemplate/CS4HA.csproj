@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+      <UserSecretsId>7d22c5b9-89ae-4875-806c-17b49a7fe068</UserSecretsId>
+  </PropertyGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="hhnl.HomeAssistantNet.Automations" Version="0.1.2" />
+      <PackageReference Include="hhnl.HomeAssistantNet.Generator" Version="0.1.2" />
+    </ItemGroup>
+</Project>

@@ -10,7 +10,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 {
     public interface IAutomationRegistry
     {
-        IReadOnlyCollection<AutomationRunInfo> Automations { get; }
+        IReadOnlyDictionary<string, AutomationRunInfo> Automations { get; }
 
         ISet<string> RelevantEntities { get; }
 
@@ -23,9 +23,9 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         public AutomationRegistry(IGeneratedMetaData generatedMetaData)
         {
-            Automations = generatedMetaData.AutomationMetaData.Select(CreateRunInfo).ToList();
+            Automations = generatedMetaData.AutomationMetaData.Select(CreateRunInfo).ToDictionary(x => x.Info.Name);
 
-            foreach (var automation in Automations)
+            foreach (var automation in Automations.Values)
             foreach (var entity in automation.Info.DependsOnEntities)
             {
                 var entityId = GetEntityId(entity);
@@ -42,7 +42,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             RelevantEntities = _dictionary.Keys.ToHashSet();
         }
 
-        public IReadOnlyCollection<AutomationRunInfo> Automations { get; }
+        public IReadOnlyDictionary<string, AutomationRunInfo> Automations { get; }
 
         public ISet<string> RelevantEntities { get; }
 

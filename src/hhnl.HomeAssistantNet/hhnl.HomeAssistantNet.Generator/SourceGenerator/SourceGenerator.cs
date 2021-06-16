@@ -70,6 +70,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 
             List<string> entitiesFullNames = new();
             
+            // Get the type of entities with a HomeAssistantEntityAttribute and load their meta data.
             var knownEntityDomains = typeof(Entity).Assembly.GetTypes().Where(t => typeof(Entity).IsAssignableFrom(t))
                 .Select(t => (Type: t, Attribute: t.GetCustomAttribute<HomeAssistantEntityAttribute>()))
                 .Where(t => t.Attribute is not null)
@@ -77,7 +78,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                     t => (t.Attribute.ContainingEntityClass, EntityBaseClass: t.Type,
                         t.Attribute.SupportedFeaturesEnumType, t.Attribute.SupportsAllEntity));
 
-
+            // Group entities by domain and generate their classes.
             foreach (var knownEntityDomain in knownEntityDomains)
             {
                 var entitiesOfDomain =
@@ -97,6 +98,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                 }
             }
 
+            // Generate all unknown entities inside the "Entities" class.
             var fullNames = entityClassGenerator.AddEntityClass("Entities", typeof(Entity), null, entities.Values, false);
             entitiesFullNames.AddRange(fullNames);
 

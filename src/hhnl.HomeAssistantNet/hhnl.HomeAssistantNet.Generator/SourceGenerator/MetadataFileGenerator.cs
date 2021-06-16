@@ -53,6 +53,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                 {nameof(AutomationInfo.Error)} = ""{(error is null ? string.Empty : error.GetMessage())}"",
                 {nameof(AutomationInfo.Method)} = typeof({method.ContainingType.GetFullName()}).GetMethod(""{method.Name}"", BindingFlags.Instance | BindingFlags.Public)!,
                 {nameof(AutomationInfo.DisplayName)} = ""{attributeData.ConstructorArguments[0].Value ?? method.Name}"",
+                {nameof(AutomationInfo.Name)} = ""{method.ContainingType.GetFullName()}.{method.Name}"",
                 {nameof(AutomationInfo.RunOnStart)} = {(attributeData.ConstructorArguments[1].Value is true ? "true" : "false")},
                 {nameof(AutomationInfo.ReentryPolicy)} = ({typeof(ReentryPolicy).GetFullName()}){attributeData.ConstructorArguments[2].Value},
                 {nameof(AutomationInfo.DependsOnEntities)} = new Type[] {{ {string.Join(", ", dependingOnEntities)} }},

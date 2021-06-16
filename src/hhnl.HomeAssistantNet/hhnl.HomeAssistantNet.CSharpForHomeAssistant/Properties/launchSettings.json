@@ -1,0 +1,13 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "hhnl.HomeAssistantNet.Supervisor": {
+      "commandName": "Project",
+      "hotReloadProfile": "aspnetcore",
+      "applicationUrl": "http://localhost:20777",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

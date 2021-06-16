@@ -12,6 +12,8 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 {
     public class AutomationInfo
     {
+        public string Name { get; set; }
+        
         public MethodInfo Method { get; set; }
 
         public bool RunOnStart { get; set; }

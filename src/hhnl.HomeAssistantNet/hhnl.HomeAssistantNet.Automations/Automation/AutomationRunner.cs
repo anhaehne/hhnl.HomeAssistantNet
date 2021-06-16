@@ -10,7 +10,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 {
     public interface IAutomationRunner
     {
-        Task RunAutomationAsync(AutomationRunInfo automationInfo);
+        void RunAutomation(AutomationRunInfo automationInfo);
     }
 
     public class AutomationRunner : IHostedService, IAutomationRunner
@@ -24,10 +24,13 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             _automationRegistry = automationRegistry;
         }
 
-        public async Task RunAutomationAsync(AutomationRunInfo automationInfo)
+        public void RunAutomation(AutomationRunInfo automationInfo)
         {
-            using var scope = _provider.CreateScope();
-            await automationInfo.Info.RunAutomation(scope.ServiceProvider, default);
+            Task.Run(async () =>
+            {
+                using var scope = _provider.CreateScope();
+                await automationInfo.Info.RunAutomation(scope.ServiceProvider, default);
+            });
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -35,9 +38,9 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Move this stuff to a background task.
             await Initialization.WaitForEntitiesLoadedAsync();
 
-            foreach (var runOnStartAutomations in _automationRegistry.Automations.Where(x => x.Info.RunOnStart))
+            foreach (var runOnStartAutomations in _automationRegistry.Automations.Values.Where(x => x.Info.RunOnStart))
             {
-                await RunAutomationAsync(runOnStartAutomations);
+                RunAutomation(runOnStartAutomations);
             }
         }
 

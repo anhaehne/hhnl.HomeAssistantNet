@@ -2,8 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Shared.Automation;
+using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
 using HomeAssistant;
+using Microsoft.Extensions.Logging;
 
 namespace hhnl.HomeAssistantNet.TestProject
 {
@@ -25,7 +27,7 @@ namespace hhnl.HomeAssistantNet.TestProject
             Persons.Andre andre,
             Persons.Janina janina,
             InputBooleans.PresenceGuests guests,
-            InputBooleans.PresenceAnyone presenceAnyone,
+            [OutputOnly]InputBooleans.PresenceAnyone presenceAnyone,
             CancellationToken ct)
         {
             var isAnyOneHome = andre.IsHome || janina.IsHome || guests.IsOn;

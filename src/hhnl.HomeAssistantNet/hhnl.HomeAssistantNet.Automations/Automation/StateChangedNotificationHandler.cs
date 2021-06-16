@@ -35,7 +35,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
             foreach (var automation in automations)
             {
-                await _automationRunner.RunAutomationAsync(automation);
+                _automationRunner.RunAutomation(automation);
             }
         }
     }

@@ -1,0 +1,19 @@
+{
+  "name": "C#",
+  "version": "1",
+  "slug": "c_sharp_for_homeassistant",
+  "description": "1 A touch first ui for home assistant.",
+  "arch": [ "armhf", "armv7", "aarch64", "amd64", "i386" ],
+  "startup": "application",
+  "boot": "auto",
+  "homeassistant_api": true,
+  "panel_icon": "mdi:chart-bubble",
+  "ingress": true,
+  "auth_api": true,
+  "options": {},
+  "schema": {},
+  "ports": {
+    "20777/tcp": 20777
+  },
+  "map": ["config:rw"]
+}

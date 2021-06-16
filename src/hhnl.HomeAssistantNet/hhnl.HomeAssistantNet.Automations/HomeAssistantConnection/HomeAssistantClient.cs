@@ -27,6 +27,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         private readonly IMediator _mediator;
         private readonly Channel<byte[]> _messagesToSend;
         private CancellationTokenSource? _cancellationTokenSource;
+        private readonly SemaphoreSlim _enqueueLock = new(1);
         private long _id;
         private Task? _receiveTask;
         private Task? _sendTask;
@@ -123,6 +124,10 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                 {
                     try
                     {
+                        // If the server return a new message id, we increment our counter.
+                        var incremented = received.Id + 1;
+                        Interlocked.CompareExchange(ref _id, incremented, received.Id);
+
                         var receiveTask = HandleMessageAsync(received);
 
                         await Task.WhenAny(receiveTask, Task.Delay(TimeSpan.FromSeconds(10)));
@@ -165,7 +170,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
                     _logger.LogDebug("Got auth_required; sending token.");
 
-                    await SendAsync(
+                    await EnqueueMessageAsync(_ =>
                         new
                         {
                             type = "auth",
@@ -179,10 +184,10 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
                     Initialization.HomeAssistantConnected();
 
-                    await SendAsync(
+                    await EnqueueMessageAsync(i =>
                         new
                         {
-                            id = Interlocked.Increment(ref _id),
+                            id = i,
                             type = "subscribe_events",
                             event_type = "state_changed"
                         });
@@ -261,15 +266,18 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             // Wait for init
             await Initialization.WaitForHomeAssistantConnectionAsync();
 
-            var id = Interlocked.Increment(ref _id);
-            var request = requestFactory(id);
-            var tcs = _callResults.GetOrAdd(id, i => new TaskCompletionSource<WebsocketApiMessage>(cancellationToken));
-
+            TaskCompletionSource<WebsocketApiMessage> tcs = null;
+            
+            var id = await EnqueueMessageAsync(innerId =>
+            {
+                var request = requestFactory(innerId);
+                tcs = _callResults.GetOrAdd(innerId, i => new TaskCompletionSource<WebsocketApiMessage>(cancellationToken));
+                return request;
+            });
+            
             try
             {
-                await SendAsync(request);
-
-                var result = await tcs.Task;
+                var result = await tcs!.Task;
 
                 if (result.Success == false)
                 {
@@ -287,11 +295,23 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         }
 
 
-        private async Task SendAsync<T>(T response)
+        private async Task<long> EnqueueMessageAsync<T>(Func<long, T> createMessageAsync)
         {
-            var bytes = JsonSerializer.SerializeToUtf8Bytes(response);
+            await _enqueueLock.WaitAsync();
 
-            await _messagesToSend.Writer.WriteAsync(bytes);
+            try
+            {
+                var messageId = Interlocked.Increment(ref _id);
+                var message = createMessageAsync(messageId);
+                var bytes = JsonSerializer.SerializeToUtf8Bytes(message);
+                await _messagesToSend.Writer.WriteAsync(bytes);
+                return messageId;
+
+            }
+            finally
+            {
+                _enqueueLock.Release();
+            }
         }
 
         private class WebsocketApiMessage

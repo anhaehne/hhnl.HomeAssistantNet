@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Automations.HomeAssistantConnection;
+using hhnl.HomeAssistantNet.Automations.Supervisor;
 using hhnl.HomeAssistantNet.Shared.Configuration;
 using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
@@ -38,15 +39,17 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             metaData.RegisterEntitiesAndAutomations(services);
 
             services.Configure<HomeAssistantConfig>(builderContext.Configuration);
-            services.Configure<HomeAssistantConfig>(config =>
+            services.PostConfigure<HomeAssistantConfig>(config =>
             {
                 // When not configured otherwise we expect to run in a Home Assistant Add-ons.
                 if (string.IsNullOrEmpty(config.Token))
                     config.Token = Environment.GetEnvironmentVariable("SUPERVISOR_TOKEN") ?? string.Empty;
                 
                 if (string.IsNullOrEmpty(config.Instance))
-                    config.Token = "http://supervisor/core/api";
+                    config.Instance = Environment.GetEnvironmentVariable("HOME_ASSISTANT_API") ?? "http://supervisor/core/api";
             });
+
+            services.Configure<AutomationsConfig>(builderContext.Configuration);
 
             // Order is important.
             services.AddSingleton<HomeAssistantClient>();
@@ -62,6 +65,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             services.AddSingleton<IAutomationRunner>(s => s.GetRequiredService<AutomationRunner>());
             
             services.AddSingleton<IAutomationRegistry, AutomationRegistry>();
+
+            services.AddHostedService<SupervisorClient>();
             
             // Handler
             services
