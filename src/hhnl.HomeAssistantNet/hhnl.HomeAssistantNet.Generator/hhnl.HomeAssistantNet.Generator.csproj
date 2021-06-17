@@ -6,7 +6,7 @@
         <LangVersion>9.0</LangVersion>
 
         <Authors>anhaehne</Authors>
-        <Version>0.1.2</Version>
+        <Version>0.1.11</Version>
         <PackageProjectUrl>https://github.com/anhaehne/hhnl.HomeAssistantNet</PackageProjectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -34,7 +34,6 @@
 
     <ItemGroup>
         <!-- Package DLLs -->
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         <None Include="$(PKGHADotNet_Core)\lib\netstandard2.0\HADotNet.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         <None Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         <None Include="$(PKGRestSharp)\lib\netstandard2.0\RestSharp.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />

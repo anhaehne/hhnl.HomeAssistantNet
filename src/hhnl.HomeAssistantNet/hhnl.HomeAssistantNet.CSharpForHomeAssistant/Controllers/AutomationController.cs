@@ -26,19 +26,19 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
         }
         
         [HttpGet]
-        public Task<ActionResult<IReadOnlyCollection<ManagementAutomationInfo>>> GetAutomationsAsync()
+        public Task<ActionResult<IReadOnlyCollection<AutomationInfoDto>>> GetAutomationsAsync()
         {
             return CallHostService(service => service.GetAutomationsAsync()!);
         }
 
         [HttpPost("{name}/start")]
-        public Task<ActionResult<ManagementAutomationInfo>> StartAutomationAsync([FromRoute]string name)
+        public Task<ActionResult<AutomationInfoDto>> StartAutomationAsync([FromRoute]string name)
         {
             return CallHostService(service => service.StartAutomationAsync(name));
         }
         
         [HttpPost("{name}/stop")]
-        public Task<ActionResult<ManagementAutomationInfo>> StopAutomationAsync([FromRoute]string name, [FromBody]TimeSpan? timeout = null)
+        public Task<ActionResult<AutomationInfoDto>> StopAutomationAsync([FromRoute]string name, [FromBody]TimeSpan? timeout = null)
         {
             return CallHostService(service => service.StopAutomationAsync(name, timeout ?? TimeSpan.FromSeconds(30)));
         }

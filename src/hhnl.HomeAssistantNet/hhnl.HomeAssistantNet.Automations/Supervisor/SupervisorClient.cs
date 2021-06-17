@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Automations.Automation;
+using hhnl.HomeAssistantNet.Shared.Automation;
 using hhnl.HomeAssistantNet.Shared.Supervisor;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
@@ -16,6 +17,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
     {
         private readonly IAutomationRegistry _automationRegistry;
         private readonly IAutomationRunner _automationRunner;
+        private readonly IOptions<AutomationsConfig> _config;
         private readonly HubConnection? _hubConnection;
         private readonly ILogger<SupervisorClient> _logger;
 
@@ -28,6 +30,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             _automationRegistry = automationRegistry;
             _automationRunner = automationRunner;
             _logger = logger;
+            _config = config;
 
             if (config.Value.SupervisorUrl is null)
             {
@@ -35,8 +38,10 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
                 return;
             }
 
+            var connectUri = new Uri(new Uri(config.Value.SupervisorUrl), "/client-management");
+            
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl(new Uri($"{config.Value.SupervisorUrl}/client-management"))
+                .WithUrl(connectUri)
                 .WithAutomaticReconnect()
                 .Build();
             _hubConnection.On<long>(nameof(IManagementClient.GetAutomationsAsync), GetAutomationsAsync);
@@ -51,7 +56,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             if (_hubConnection is null)
                 return;
 
-            _logger.LogInformation("Starting supervisor client ...");
+            _logger.LogInformation($"Starting supervisor client '{_config.Value.SupervisorUrl}' ...");
             await _hubConnection.StartAsync(cancellationToken);
             _logger.LogInformation("Supervisor client started");
         }
@@ -71,7 +76,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
                 return _hubConnection.SendAsync("AutomationStarted", messageId, null);
 
             _automationRunner.RunAutomation(automation);
-            return _hubConnection.SendAsync("AutomationStarted", messageId, ToManagementInfo(automation));
+            return _hubConnection.SendAsync("AutomationStarted", messageId, ToDto(automation));
         }
 
         public Task StopAutomationAsync(long messageId, string name)
@@ -81,7 +86,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
 
         public Task GetAutomationsAsync(long messageId)
         {
-            var automations = _automationRegistry.Automations.Values.Select(ToManagementInfo).ToList();
+            var automations = _automationRegistry.Automations.Values.Select(ToDto).ToArray();
             return _hubConnection.SendAsync("AutomationsGot", messageId, automations);
         }
 
@@ -96,14 +101,12 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             return _hubConnection.SendAsync("ProcessIdGot", messageId, Process.GetCurrentProcess().Id);
         }
 
-        private static ManagementAutomationInfo ToManagementInfo(AutomationRunInfo runInfo)
+        private static AutomationInfoDto ToDto(AutomationEntry entry)
         {
-            return new ManagementAutomationInfo
+            return new AutomationInfoDto
             {
-                Name = runInfo.Info.Name,
-                FriendlyName = runInfo.Info.DisplayName,
-                Running = false,
-                LastError = null
+                Info = entry.Info,
+                Runs = entry.Runs,
             };
         }
     }

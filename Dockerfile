@@ -8,12 +8,15 @@ ENV ASPNETCORE_URLS=http://+:8099;http://+:20777
 COPY src/hhnl.HomeAssistantNet/ProjectTemplate/ ProjectTemplate/
 
 # Configure supervisor
-ENV SupervisorConfig__DeployDirectory=/config/deploy/
-ENV SupervisorConfig__SourceDirectory=/config/source/
+ENV SupervisorConfig__DeployDirectory=/config/c-sharp-for-homeassistant/deploy/
+ENV SupervisorConfig__SourceDirectory=/config/c-sharp-for-homeassistant/source/
 
 # Configure supervisor client
 ENV SupervisorUrl=http://localhost:8099
 ENV IsLocal=true
+
+# Enable debug log
+ENV Logging__LogLevel__Default=Debug
 
 # Build CSharpForHomeAssistant
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build

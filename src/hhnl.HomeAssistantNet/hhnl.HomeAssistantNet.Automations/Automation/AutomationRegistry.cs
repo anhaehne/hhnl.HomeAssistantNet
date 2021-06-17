@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using hhnl.HomeAssistantNet.Shared.Automation;
 using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.SourceGenerator;
 
@@ -10,29 +9,30 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 {
     public interface IAutomationRegistry
     {
-        IReadOnlyDictionary<string, AutomationRunInfo> Automations { get; }
+        IReadOnlyDictionary<string, AutomationEntry> Automations { get; }
 
         ISet<string> RelevantEntities { get; }
 
-        IReadOnlyCollection<AutomationRunInfo> GetAutomationsDependingOn(string entity);
+        IReadOnlyCollection<AutomationEntry> GetAutomationsDependingOn(string entity);
     }
 
     public class AutomationRegistry : IAutomationRegistry
     {
-        private readonly Dictionary<string, List<AutomationRunInfo>> _dictionary = new();
+        private readonly Dictionary<string, List<AutomationEntry>> _dictionary = new();
 
         public AutomationRegistry(IGeneratedMetaData generatedMetaData)
         {
-            Automations = generatedMetaData.AutomationMetaData.Select(CreateRunInfo).ToDictionary(x => x.Info.Name);
+            Automations = generatedMetaData.AutomationMetaData.Select(x => new AutomationEntry(x))
+                .ToDictionary(x => x.Info.Name);
 
             foreach (var automation in Automations.Values)
             foreach (var entity in automation.Info.DependsOnEntities)
             {
                 var entityId = GetEntityId(entity);
-                
+
                 if (!_dictionary.TryGetValue(entityId, out var automationsDependingOnEntity))
                 {
-                    automationsDependingOnEntity = new List<AutomationRunInfo>();
+                    automationsDependingOnEntity = new List<AutomationEntry>();
                     _dictionary.Add(entityId, automationsDependingOnEntity);
                 }
 
@@ -42,28 +42,20 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             RelevantEntities = _dictionary.Keys.ToHashSet();
         }
 
-        public IReadOnlyDictionary<string, AutomationRunInfo> Automations { get; }
+        public IReadOnlyDictionary<string, AutomationEntry> Automations { get; }
 
         public ISet<string> RelevantEntities { get; }
 
-        public IReadOnlyCollection<AutomationRunInfo> GetAutomationsDependingOn(string entity)
+        public IReadOnlyCollection<AutomationEntry> GetAutomationsDependingOn(string entity)
         {
             return _dictionary.TryGetValue(entity, out var automationsDependingOnEntity)
                 ? automationsDependingOnEntity
-                : Array.Empty<AutomationRunInfo>();
+                : Array.Empty<AutomationEntry>();
         }
 
         private string GetEntityId(Type t)
         {
             return t.GetCustomAttribute<UniqueIdAttribute>().Value;
-        }
-
-        private AutomationRunInfo CreateRunInfo(AutomationInfo info)
-        {
-            return new AutomationRunInfo
-            {
-                Info = info
-            };
         }
     }
 }

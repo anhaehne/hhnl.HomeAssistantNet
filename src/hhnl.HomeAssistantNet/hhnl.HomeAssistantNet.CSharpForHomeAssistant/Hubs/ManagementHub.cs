@@ -41,17 +41,17 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Hubs
                 await _notificationQueue.Enqueue(NoConnectionNotification.Instance);
         }
 
-        public Task AutomationStopped(long messageId, ManagementAutomationInfo? info)
+        public Task AutomationStopped(long messageId, AutomationInfoDto? info)
         {
             return _mediator.Send(new SetHubCallResultRequest(info, messageId, Context.ConnectionId));
         }
 
-        public Task AutomationStarted(long messageId, ManagementAutomationInfo? info)
+        public Task AutomationStarted(long messageId, AutomationInfoDto? info)
         {
             return _mediator.Send(new SetHubCallResultRequest(info, messageId, Context.ConnectionId));
         }
 
-        public Task AutomationsGot(long messageId, IReadOnlyCollection<ManagementAutomationInfo> infos)
+        public Task AutomationsGot(long messageId, IReadOnlyCollection<AutomationInfoDto> infos)
         {
             return _mediator.Send(new SetHubCallResultRequest(infos, messageId, Context.ConnectionId));
         }

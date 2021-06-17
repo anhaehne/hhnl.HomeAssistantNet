@@ -50,7 +50,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 
                     return $@"            new {typeof(AutomationInfo).GetFullName()}
             {{
-                {nameof(AutomationInfo.Error)} = ""{(error is null ? string.Empty : error.GetMessage())}"",
+                {nameof(AutomationInfo.GenerationError)} = ""{(error is null ? string.Empty : error.GetMessage())}"",
                 {nameof(AutomationInfo.Method)} = typeof({method.ContainingType.GetFullName()}).GetMethod(""{method.Name}"", BindingFlags.Instance | BindingFlags.Public)!,
                 {nameof(AutomationInfo.DisplayName)} = ""{attributeData.ConstructorArguments[0].Value ?? method.Name}"",
                 {nameof(AutomationInfo.Name)} = ""{method.ContainingType.GetFullName()}.{method.Name}"",

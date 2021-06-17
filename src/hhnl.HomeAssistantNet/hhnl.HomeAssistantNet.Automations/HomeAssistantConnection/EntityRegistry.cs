@@ -12,6 +12,7 @@ using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
 using hhnl.HomeAssistantNet.Shared.SourceGenerator;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 {
@@ -29,14 +30,17 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
         private readonly Dictionary<string, Entity> _entities;
         private readonly IHomeAssistantClient _homeAssistantClient;
+        private readonly ILogger<EntityRegistry> _logger;
 
         public EntityRegistry(
             IGeneratedMetaData metaData,
             IAutomationRegistry automationRegistry,
             IServiceProvider serviceProvider,
-            IHomeAssistantClient homeAssistantClient)
+            IHomeAssistantClient homeAssistantClient,
+            ILogger<EntityRegistry> logger)
         {
             _homeAssistantClient = homeAssistantClient;
+            _logger = logger;
 
             var entityById = metaData.EntityTypes.Select(type => (type, id: GetEntityId(type))).ToList();
 
@@ -64,8 +68,12 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         {
             await Initialization.WaitForHomeAssistantConnectionAsync();
 
+            _logger.LogInformation("Fetching entity states.");
+            
             var json = await _homeAssistantClient.FetchStatesAsync(cancellationToken);
 
+            _logger.LogInformation($"Received {json.GetArrayLength()} entities.");
+            
             for (var i = 0; i < json.GetArrayLength(); i++)
             {
                 var element = json[i];

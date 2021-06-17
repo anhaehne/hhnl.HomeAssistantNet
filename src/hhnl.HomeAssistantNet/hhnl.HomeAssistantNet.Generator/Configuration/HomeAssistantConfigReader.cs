@@ -13,7 +13,7 @@ namespace hhnl.HomeAssistantNet.Generator.Configuration
         public const string ConfigFileName = "ha-config.json";
         private const string TokenEnvironmentVariableName = "SUPERVISOR_TOKEN";
         private const string InstanceEnvironmentVariableName = "HOME_ASSISTANT_API";
-        private const string InstanceEnvironmentVariableDefault = "http://supervisor/core/api";
+        private const string InstanceEnvironmentVariableDefault = "http://supervisor/core";
 
         public static readonly DiagnosticDescriptor HaConfigNotFoundError = new("HHNLHAN001",
             "Home assistant configuration not found",
@@ -51,6 +51,8 @@ namespace hhnl.HomeAssistantNet.Generator.Configuration
             [NotNullWhen(true)] out HomeAssistantConfig? config,
             out Diagnostic? diagnostic)
         {
+            
+            
             // Try read from environment
             var environmentToken = Environment.GetEnvironmentVariable(TokenEnvironmentVariableName);
 

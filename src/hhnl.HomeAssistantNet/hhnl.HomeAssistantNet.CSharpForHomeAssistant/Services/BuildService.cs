@@ -74,7 +74,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             var buildStartInfo = new ProcessStartInfo
             {
                 WorkingDirectory = srcDirectory, FileName = "dotnet",
-                Arguments = $"publish -c Release -o {Path.GetFullPath(_config.Value.DeployDirectory)}"
+                Arguments = $"publish --force -c Release -o {Path.GetFullPath(_config.Value.DeployDirectory)}"
             };
 
             var buildProcess = Process.Start(buildStartInfo);
@@ -97,9 +97,20 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
                 return false;
             }
 
+            // Delete the bin and obj folder so the next time the users opens the project they don't get an error due to missing nuget packages.
+            DeleteFolder("bin");
+            DeleteFolder("obj");
+            
             return true;
         }
 
+        private void DeleteFolder(string folder)
+        {
+            var path = Path.Combine(Path.GetFullPath(_config.Value.SourceDirectory), folder);
+            if(Directory.Exists(path))
+                Directory.Delete(path, true);
+        }
+        
         private string GetProjectFileName()
         {
             var srcDirectory = Path.GetFullPath(_config.Value.SourceDirectory);

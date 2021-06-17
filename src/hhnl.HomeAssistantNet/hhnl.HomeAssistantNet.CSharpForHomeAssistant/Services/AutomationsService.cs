@@ -8,9 +8,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 {
     public interface IAutomationsHostService
     {
-        Task<IReadOnlyCollection<ManagementAutomationInfo>> GetAutomationsAsync();
-        Task<ManagementAutomationInfo?> StartAutomationAsync(string name);
-        Task<ManagementAutomationInfo?> StopAutomationAsync(string name, TimeSpan timeout);
+        Task<IReadOnlyCollection<AutomationInfoDto>> GetAutomationsAsync();
+        Task<AutomationInfoDto?> StartAutomationAsync(string name);
+        Task<AutomationInfoDto?> StopAutomationAsync(string name, TimeSpan timeout);
     }
 
     public class AutomationsService : IAutomationsHostService
@@ -24,24 +24,24 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             _logger = logger;
         }
 
-        public async Task<IReadOnlyCollection<ManagementAutomationInfo>> GetAutomationsAsync()
+        public async Task<IReadOnlyCollection<AutomationInfoDto>> GetAutomationsAsync()
         {
             _logger.LogDebug("Getting automation list.");
-            var result = await _hubCallService.CallService<IReadOnlyCollection<ManagementAutomationInfo>>((id, client) =>
+            var result = await _hubCallService.CallService<IReadOnlyCollection<AutomationInfoDto>>((id, client) =>
                 client.GetAutomationsAsync(id));
-            return result ?? Array.Empty<ManagementAutomationInfo>();
+            return result ?? Array.Empty<AutomationInfoDto>();
         }
 
-        public Task<ManagementAutomationInfo?> StartAutomationAsync(string name)
+        public Task<AutomationInfoDto?> StartAutomationAsync(string name)
         {
             _logger.LogDebug($"Starting automation '{name}'.");
-            return _hubCallService.CallService<ManagementAutomationInfo>((id, client) => client.StartAutomationAsync(id, name));
+            return _hubCallService.CallService<AutomationInfoDto>((id, client) => client.StartAutomationAsync(id, name));
         }
 
-        public Task<ManagementAutomationInfo?> StopAutomationAsync(string name, TimeSpan timeout)
+        public Task<AutomationInfoDto?> StopAutomationAsync(string name, TimeSpan timeout)
         {
             _logger.LogDebug($"Stopping automation '{name}'.");
-            return _hubCallService.CallService<ManagementAutomationInfo>((id, client) => client.StopAutomationAsync(id, name),
+            return _hubCallService.CallService<AutomationInfoDto>((id, client) => client.StopAutomationAsync(id, name),
                 timeout);
         }
     }

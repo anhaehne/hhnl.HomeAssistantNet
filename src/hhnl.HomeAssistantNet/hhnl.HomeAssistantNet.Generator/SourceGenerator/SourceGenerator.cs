@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using HADotNet.Core;
 using HADotNet.Core.Clients;
+using HADotNet.Core.Domain;
 using hhnl.HomeAssistantNet.Generator.Configuration;
 using hhnl.HomeAssistantNet.Shared.Entities;
 using Microsoft.CodeAnalysis;
@@ -37,11 +38,25 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                 return;
             }
 
-            ClientFactory.Initialize(config.Instance, config.Token);
-
-            Task.Run(() => Run(context)).GetAwaiter().GetResult();
-
-            Debug.WriteLine("Execute code generator");
+            try
+            {
+                ClientFactory.Initialize(config.Instance, config.Token);
+                Task.Run(() => Run(context)).GetAwaiter().GetResult();
+            }
+            catch (HttpResponseException e)
+            {
+                var message =
+                    $"Unable to connect to HomeAssistant api. HomeAssistance url: '{config.Instance}' Token: '{config.Token.Substring(0, 10)}...' StatusCode: '{e.StatusCode}' RequestPath '{e.RequestPath}' NetworkDescription: '{e.NetworkDescription}' Message '{e.Message}' InnerException: '{e.InnerException}' StackTrace: {e.StackTrace}";
+                var dd = new DiagnosticDescriptor("HHNL005", message, message, "Error", DiagnosticSeverity.Error, true);
+                context.ReportDiagnostic(Diagnostic.Create(dd, Location.None));
+            }
+            catch (Exception e)
+            {
+                var message =
+                    $"An unhandled exception occured '{e.GetType()}'. HomeAssistance url: '{config.Instance}' Token: '{config.Token.Substring(0, 10)}...'  Message '{e.Message}' InnerException: '{e.InnerException}' StackTrace: {e.StackTrace}";
+                var dd = new DiagnosticDescriptor("HHNL005", message, message, "Error", DiagnosticSeverity.Error, true);
+                context.ReportDiagnostic(Diagnostic.Create(dd, Location.None));
+            }
         }
 
         private async Task Run(GeneratorExecutionContext context)
@@ -69,7 +84,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             var entities = (await entityClient.GetStates()).ToDictionary(x => x.EntityId);
 
             List<string> entitiesFullNames = new();
-            
+
             // Get the type of entities with a HomeAssistantEntityAttribute and load their meta data.
             var knownEntityDomains = typeof(Entity).Assembly.GetTypes().Where(t => typeof(Entity).IsAssignableFrom(t))
                 .Select(t => (Type: t, Attribute: t.GetCustomAttribute<HomeAssistantEntityAttribute>()))

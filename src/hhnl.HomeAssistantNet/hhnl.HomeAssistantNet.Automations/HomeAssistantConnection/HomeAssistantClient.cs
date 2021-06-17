@@ -22,12 +22,12 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
     public class HomeAssistantClient : IHostedService, IDisposable, IHomeAssistantClient
     {
         private readonly ConcurrentDictionary<long, TaskCompletionSource<WebsocketApiMessage>> _callResults = new();
+        private readonly SemaphoreSlim _enqueueLock = new(1);
         private readonly IOptions<HomeAssistantConfig> _haConfig;
         private readonly ILogger<HomeAssistantClient> _logger;
         private readonly IMediator _mediator;
         private readonly Channel<byte[]> _messagesToSend;
         private CancellationTokenSource? _cancellationTokenSource;
-        private readonly SemaphoreSlim _enqueueLock = new(1);
         private long _id;
         private Task? _receiveTask;
         private Task? _sendTask;
@@ -88,9 +88,14 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             _webSocket = new ClientWebSocket();
             _id = 1;
 
-            var uriBuilder = new UriBuilder(new Uri(_haConfig.Value.Instance));
-            uriBuilder.Path += "api/websocket";
+            var baseUri = new Uri(_haConfig.Value.Instance);
+            var completeUri = new Uri(baseUri, "api/websocket");
+
+            var uriBuilder = new UriBuilder(completeUri);
             uriBuilder.Scheme = uriBuilder.Scheme == Uri.UriSchemeHttps ? "wss" : "ws";
+
+            _logger.LogInformation(
+                $"Starting home assistant client. Url '{uriBuilder}' Token '{_haConfig.Value.Token.Substring(0, 10)}...'");
 
             await _webSocket.ConnectAsync(uriBuilder.Uri, cancellationToken);
 
@@ -266,18 +271,20 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             // Wait for init
             await Initialization.WaitForHomeAssistantConnectionAsync();
 
-            TaskCompletionSource<WebsocketApiMessage> tcs = null;
-            
+            TaskCompletionSource<WebsocketApiMessage>? tcs = null;
+
             var id = await EnqueueMessageAsync(innerId =>
             {
                 var request = requestFactory(innerId);
                 tcs = _callResults.GetOrAdd(innerId, i => new TaskCompletionSource<WebsocketApiMessage>(cancellationToken));
                 return request;
             });
+
+            Debug.Assert(tcs is not null);
             
             try
             {
-                var result = await tcs!.Task;
+                var result = await tcs.Task;
 
                 if (result.Success == false)
                 {
@@ -306,7 +313,6 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                 var bytes = JsonSerializer.SerializeToUtf8Bytes(message);
                 await _messagesToSend.Writer.WriteAsync(bytes);
                 return messageId;
-
             }
             finally
             {
@@ -314,6 +320,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             }
         }
 
+#pragma warning disable 8618
         private class WebsocketApiMessage
         {
             [JsonPropertyName("id")] public long Id { get; set; }
@@ -364,5 +371,6 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
             [JsonPropertyName("new_state")] public JsonElement NewState { get; set; }
         }
+#pragma warning restore 8618
     }
 }
