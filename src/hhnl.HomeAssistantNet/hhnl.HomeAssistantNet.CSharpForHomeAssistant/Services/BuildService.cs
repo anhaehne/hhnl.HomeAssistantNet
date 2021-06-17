@@ -40,6 +40,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 
         public Task<bool> BuildAndDeployAsync()
         {
+            if (_config.Value.SuppressAutomationDeploy)
+                return Task.FromResult(true);
+
             _buildAndDeployTask = BuildAndDeployAsyncInternal();
             return _buildAndDeployTask;
         }

@@ -38,7 +38,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
         }
         
         [HttpPost("{name}/stop")]
-        public Task<ActionResult<AutomationInfoDto>> StopAutomationAsync([FromRoute]string name, [FromBody]TimeSpan? timeout = null)
+        public Task<ActionResult<AutomationInfoDto>> StopAutomationAsync([FromRoute]string name, TimeSpan? timeout = null)
         {
             return CallHostService(service => service.StopAutomationAsync(name, timeout ?? TimeSpan.FromSeconds(30)));
         }
@@ -61,7 +61,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
             }
 
             if (result is null)
-                return Problem("No automation found with the given name.", statusCode: (int)HttpStatusCode.FailedDependency);
+                return Problem("No automation found with the given name.", statusCode: (int)HttpStatusCode.NotFound);
             
             return Ok(result);
         }

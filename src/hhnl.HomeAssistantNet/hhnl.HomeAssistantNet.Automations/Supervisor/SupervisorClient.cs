@@ -81,7 +81,11 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
 
         public Task StopAutomationAsync(long messageId, string name)
         {
-            throw new NotImplementedException();
+            if (!_automationRegistry.Automations.TryGetValue(name, out var automation))
+                return _hubConnection.SendAsync("AutomationStopped", messageId, null);
+
+            _automationRunner.StopAutomation(automation);
+            return _hubConnection.SendAsync("AutomationStopped", messageId, ToDto(automation));
         }
 
         public Task GetAutomationsAsync(long messageId)

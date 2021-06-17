@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Automations.Utils;
@@ -10,7 +11,9 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 {
     public interface IAutomationRunner
     {
-        void RunAutomation(AutomationEntry automationInfo);
+        void RunAutomation(AutomationEntry automation);
+
+        void StopAutomation(AutomationEntry automation);
     }
 
     public class AutomationRunner : IHostedService, IAutomationRunner
@@ -24,27 +27,28 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             _automationRegistry = automationRegistry;
         }
 
-        public void RunAutomation(AutomationEntry automationInfo)
+        public void RunAutomation(AutomationEntry automation)
         {
             // TODO handle reentry policy
             Task.Run(async () =>
             {
                 using var scope = _provider.CreateScope();
+                using var cts = new CancellationTokenSource();
 
                 var run = new AutomationRunInfo
                 {
                     Started = DateTimeOffset.Now,
                     State = AutomationRunInfo.RunState.Running,
-                    CancellationTokenSource = new CancellationTokenSource()
+                    CancellationTokenSource = cts
                 };
 
-                AutomationRunContext.Current = new AutomationRunContext(run.CancellationTokenSource.Token, scope.ServiceProvider);
-                
-                automationInfo.AddRun(run);
+                AutomationRunContext.Current = new AutomationRunContext(cts.Token, scope.ServiceProvider);
+
+                automation.AddRun(run);
 
                 try
                 {
-                    await automationInfo.Info.RunAutomation(scope.ServiceProvider, default);
+                    await automation.Info.RunAutomation(scope.ServiceProvider, cts.Token);
 
                     run.State = AutomationRunInfo.RunState.Completed;
                 }
@@ -60,12 +64,14 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 finally
                 {
                     run.Ended = DateTimeOffset.Now;
-
-                    var cts = run.CancellationTokenSource;
                     run.CancellationTokenSource = null;
-                    cts?.Dispose();
                 }
             });
+        }
+
+        public void StopAutomation(AutomationEntry automation)
+        {
+            automation.Runs.FirstOrDefault()?.CancellationTokenSource?.Cancel();
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
