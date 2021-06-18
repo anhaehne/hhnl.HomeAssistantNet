@@ -8,6 +8,15 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "hhnl.HomeAssistantNet.Supervisor - No Deploy": {
+      "commandName": "Project",
+      "hotReloadProfile": "aspnetcore",
+      "applicationUrl": "http://localhost:20777",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SupervisorConfig__SuppressAutomationDeploy": "true"
+      }
     }
   }
 }

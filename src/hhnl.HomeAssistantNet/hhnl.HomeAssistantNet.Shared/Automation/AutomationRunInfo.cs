@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace hhnl.HomeAssistantNet.Shared.Automation
 {
@@ -15,6 +15,14 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
         
         public RunState State { get; set; }
 
+        public StartReason Reason { get; set; }
+
+        public string? ChangedEntity { get; set; }
+        
+        
+        [JsonIgnore] 
+        public Task Task { get; set; }
+        
         [JsonIgnore]
         public CancellationTokenSource? CancellationTokenSource { get; set; }
         
@@ -24,6 +32,14 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
             Completed,
             Cancelled,
             Error,
+            WaitingInQueue,
+        }
+        
+        public enum StartReason
+        {
+            RunOnStart,
+            EntityChanged,
+            Manual,
         }
     }
 }

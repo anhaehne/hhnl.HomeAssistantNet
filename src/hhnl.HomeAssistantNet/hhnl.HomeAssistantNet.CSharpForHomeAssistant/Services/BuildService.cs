@@ -49,6 +49,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 
         public void RunDeployedApplication()
         {
+            if (_config.Value.SuppressAutomationDeploy)
+                return;
+            
             var dllPath = Path.Combine(Path.GetFullPath(_config.Value.DeployDirectory), $"{GetProjectFileName()}.dll");
 
             _logger.LogInformation($"Starting deployed application: '{dllPath}'");

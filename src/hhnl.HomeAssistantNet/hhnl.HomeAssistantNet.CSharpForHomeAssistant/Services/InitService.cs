@@ -15,7 +15,6 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         private readonly ILogger<InitService> _logger;
         private readonly IOptions<SupervisorConfig> _config;
         private readonly IBuildService _buildService;
-        private static readonly string[] _defaultExtensions = { "muhammad-sammy.csharp" };
 
         public InitService(ILogger<InitService> logger, IOptions<SupervisorConfig> config, IBuildService buildService)
         {
@@ -36,6 +35,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 
         private async Task SetupAsync()
         {
+            if (_config.Value.SuppressAutomationDeploy)
+                return;
+            
             // TODO: Handle failures
             var sourceFolder = new DirectoryInfo(_config.Value.SourceDirectory);
             sourceFolder.Create();

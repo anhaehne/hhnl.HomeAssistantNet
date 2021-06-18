@@ -21,7 +21,6 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 
         /// <summary>
         /// Will queue the execution and tries to cancel the previous one.
-        /// Automation can only be canceled if the accept a <see cref="CancellationToken" />.
         /// </summary>
         CancelPrevious,
 

@@ -28,14 +28,11 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             await _entityRegistry.UpdateEntityAsync(notification.EntityId, notification.NewState);
 
             // Run automations
-            var automations = _automationRegistry.GetAutomationsDependingOn(notification.EntityId);
-
-            if (!automations.Any())
-                return;
+            var automations = _automationRegistry.GetAutomationsTrackingEntity(notification.EntityId);
 
             foreach (var automation in automations)
             {
-                _automationRunner.RunAutomation(automation);
+                await _automationRunner.EnqueueAutomationForEntityChangeAsync(automation, notification.EntityId);
             }
         }
     }

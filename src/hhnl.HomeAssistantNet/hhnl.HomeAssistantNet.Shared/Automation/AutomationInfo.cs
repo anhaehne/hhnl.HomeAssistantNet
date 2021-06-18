@@ -27,6 +27,9 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 
         [JsonIgnore]
         public IReadOnlyCollection<Type> DependsOnEntities { get; set; }
+        
+        [JsonIgnore]
+        public IReadOnlyCollection<Type> ListenToEntities { get; set; }
 
         [JsonIgnore]
         public Func<IServiceProvider, CancellationToken, Task> RunAutomation { get; set; }

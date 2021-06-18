@@ -70,22 +70,28 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             return _hubConnection.StopAsync(cancellationToken);
         }
 
-        public Task StartAutomationAsync(long messageId, string name)
+        public async Task StartAutomationAsync(long messageId, string name)
         {
             if (!_automationRegistry.Automations.TryGetValue(name, out var automation))
-                return _hubConnection.SendAsync("AutomationStarted", messageId, null);
+            {
+                await _hubConnection.SendAsync("AutomationStarted", messageId, null);
+                return;
+            }
 
-            _automationRunner.RunAutomation(automation);
-            return _hubConnection.SendAsync("AutomationStarted", messageId, ToDto(automation));
+            await _automationRunner.EnqueueAutomationForManualStartAsync(automation);
+            await _hubConnection.SendAsync("AutomationStarted", messageId, ToDto(automation));
         }
 
-        public Task StopAutomationAsync(long messageId, string name)
+        public async Task StopAutomationAsync(long messageId, string name)
         {
             if (!_automationRegistry.Automations.TryGetValue(name, out var automation))
-                return _hubConnection.SendAsync("AutomationStopped", messageId, null);
+            {
+                await _hubConnection.SendAsync("AutomationStopped", messageId, null);
+                return;
+            }
 
-            _automationRunner.StopAutomation(automation);
-            return _hubConnection.SendAsync("AutomationStopped", messageId, ToDto(automation));
+            await _automationRunner.StopAutomationAsync(automation);
+            await _hubConnection.SendAsync("AutomationStopped", messageId, ToDto(automation));
         }
 
         public Task GetAutomationsAsync(long messageId)

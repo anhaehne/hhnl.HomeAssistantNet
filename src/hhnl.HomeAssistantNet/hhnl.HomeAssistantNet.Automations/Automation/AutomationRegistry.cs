@@ -13,12 +13,12 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         ISet<string> RelevantEntities { get; }
 
-        IReadOnlyCollection<AutomationEntry> GetAutomationsDependingOn(string entity);
+        IReadOnlyCollection<AutomationEntry> GetAutomationsTrackingEntity(string entity);
     }
 
     public class AutomationRegistry : IAutomationRegistry
     {
-        private readonly Dictionary<string, List<AutomationEntry>> _dictionary = new();
+        private readonly Dictionary<string, List<AutomationEntry>> _automationsListeningToEntities = new();
 
         public AutomationRegistry(IGeneratedMetaData generatedMetaData)
         {
@@ -26,29 +26,29 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 .ToDictionary(x => x.Info.Name);
 
             foreach (var automation in Automations.Values)
-            foreach (var entity in automation.Info.DependsOnEntities)
+            foreach (var entity in automation.Info.ListenToEntities)
             {
                 var entityId = GetEntityId(entity);
 
-                if (!_dictionary.TryGetValue(entityId, out var automationsDependingOnEntity))
+                if (!_automationsListeningToEntities.TryGetValue(entityId, out var automationsListeningToEntity))
                 {
-                    automationsDependingOnEntity = new List<AutomationEntry>();
-                    _dictionary.Add(entityId, automationsDependingOnEntity);
+                    automationsListeningToEntity = new List<AutomationEntry>();
+                    _automationsListeningToEntities.Add(entityId, automationsListeningToEntity);
                 }
 
-                automationsDependingOnEntity.Add(automation);
+                automationsListeningToEntity.Add(automation);
             }
 
-            RelevantEntities = _dictionary.Keys.ToHashSet();
+            RelevantEntities = _automationsListeningToEntities.Keys.ToHashSet();
         }
 
         public IReadOnlyDictionary<string, AutomationEntry> Automations { get; }
 
         public ISet<string> RelevantEntities { get; }
 
-        public IReadOnlyCollection<AutomationEntry> GetAutomationsDependingOn(string entity)
+        public IReadOnlyCollection<AutomationEntry> GetAutomationsTrackingEntity(string entity)
         {
-            return _dictionary.TryGetValue(entity, out var automationsDependingOnEntity)
+            return _automationsListeningToEntities.TryGetValue(entity, out var automationsDependingOnEntity)
                 ? automationsDependingOnEntity
                 : Array.Empty<AutomationEntry>();
         }

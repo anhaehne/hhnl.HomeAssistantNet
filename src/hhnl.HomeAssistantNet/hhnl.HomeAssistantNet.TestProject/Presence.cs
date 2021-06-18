@@ -27,7 +27,7 @@ namespace hhnl.HomeAssistantNet.TestProject
             Persons.Andre andre,
             Persons.Janina janina,
             InputBooleans.PresenceGuests guests,
-            [OutputOnly]InputBooleans.PresenceAnyone presenceAnyone,
+            [NoTrack]InputBooleans.PresenceAnyone presenceAnyone,
             CancellationToken ct)
         {
             var isAnyOneHome = andre.IsHome || janina.IsHome || guests.IsOn;

@@ -18,6 +18,17 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         public AutomationInfo Info { get; }
 
+        public AutomationRunInfo? LatestRun
+        {
+            get
+            {
+                lock (_runs)
+                {
+                    return _runs.Front();
+                }
+            }
+        }
+
         public IReadOnlyCollection<AutomationRunInfo> Runs
         {
             get

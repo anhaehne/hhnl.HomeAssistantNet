@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using hhnl.HomeAssistantNet.Shared.Automation;
 
 namespace hhnl.HomeAssistantNet.Automations.Automation
 {
@@ -7,10 +8,11 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
     {
         private static readonly AsyncLocal<AutomationRunContext?> _current = new();
 
-        public AutomationRunContext(CancellationToken token, IServiceProvider serviceProvider)
+        public AutomationRunContext(CancellationToken token, IServiceProvider serviceProvider, AutomationRunInfo currentRun)
         {
             CancellationToken = token;
             ServiceProvider = serviceProvider;
+            CurrentRun = currentRun;
         }
 
         public static AutomationRunContext? Current
@@ -22,6 +24,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         public CancellationToken CancellationToken { get; }
 
         public IServiceProvider ServiceProvider { get; }
+
+        public AutomationRunInfo CurrentRun { get; }
 
         public static AutomationRunContext GetRunContextOrFail()
         {
