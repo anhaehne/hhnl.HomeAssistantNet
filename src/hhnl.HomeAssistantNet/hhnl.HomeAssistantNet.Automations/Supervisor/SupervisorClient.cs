@@ -16,19 +16,19 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
     public class SupervisorClient : IHostedService, IManagementClient
     {
         private readonly IAutomationRegistry _automationRegistry;
-        private readonly IAutomationRunner _automationRunner;
+        private readonly IAutomationService _automationService;
         private readonly IOptions<AutomationsConfig> _config;
         private readonly HubConnection? _hubConnection;
         private readonly ILogger<SupervisorClient> _logger;
 
         public SupervisorClient(
             IAutomationRegistry automationRegistry,
-            IAutomationRunner automationRunner,
+            IAutomationService automationService,
             ILogger<SupervisorClient> logger,
             IOptions<AutomationsConfig> config)
         {
             _automationRegistry = automationRegistry;
-            _automationRunner = automationRunner;
+            _automationService = automationService;
             _logger = logger;
             _config = config;
 
@@ -78,7 +78,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
                 return;
             }
 
-            await _automationRunner.EnqueueAutomationForManualStartAsync(automation);
+            await _automationService.EnqueueAutomationForManualStartAsync(automation);
             await _hubConnection.SendAsync("AutomationStarted", messageId, ToDto(automation));
         }
 
@@ -90,7 +90,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
                 return;
             }
 
-            await _automationRunner.StopAutomationAsync(automation);
+            await _automationService.StopAutomationAsync(automation);
             await _hubConnection.SendAsync("AutomationStopped", messageId, ToDto(automation));
         }
 

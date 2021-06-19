@@ -9,17 +9,17 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
     public class StateChangedNotificationHandler : INotificationHandler<HomeAssistantClient.StateChangedNotification>
     {
         private readonly IAutomationRegistry _automationRegistry;
-        private readonly IAutomationRunner _automationRunner;
+        private readonly IAutomationService _automationService;
         private readonly IEntityRegistry _entityRegistry;
 
         public StateChangedNotificationHandler(
             IAutomationRegistry automationRegistry,
             IEntityRegistry entityRegistry,
-            IAutomationRunner automationRunner)
+            IAutomationService automationService)
         {
             _automationRegistry = automationRegistry;
             _entityRegistry = entityRegistry;
-            _automationRunner = automationRunner;
+            _automationService = automationService;
         }
 
         public async Task Handle(HomeAssistantClient.StateChangedNotification notification, CancellationToken cancellationToken)
@@ -32,7 +32,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
             foreach (var automation in automations)
             {
-                await _automationRunner.EnqueueAutomationForEntityChangeAsync(automation, notification.EntityId);
+                await _automationService.EnqueueAutomationForEntityChangeAsync(automation, notification.EntityId);
             }
         }
     }

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using hhnl.HomeAssistantNet.Automations.Automation.Runner;
 using hhnl.HomeAssistantNet.Automations.HomeAssistantConnection;
 using hhnl.HomeAssistantNet.Automations.Supervisor;
 using hhnl.HomeAssistantNet.Shared.Configuration;
@@ -62,11 +63,12 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             services.AddSingleton<IHostedService>(s => s.GetRequiredService<EntityRegistry>());
             services.AddSingleton<IEntityRegistry>(s => s.GetRequiredService<EntityRegistry>());
             
-            services.AddSingleton<AutomationRunner>();
-            services.AddSingleton<IHostedService>(s => s.GetRequiredService<AutomationRunner>());
-            services.AddSingleton<IAutomationRunner>(s => s.GetRequiredService<AutomationRunner>());
+            services.AddSingleton<AutomationService>();
+            services.AddSingleton<IHostedService>(s => s.GetRequiredService<AutomationService>());
+            services.AddSingleton<IAutomationService>(s => s.GetRequiredService<AutomationService>());
             
             services.AddSingleton<IAutomationRegistry, AutomationRegistry>();
+            services.AddSingleton<IAutomationRunnerFactory, AutomationRunnerFactory>();
 
             services.AddHostedService<SupervisorClient>();
             

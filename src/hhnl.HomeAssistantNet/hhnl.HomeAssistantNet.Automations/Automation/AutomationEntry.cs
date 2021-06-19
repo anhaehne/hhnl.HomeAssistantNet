@@ -24,7 +24,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             {
                 lock (_runs)
                 {
-                    return _runs.Front();
+                    return _runs.IsEmpty ? null : _runs.Front();
                 }
             }
         }
