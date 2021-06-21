@@ -6,7 +6,7 @@ using hhnl.HomeAssistantNet.Automations.Automation.Runner;
 using hhnl.HomeAssistantNet.Shared.Automation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace hhnl.HomeAssistantNet.Tests.Automation.AutomationRunner
+namespace hhnl.HomeAssistantNet.Tests.Automation.Runner
 {
     [TestClass]
     public class DiscardAutomationRunnerTests : AutomationTestBase
@@ -30,7 +30,7 @@ namespace hhnl.HomeAssistantNet.Tests.Automation.AutomationRunner
 
             // Assert
             Assert.IsNotNull(Entry.LatestRun, "No run has been added to the entry.");
-            await Assert.That.TaskCompletesAsync(Entry.LatestRun!.Task, TimeSpan.FromSeconds(5));
+            await Assert.That.TaskCompletesAsync(Entry.LatestRun!.Task, TimeSpan.FromSeconds(1));
         }
 
         [TestMethod]
@@ -62,7 +62,7 @@ namespace hhnl.HomeAssistantNet.Tests.Automation.AutomationRunner
 
             await sut.EnqueueAsync(AutomationRunInfo.StartReason.Manual, null, null);
             var firstRun = Entry.LatestRun;
-            await Assert.That.TaskCompletesAsync(firstRun!.Task, TimeSpan.FromSeconds(5), "First task didn't complete in time.");
+            await Assert.That.TaskCompletesAsync(firstRun!.Task, TimeSpan.FromSeconds(1), "First task didn't complete in time.");
 
             // Act
             await sut.EnqueueAsync(AutomationRunInfo.StartReason.Manual, null, null);
@@ -89,7 +89,7 @@ namespace hhnl.HomeAssistantNet.Tests.Automation.AutomationRunner
             // Assert
             Assert.IsNotNull(Entry.LatestRun, "No run has been added to the entry.");
             Assert.IsTrue(AutomationClassInstances.Single().HasBeenCanceled);
-            await Assert.That.TaskCompletesAsync(Entry.LatestRun!.Task, TimeSpan.FromSeconds(5));
+            await Assert.That.TaskCompletesAsync(Entry.LatestRun!.Task, TimeSpan.FromSeconds(1));
         }
 
         [TestMethod]
@@ -119,7 +119,7 @@ namespace hhnl.HomeAssistantNet.Tests.Automation.AutomationRunner
 
             // Act
             await sut.EnqueueAsync(AutomationRunInfo.StartReason.Manual, null, null);
-            await Assert.That.TaskCompletesAsync(Entry.LatestRun!.Task, TimeSpan.FromSeconds(5));
+            await Assert.That.TaskCompletesAsync(Entry.LatestRun!.Task, TimeSpan.FromSeconds(1));
 
             // Assert
             Assert.IsNotNull(Entry.LatestRun, "No run has been added to the entry.");
@@ -141,15 +141,38 @@ namespace hhnl.HomeAssistantNet.Tests.Automation.AutomationRunner
 
             // Assert
             Assert.IsNotNull(Entry.LatestRun, "No run has been added to the entry.");
-            await Assert.That.TaskCompletesAsync(Entry.LatestRun!.Task, TimeSpan.FromSeconds(5));
+            await Assert.That.TaskCompletesAsync(Entry.LatestRun!.Task, TimeSpan.FromSeconds(1));
             Assert.AreEqual(AutomationRunInfo.RunState.Error, Entry.LatestRun!.State, "RunState is not error.");
             Assert.IsNotNull(Entry.LatestRun!.Error, "Error has not been set.");
             Assert.AreEqual(exception.ToString(), Entry.LatestRun!.Error, "Error message is not correct.");
         }
 
-        [DataTestMethod]
-        [DynamicData(nameof(CancelExceptions))]
-        public async Task StartAutomation_should_set_correct_run_info_when_cancelled(Exception ex)
+        [TestMethod]
+        public Task StartAutomation_should_set_correct_run_info_when_cancelled_by_OperationCanceledException()
+            => StartAutomation_should_set_correct_run_info_when_cancelled(new OperationCanceledException());
+        
+        [TestMethod]
+        public Task StartAutomation_should_set_correct_run_info_when_cancelled_by_TaskCanceledException()
+            => StartAutomation_should_set_correct_run_info_when_cancelled(new TaskCanceledException());
+        
+        [TestMethod]
+        public async Task StopAsync_should_cancel_runs()
+        {
+            // Arrange
+            Initialize(true);
+
+            var sut = new DiscardAutomationRunner(Entry, ServiceProvider);
+            await sut.EnqueueAsync(AutomationRunInfo.StartReason.Manual, null, null);
+
+            // Act
+            await sut.StopAsync();
+
+            // Assert
+            Assert.IsNotNull(Entry.LatestRun, "No run has been added to the entry.");
+            Assert.AreEqual(AutomationRunInfo.RunState.Cancelled, Entry.LatestRun!.State, "Run is not in state cancelled.");
+        }
+        
+        private async Task StartAutomation_should_set_correct_run_info_when_cancelled(Exception ex)
         {
             // Arrange
             Initialize(false, ex);
@@ -161,7 +184,7 @@ namespace hhnl.HomeAssistantNet.Tests.Automation.AutomationRunner
 
             // Assert
             Assert.IsNotNull(Entry.LatestRun, "No run has been added to the entry.");
-            await Assert.That.TaskCompletesAsync(Entry.LatestRun!.Task, TimeSpan.FromSeconds(5));
+            await Assert.That.TaskCompletesAsync(Entry.LatestRun!.Task, TimeSpan.FromSeconds(1));
             Assert.AreEqual(AutomationRunInfo.RunState.Cancelled, Entry.LatestRun!.State, "RunState is not cancelled.");
         }
     }

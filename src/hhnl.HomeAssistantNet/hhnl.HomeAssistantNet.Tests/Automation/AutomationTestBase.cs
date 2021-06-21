@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Automations.Automation;
+using hhnl.HomeAssistantNet.Automations.Utils;
 using hhnl.HomeAssistantNet.Shared.Automation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace hhnl.HomeAssistantNet.Tests.Automation
 {
@@ -30,7 +32,7 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
                                            throw new InvalidOperationException(
                                                "Test base not initialized.");
 
-        public void Initialize(bool waitForManualCompletion, Exception? throwException = null)
+        protected void Initialize(bool waitForManualCompletion, Exception? throwException = null)
         {
             _automationInfo = new AutomationInfo
             {
@@ -52,6 +54,20 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             _serviceProvider = services.BuildServiceProvider();
         }
 
+        protected async Task<MockAutomationClass> WaitForAutomationInstance(int count, TimeSpan? timeout = null)
+        {
+            using var tcs = new CancellationTokenSource(timeout ?? TimeSpan.FromSeconds(1));
+            
+            while (AutomationClassInstances.Count != count)
+            {
+                if(tcs.IsCancellationRequested)
+                    Assert.Fail("Waiting for automation class instance reached timeout.");
+                
+                await Task.Delay(10, tcs.Token).IgnoreCancellationAsync();
+            }
+
+            return AutomationClassInstances[count - 1];
+        }
 
         public class MockAutomationClass
         {

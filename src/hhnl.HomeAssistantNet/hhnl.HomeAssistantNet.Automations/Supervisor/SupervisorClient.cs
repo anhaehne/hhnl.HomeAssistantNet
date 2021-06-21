@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Automations.Automation;
-using hhnl.HomeAssistantNet.Shared.Automation;
+using hhnl.HomeAssistantNet.Shared.Configuration;
 using hhnl.HomeAssistantNet.Shared.Supervisor;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
@@ -25,7 +25,8 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             IAutomationRegistry automationRegistry,
             IAutomationService automationService,
             ILogger<SupervisorClient> logger,
-            IOptions<AutomationsConfig> config)
+            IOptions<AutomationsConfig> config,
+            IOptions<HomeAssistantConfig> haConfig)
         {
             _automationRegistry = automationRegistry;
             _automationService = automationService;
@@ -39,9 +40,9 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             }
 
             var connectUri = new Uri(new Uri(config.Value.SupervisorUrl), "/client-management");
-            
+
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl(connectUri)
+                .WithUrl(connectUri, options => options.AccessTokenProvider = () => Task.FromResult(haConfig.Value.Token))
                 .WithAutomaticReconnect()
                 .Build();
             _hubConnection.On<long>(nameof(IManagementClient.GetAutomationsAsync), GetAutomationsAsync);
@@ -116,7 +117,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             return new AutomationInfoDto
             {
                 Info = entry.Info,
-                Runs = entry.Runs,
+                Runs = entry.Runs
             };
         }
     }

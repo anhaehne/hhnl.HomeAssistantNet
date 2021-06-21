@@ -17,7 +17,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
         public override async Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
-            TaskCompletionSource<bool>? startTcs)
+            TaskCompletionSource? startTcs)
         {
             await _semaphore.WaitAsync();
 
@@ -26,11 +26,15 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                 // If the current execution hasn't finished, we discard the run.
                 if (!_currentRun.IsCompleted)
                 {
-                    startTcs?.TrySetResult(false);
+                    startTcs?.TrySetResult();
                     return;
                 }
 
-                var run = StartAutomation(reason, changedEntity, startTcs);
+                var run = CreateAutomationRun(reason, changedEntity, startTcs);
+                
+                Entry.AddRun(run);
+                run.Start();
+                
                 _currentRun = run.Task;
             }
             finally

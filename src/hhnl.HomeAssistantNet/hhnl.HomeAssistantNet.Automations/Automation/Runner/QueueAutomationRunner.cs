@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using hhnl.HomeAssistantNet.Automations.Utils;
 using hhnl.HomeAssistantNet.Shared.Automation;
 
 namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
@@ -11,10 +12,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
         private readonly CancellationTokenSource _cts = new();
 
         private readonly
-            Channel<(AutomationRunInfo.StartReason Reason, string? ChangedEntity,
-                TaskCompletionSource<bool>? StartTCS)> _runs = Channel
-                .CreateBounded<(AutomationRunInfo.StartReason Reason, string? ChangedEntity,
-                    TaskCompletionSource<bool>? StartTCS)>(1);
+            Channel<AutomationRunInfo> _runs = Channel.CreateBounded<AutomationRunInfo>(1);
 
         private Task _runTask = Task.CompletedTask;
 
@@ -27,21 +25,28 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
             _runTask = Run();
         }
 
-        public override Task StopAsync()
+        public override async Task StopAsync()
         {
             _cts.Cancel();
             Entry.LatestRun?.CancellationTokenSource?.Cancel();
-            return _runTask;
+
+            await _runTask.IgnoreCancellationAsync();
         }
 
         public override Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
-            TaskCompletionSource<bool>? startTcs)
+            TaskCompletionSource? startTcs)
         {
-            if (!_runs.Writer.TryWrite((reason, changedEntity, startTcs)))
-                startTcs?.TrySetResult(false);
+            var run = CreateAutomationRun(reason, changedEntity, startTcs, AutomationRunInfo.RunState.WaitingInQueue);
 
+            if (!_runs.Writer.TryWrite(run))
+            {
+                startTcs?.TrySetResult();
+                return Task.CompletedTask;
+            }
+            
+            Entry.AddRun(run);
             return Task.CompletedTask;
         }
 
@@ -50,7 +55,9 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
             while (!_cts.Token.IsCancellationRequested)
             {
                 var next = await _runs.Reader.ReadAsync(_cts.Token);
-                await StartAutomation(next.Reason, next.ChangedEntity, next.StartTCS).Task;
+                next.Start();
+                next.State = AutomationRunInfo.RunState.Running;
+                await next.Task;
             }
         }
     }

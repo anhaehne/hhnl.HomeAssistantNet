@@ -49,8 +49,6 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 if (string.IsNullOrEmpty(config.Instance))
                     config.Instance = Environment.GetEnvironmentVariable("HOME_ASSISTANT_API") ?? "http://supervisor/core/";
             });
-
-            var t = builderContext.Configuration["SupervisorUrl"];
             
             services.Configure<AutomationsConfig>(builderContext.Configuration);
 

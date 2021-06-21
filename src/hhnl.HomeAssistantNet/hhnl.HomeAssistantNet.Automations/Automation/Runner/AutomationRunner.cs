@@ -8,8 +8,6 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 {
     public abstract class AutomationRunner
     {
-        protected AutomationEntry Entry { get; }
-
         private readonly IServiceProvider _provider;
 
         protected AutomationRunner(AutomationEntry entry, IServiceProvider provider)
@@ -18,61 +16,73 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
             _provider = provider;
         }
 
+        protected AutomationEntry Entry { get; }
+
         public abstract Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
-            TaskCompletionSource<bool>? startTcs);
+            TaskCompletionSource? startTcs);
 
         public virtual void Start()
         {
         }
 
-        public virtual Task StopAsync() => Task.CompletedTask;
-        
-        protected AutomationRunInfo StartAutomation(AutomationRunInfo.StartReason reason, string? changedEntity, TaskCompletionSource<bool>? startTcs)
+        public virtual Task StopAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        protected AutomationRunInfo CreateAutomationRun(
+            AutomationRunInfo.StartReason reason,
+            string? changedEntity,
+            TaskCompletionSource? startTcs,
+            AutomationRunInfo.RunState initialState = AutomationRunInfo.RunState.Running)
         {
             var run = new AutomationRunInfo
             {
                 Started = DateTimeOffset.Now,
-                State = AutomationRunInfo.RunState.Running,
+                State = initialState,
                 CancellationTokenSource = new CancellationTokenSource(),
                 Reason = reason,
                 ChangedEntity = changedEntity
             };
-            
-            run.Task = Task.Run(async () =>
+
+            run.Start = () =>
             {
-                using var scope = _provider.CreateScope();
-                
-                AutomationRunContext.Current = new AutomationRunContext(run.CancellationTokenSource.Token, scope.ServiceProvider, run);
+                run.Task = Task.Run(async () =>
+                {
+                    startTcs?.TrySetResult();
+                    using var scope = _provider.CreateScope();
 
-                try
-                {
-                    await Entry.Info.RunAutomation(scope.ServiceProvider, run.CancellationTokenSource.Token);
+                    AutomationRunContext.Current =
+                        new AutomationRunContext(run.CancellationTokenSource.Token, scope.ServiceProvider, run);
 
-                    run.State = AutomationRunInfo.RunState.Completed;
-                }
-                catch (Exception e) when (e is OperationCanceledException or TaskCanceledException)
-                {
-                    run.State = AutomationRunInfo.RunState.Cancelled;
-                }
-                catch (Exception e)
-                {
-                    run.State = AutomationRunInfo.RunState.Error;
-                    run.Error = e.ToString();
-                }
-                finally
-                {
-                    run.Ended = DateTimeOffset.Now;
-                    run.CancellationTokenSource.Dispose();
-                    run.CancellationTokenSource = null;
-                }
-            });
+                    try
+                    {
+                        await Entry.Info.RunAutomation(scope.ServiceProvider, run.CancellationTokenSource.Token);
 
-            Entry.AddRun(run);
+                        run.State = run.CancellationTokenSource.Token.IsCancellationRequested
+                            ? AutomationRunInfo.RunState.Cancelled
+                            : AutomationRunInfo.RunState.Completed;
+                    }
+                    catch (Exception e) when (e is OperationCanceledException or TaskCanceledException)
+                    {
+                        run.State = AutomationRunInfo.RunState.Cancelled;
+                    }
+                    catch (Exception e)
+                    {
+                        run.State = AutomationRunInfo.RunState.Error;
+                        run.Error = e.ToString();
+                    }
+                    finally
+                    {
+                        run.Ended = DateTimeOffset.Now;
+                        run.CancellationTokenSource.Dispose();
+                        run.CancellationTokenSource = null;
+                    }
+                });
+            };
             
-            startTcs?.TrySetResult(false);
-
             return run;
         }
     }

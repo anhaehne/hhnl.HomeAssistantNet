@@ -46,16 +46,16 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         public async Task EnqueueAutomationForEntityChangeAsync(AutomationEntry automation, string changedEntity)
         {
-            TaskCompletionSource<bool> tcs =
-                new(TaskCreationOptions.RunContinuationsAsynchronously | TaskCreationOptions.DenyChildAttach);
+            TaskCompletionSource tcs =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
             await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.EntityChanged, changedEntity, tcs);
             await tcs.Task;
         }
 
         public async Task EnqueueAutomationForManualStartAsync(AutomationEntry automation)
         {
-            TaskCompletionSource<bool> tcs =
-                new(TaskCreationOptions.RunContinuationsAsynchronously | TaskCreationOptions.DenyChildAttach);
+            TaskCompletionSource tcs =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
             await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.Manual, null, tcs);
             await tcs.Task;
         }
@@ -92,7 +92,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             AutomationEntry entry,
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
-            TaskCompletionSource<bool>? startTcs)
+            TaskCompletionSource? startTcs)
         {
             var runner = _runners.GetOrAdd(entry,
                 e => new Lazy<AutomationRunner>(() =>

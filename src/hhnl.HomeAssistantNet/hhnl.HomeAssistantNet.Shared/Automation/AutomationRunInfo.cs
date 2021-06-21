@@ -7,6 +7,8 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 {
     public class AutomationRunInfo
     {
+        private static Action _noop = () => { };
+
         public string? Error { get; set; }
         
         public DateTimeOffset Started { get; set; }
@@ -18,10 +20,13 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
         public StartReason Reason { get; set; }
 
         public string? ChangedEntity { get; set; }
-        
-        
+
+
         [JsonIgnore] 
-        public Task Task { get; set; }
+        public Task Task { get; set; } = Task.CompletedTask;
+
+        [JsonIgnore] 
+        public Action Start { get; set; } = _noop;
         
         [JsonIgnore]
         public CancellationTokenSource? CancellationTokenSource { get; set; }

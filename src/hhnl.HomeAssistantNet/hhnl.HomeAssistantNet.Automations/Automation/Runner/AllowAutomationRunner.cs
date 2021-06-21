@@ -17,9 +17,13 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
         public override Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
-            TaskCompletionSource<bool>? startTcs)
+            TaskCompletionSource? startTcs)
         {
-            var run = StartAutomation(reason, changedEntity, startTcs);
+            var run = CreateAutomationRun(reason, changedEntity, startTcs);
+            
+            Entry.AddRun(run);
+            run.Start();
+            
             _runs.TryAdd(run, false);
 
             // Remove run when it is completed.
