@@ -4,8 +4,8 @@ namespace hhnl.HomeAssistantNet.Automations.Utils
 {
     public static class Initialization
     {
-        private static readonly TaskCompletionSource<bool> _homeAssistantConnection = new();
-        private static readonly TaskCompletionSource<bool> _entitiesLoaded = new();
+        private static readonly TaskCompletionSource _homeAssistantConnection = new();
+        private static readonly TaskCompletionSource _entitiesLoaded = new();
 
         public static async Task WaitForHomeAssistantConnectionAsync()
         {
@@ -19,12 +19,12 @@ namespace hhnl.HomeAssistantNet.Automations.Utils
 
         public static void HomeAssistantConnected()
         {
-            _homeAssistantConnection.SetResult(true);
+            _homeAssistantConnection.SetResult();
         }
 
         public static void EntitiesLoaded()
         {
-            _entitiesLoaded.SetResult(true);
+            _entitiesLoaded.SetResult();
         }
     }
 }

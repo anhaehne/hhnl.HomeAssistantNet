@@ -1,0 +1,36 @@
+﻿@page "/"
+@using hhnl.HomeAssistantNet.Shared.Supervisor
+@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
+@using hhnl.HomeAssistantNet.Shared.Automation
+@inject SupervisorApiService _supervisorApiService
+
+<h1>Automations</h1>
+
+@foreach (var automation in Automations)
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">@automation.Info.DisplayName</h5>
+            @if (automation.Runs.FirstOrDefault()?.State != AutomationRunInfo.RunState.Running)
+            {
+                <button  @onclick="() => OnStart(automation)" type="submit" class="btn btn-primary mb-3">Start</button>
+            }
+        </div>
+    </div>
+}
+
+
+@code
+{
+    private IReadOnlyCollection<AutomationInfoDto> Automations { get; set; } = Array.Empty<AutomationInfoDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Automations = await _supervisorApiService.GetAutomationsAsync();
+    }
+
+    private Task OnStart(AutomationInfoDto dto)
+    {
+        return _supervisorApiService.StartAutomationAsync(dto);
+    }
+}

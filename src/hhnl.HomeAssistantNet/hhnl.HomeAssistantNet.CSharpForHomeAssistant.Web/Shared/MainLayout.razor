@@ -1,0 +1,41 @@
+﻿@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
+@inherits LayoutComponentBase
+@inject SupervisorApiService _supervisorApiService
+
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">C# for Home Assistant</a>
+        <div class="navbar-text">@NavBarText</div>
+        <button disabled="@(_supervisorApiService.State == SupervisorApiService.ApplicationState.BuildAndDeploy)" class="d-flex btn btn-primary" @onclick="OnBuildClick" type="submit">Build & Deploy</button>
+    </div>
+</nav>
+<div class="page">
+    <div class="main">
+        <div class="container">
+            @Body
+        </div>
+    </div>
+</div>
+@if (_supervisorApiService.State != SupervisorApiService.ApplicationState.ConnectedToHost)
+{
+    <div class="overlay">
+        <div class="spinner-border text-primary"></div>
+    </div>
+}
+
+@code
+{
+    private async Task OnBuildClick()
+    {
+        await _supervisorApiService.BuildAndDeployAsync();
+    }
+
+    private string NavBarText => _supervisorApiService.State switch
+    {
+        SupervisorApiService.ApplicationState.NoConnection => "No connection. Waiting for connection ...",
+        SupervisorApiService.ApplicationState.BuildAndDeploy => "Build and deploy in progress ...",
+        SupervisorApiService.ApplicationState.ConnectedToHost => "Connection established",
+        SupervisorApiService.ApplicationState.Connecting => "Connecting ...",
+        _ => throw new ArgumentOutOfRangeException()
+    };
+}

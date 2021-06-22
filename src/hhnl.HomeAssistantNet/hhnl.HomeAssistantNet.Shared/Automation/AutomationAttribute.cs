@@ -1,8 +1,10 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace hhnl.HomeAssistantNet.Shared.Automation
 {
     [AttributeUsage(AttributeTargets.Method)]
+    [MeansImplicitUse]
     public class AutomationAttribute : Attribute
     {
         /// <summary>

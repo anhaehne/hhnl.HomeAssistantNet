@@ -6,13 +6,14 @@
         <LangVersion>9.0</LangVersion>
 
         <Authors>anhaehne</Authors>
-        <Version>0.1.0</Version>
+        <Version>0.1.12</Version>
         <PackageProjectUrl>https://github.com/anhaehne/hhnl.HomeAssistantNet</PackageProjectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
         <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="all">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

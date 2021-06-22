@@ -34,7 +34,7 @@ namespace hhnl.HomeAssistantNet.TestProject
             await presenceAnyone.SetAsync(isAnyOneHome, ct);
         }
 
-        [Automation(runOnStart: true)]
+        [Automation]
         public async Task LeaveHome(InputBooleans.LeaveHome leaveHome)
         {
             // If leave home is turned off, we have nothing to do.

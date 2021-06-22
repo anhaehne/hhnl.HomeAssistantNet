@@ -15,7 +15,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
 {
-    [Route("automation")]
+    [Route("api/automation")]
     public class AutomationController : Controller
     {
         private readonly IAutomationsHostService _hostService;

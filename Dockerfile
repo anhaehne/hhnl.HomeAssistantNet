@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:5.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/sdk:6.0.100-preview.5 AS base
 WORKDIR /app
 EXPOSE 8099
 
@@ -19,17 +19,19 @@ ENV IsLocal=true
 ENV Logging__LogLevel__Default=Debug
 
 # Build CSharpForHomeAssistant
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.100-preview.5 AS build
 WORKDIR /src
 COPY ["src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.CSharpForHomeAssistant/hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj", "hhnl.HomeAssistantNet.CSharpForHomeAssistant/"]
 RUN dotnet restore "hhnl.HomeAssistantNet.CSharpForHomeAssistant/hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj"
 COPY src/hhnl.HomeAssistantNet .
 WORKDIR "/src/hhnl.HomeAssistantNet.CSharpForHomeAssistant"
-RUN dotnet build "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -c Release -o /app/build
+#RUN dotnet build "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -c Release -o /app/build
+RUN dotnet build "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -o /app/build
 
 # Publish
 FROM build AS publish
-RUN dotnet publish "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -c Release -o /app/publish
+#RUN dotnet publish "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -c Release -o /app/publish
+RUN dotnet publish "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -o /app/publish
 
 # Copy to final
 FROM base AS final

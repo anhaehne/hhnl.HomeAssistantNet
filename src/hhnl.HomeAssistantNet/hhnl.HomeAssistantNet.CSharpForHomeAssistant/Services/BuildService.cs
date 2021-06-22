@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests;
+using hhnl.HomeAssistantNet.Shared.Configuration;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,15 +23,17 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
     {
         private readonly IOptions<SupervisorConfig> _config;
         private readonly ILogger<BuildService> _logger;
+        private readonly IOptions<HomeAssistantConfig> _haConfig;
         private readonly IMediator _mediator;
         private Task<bool> _buildAndDeployTask = Task.FromResult(true);
 
 
-        public BuildService(IOptions<SupervisorConfig> config, IMediator mediator, ILogger<BuildService> logger)
+        public BuildService(IOptions<SupervisorConfig> config, IMediator mediator, ILogger<BuildService> logger, IOptions<HomeAssistantConfig> haConfig)
         {
             _config = config;
             _mediator = mediator;
             _logger = logger;
+            _haConfig = haConfig;
         }
 
         public Task WaitForBuildAndDeployAsync()
@@ -59,7 +62,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             var runStartInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = dllPath,
+                Arguments = $"{dllPath} Token={_haConfig.Value.Token} SupervisorUrl=http://localhost:20777",
             };
             var runProcess = Process.Start(runStartInfo);
         }

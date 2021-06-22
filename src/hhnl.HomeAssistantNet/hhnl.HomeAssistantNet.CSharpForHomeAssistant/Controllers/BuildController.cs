@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
 {
-    [Route("build")]
+    [Route("api/build")]
     public class BuildController : Controller
     {
         private readonly IBuildService _buildService;

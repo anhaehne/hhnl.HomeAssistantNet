@@ -1,0 +1,49 @@
+﻿@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
+@inject AuthenticationService _authenticationService
+
+<div class="mb-3 row">
+    <label for="accessToken" class="form-label">Access Token</label>
+    <input type="text" @bind="AccessToken" class="form-control" id="accessToken" placeholder="K3Mdk1ldj...">
+</div>
+
+ @if (_lastAttemptFailed)
+ {
+     <div class="alert alert-warning" role="alert">
+       Token invalid! Please try again.
+     </div>
+ }
+<div class="row">
+    <button disabled="@_inFlight" @onclick="OnConfirm" type="submit" class="btn btn-primary mb-3">Confirm</button>
+</div>
+
+@code {
+    
+    [CascadingParameter] BlazoredModalInstance? ModalInstance { get; set; }
+    
+    private string? AccessToken { get; set; }
+
+    private bool _lastAttemptFailed;
+
+    private bool _inFlight;
+
+    private async Task OnConfirm()
+    {
+        if (string.IsNullOrEmpty(AccessToken))
+            return;
+
+        _inFlight = true;
+
+        try
+        {
+            if (await _authenticationService.ValidateTokenAsync(AccessToken))
+                await ModalInstance!.CloseAsync();
+            else
+                _lastAttemptFailed = true;
+        }
+        finally
+        {
+            _inFlight = false;
+        }
+    }
+
+}

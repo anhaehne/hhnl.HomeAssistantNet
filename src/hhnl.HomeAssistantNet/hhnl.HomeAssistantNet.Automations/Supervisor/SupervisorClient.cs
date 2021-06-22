@@ -17,7 +17,6 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
     {
         private readonly IAutomationRegistry _automationRegistry;
         private readonly IAutomationService _automationService;
-        private readonly IOptions<AutomationsConfig> _config;
         private readonly HubConnection? _hubConnection;
         private readonly ILogger<SupervisorClient> _logger;
 
@@ -31,7 +30,6 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             _automationRegistry = automationRegistry;
             _automationService = automationService;
             _logger = logger;
-            _config = config;
 
             if (config.Value.SupervisorUrl is null)
             {
@@ -39,7 +37,9 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
                 return;
             }
 
-            var connectUri = new Uri(new Uri(config.Value.SupervisorUrl), "/client-management");
+            _logger.LogInformation($"Setup supervisor client Url '{config.Value.SupervisorUrl}' Token '{haConfig.Value.Token.Substring(0, 10)}...'");
+            
+            var connectUri = new Uri(new Uri(config.Value.SupervisorUrl), "/api/client-management");
 
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(connectUri, options => options.AccessTokenProvider = () => Task.FromResult(haConfig.Value.Token))
@@ -56,8 +56,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
         {
             if (_hubConnection is null)
                 return;
-
-            _logger.LogInformation($"Starting supervisor client '{_config.Value.SupervisorUrl}' ...");
+            
             await _hubConnection.StartAsync(cancellationToken);
             _logger.LogInformation("Supervisor client started");
         }

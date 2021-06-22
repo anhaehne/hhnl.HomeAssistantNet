@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <OutputType>Exe</OutputType>
         <UserSecretsId>4839da54-dd06-41c4-a082-345e3b8841a4</UserSecretsId>
