@@ -1,118 +1,46 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reflection;
+using System.Linq;
+using System.Threading;
+using hhnl.HomeAssistantNet.Generator.SourceGenerator;
 using hhnl.HomeAssistantNet.Shared.Configuration;
 using Microsoft.CodeAnalysis;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace hhnl.HomeAssistantNet.Generator.Configuration
 {
     public static class HomeAssistantConfigReader
-    {
-        public const string ConfigFileName = "ha-config.json";
-        private const string TokenEnvironmentVariableName = "SUPERVISOR_TOKEN";
-        private const string InstanceEnvironmentVariableName = "HOME_ASSISTANT_API";
-        private const string InstanceEnvironmentVariableDefault = "http://supervisor/core";
-
+    { 
         public static readonly DiagnosticDescriptor HaConfigNotFoundError = new("HHNLHAN001",
             "Home assistant configuration not found",
-            "Unable to retrieve home assistant configuration. When using a ha-config.json file, make sure the BuildAction is set to 'AdditionalFiles'."
+            "Unable to retrieve home assistant configuration. Please check the documentation on how to setup local development. https://github.com/anhaehne/hhnl.HomeAssistantNet/tree/main/c_sharp_for_home_assistant"
             ,
             "Configuration",
             DiagnosticSeverity.Error,
             true);
-
-        private static readonly DiagnosticDescriptor _haConfigInvalidError = new("HHNLHAN002",
-            "ha-config.json invalid",
-            "The file ha-config.json is invalid. {0}",
-            "Configuration",
-            DiagnosticSeverity.Error,
-            true);
-
+        
         public static bool TryGetConfig(
+            GeneratorExecutionContext context,
             [NotNullWhen(true)] out HomeAssistantConfig? config,
-            [NotNullWhen(false)] out Diagnostic? diagnostic)
+            [NotNullWhen(false)] out Diagnostic? diagnostic,
+            CancellationToken cancellationToken)
         {
-            // Try read from file
-            if (TryGetConfigFile(out var configFile))
-                return TryReadJsonConfiguration(configFile, out config, out diagnostic);
-
-            if (TryReadEnvironmentConfiguration(out config, out diagnostic))
-                return true;
-
-            // No config found
-            config = null;
-            diagnostic = Diagnostic.Create(HaConfigNotFoundError, Location.None);
-            return false;
-        }
-
-        public static bool TryReadEnvironmentConfiguration(
-            [NotNullWhen(true)] out HomeAssistantConfig? config,
-            out Diagnostic? diagnostic)
-        {
+            var secretsId = GetUserSecretsId(context);
             
-            
-            // Try read from environment
-            var environmentToken = Environment.GetEnvironmentVariable(TokenEnvironmentVariableName);
+            var configBuilder = new ConfigurationBuilder();
+            configBuilder.AddEnvironmentVariables();
 
-            if (string.IsNullOrEmpty(environmentToken))
+            if (secretsId is not null)
+                configBuilder.AddUserSecrets(secretsId);
+
+            config = configBuilder.Build().Get<HomeAssistantConfig>();
+
+            if (config?.SUPERVISOR_TOKEN is null)
             {
+                diagnostic = Diagnostic.Create(HaConfigNotFoundError, Location.None);
                 config = null;
-                diagnostic = null;
-                return false;
-            }
-
-            config = new HomeAssistantConfig
-            {
-                Instance = Environment.GetEnvironmentVariable(InstanceEnvironmentVariableName) ??
-                           InstanceEnvironmentVariableDefault,
-                Token = environmentToken!
-            };
-            diagnostic = null;
-            return true;
-        }
-
-        public static bool TryReadJsonConfiguration(
-            string? configText,
-            out HomeAssistantConfig? config,
-            out Diagnostic? diagnostic)
-        {
-            if (string.IsNullOrEmpty(configText))
-            {
-                config = null;
-                diagnostic = Diagnostic.Create(_haConfigInvalidError, Location.None, "The file is empty.");
-                return false;
-            }
-
-            try
-            {
-                config = JsonConvert.DeserializeObject<HomeAssistantConfig>(configText!);
-            }
-            catch (JsonException e)
-            {
-                config = null;
-                diagnostic = Diagnostic.Create(_haConfigInvalidError, Location.None, e.Message);
-                return false;
-            }
-
-            if (config is null)
-            {
-                diagnostic = Diagnostic.Create(_haConfigInvalidError, Location.None, "Config value is null.");
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(config.Instance))
-            {
-                config = null;
-                diagnostic = Diagnostic.Create(_haConfigInvalidError, Location.None, "instance is empty");
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(config.Token))
-            {
-                config = null;
-                diagnostic = Diagnostic.Create(_haConfigInvalidError, Location.None, "token is empty");
                 return false;
             }
 
@@ -120,34 +48,14 @@ namespace hhnl.HomeAssistantNet.Generator.Configuration
             return true;
         }
 
-        private static bool TryGetConfigFile([NotNullWhen(true)] out string? content)
+        private static string? GetUserSecretsId(GeneratorExecutionContext context)
         {
-            var entryAssembly = Assembly.GetEntryAssembly();
+            var userSecretsAttribute = context.Compilation.Assembly.GetAttributes().SingleOrDefault(x => x.AttributeClass?.GetFullName() == typeof(UserSecretsIdAttribute).GetFullName());
 
-            if (entryAssembly is null)
-            {
-                content = null;
-                return false;
-            }
-
-            var entryDirectory = Path.GetDirectoryName(entryAssembly.Location);
-
-            if (entryDirectory is null)
-            {
-                content = null;
-                return false;
-            }
-
-            var configFilePath = Path.Combine(entryDirectory, ConfigFileName);
-
-            if (!File.Exists(configFilePath))
-            {
-                content = null;
-                return false;
-            }
-
-            content = File.ReadAllText(configFilePath);
-            return true;
+            if (userSecretsAttribute is null)
+                return null;
+            
+            return userSecretsAttribute.ConstructorArguments.First().Value?.ToString();
         }
     }
 }

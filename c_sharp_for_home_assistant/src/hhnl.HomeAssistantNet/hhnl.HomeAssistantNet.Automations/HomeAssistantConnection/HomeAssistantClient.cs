@@ -88,14 +88,14 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             _webSocket = new ClientWebSocket();
             _id = 1;
 
-            var baseUri = new Uri(_haConfig.Value.Instance);
+            var baseUri = new Uri(_haConfig.Value.HOME_ASSISTANT_API);
             var completeUri = new Uri(baseUri, "api/websocket");
 
             var uriBuilder = new UriBuilder(completeUri);
             uriBuilder.Scheme = uriBuilder.Scheme == Uri.UriSchemeHttps ? "wss" : "ws";
 
             _logger.LogInformation(
-                $"Starting home assistant client. Url '{uriBuilder}' Token '{_haConfig.Value.Token.Substring(0, 10)}...'");
+                $"Starting home assistant client. Url '{uriBuilder}' Token '{_haConfig.Value.SUPERVISOR_TOKEN.Substring(0, 10)}...'");
 
             await _webSocket.ConnectAsync(uriBuilder.Uri, cancellationToken);
 
@@ -179,7 +179,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                         new
                         {
                             type = "auth",
-                            access_token = _haConfig.Value.Token
+                            access_token = _haConfig.Value.SUPERVISOR_TOKEN
                         });
 
                     break;

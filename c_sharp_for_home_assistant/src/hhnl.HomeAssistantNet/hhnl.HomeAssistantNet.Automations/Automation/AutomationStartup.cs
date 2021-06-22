@@ -43,11 +43,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             services.PostConfigure<HomeAssistantConfig>(config =>
             {
                 // When not configured otherwise we expect to run in a Home Assistant Add-ons.
-                if (string.IsNullOrEmpty(config.Token))
-                    config.Token = Environment.GetEnvironmentVariable("SUPERVISOR_TOKEN") ?? string.Empty;
-                
-                if (string.IsNullOrEmpty(config.Instance))
-                    config.Instance = Environment.GetEnvironmentVariable("HOME_ASSISTANT_API") ?? "http://supervisor/core/";
+                config.HOME_ASSISTANT_API ??= "http://supervisor/core/";
             });
             
             services.Configure<AutomationsConfig>(builderContext.Configuration);
@@ -87,7 +83,11 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         protected void ConfigureHost(IHostBuilder hostBuilder)
         {
             hostBuilder
-                .ConfigureAppConfiguration(c => c.AddJsonFile("ha-config.json", true))
+                .ConfigureAppConfiguration((context, builder) =>
+                {
+                    var appAssembly = Assembly.Load(new AssemblyName(context.HostingEnvironment.ApplicationName));
+                    builder.AddUserSecrets(appAssembly, optional: true);
+                })
                 .ConfigureServices(ConfigureServices)
                 .ConfigureServices(ConfigureServiceInternal)
                 

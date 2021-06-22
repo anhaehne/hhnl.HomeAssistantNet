@@ -37,12 +37,12 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
                 return;
             }
 
-            _logger.LogInformation($"Setup supervisor client Url '{config.Value.SupervisorUrl}' Token '{haConfig.Value.Token.Substring(0, 10)}...'");
+            _logger.LogInformation($"Setup supervisor client Url '{config.Value.SupervisorUrl}' Token '{haConfig.Value.SUPERVISOR_TOKEN.Substring(0, 10)}...'");
             
             var connectUri = new Uri(new Uri(config.Value.SupervisorUrl), "/api/client-management");
 
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl(connectUri, options => options.AccessTokenProvider = () => Task.FromResult(haConfig.Value.Token))
+                .WithUrl(connectUri, options => options.AccessTokenProvider = () => Task.FromResult(haConfig.Value.SUPERVISOR_TOKEN))
                 .WithAutomaticReconnect()
                 .Build();
             _hubConnection.On<long>(nameof(IManagementClient.GetAutomationsAsync), GetAutomationsAsync);

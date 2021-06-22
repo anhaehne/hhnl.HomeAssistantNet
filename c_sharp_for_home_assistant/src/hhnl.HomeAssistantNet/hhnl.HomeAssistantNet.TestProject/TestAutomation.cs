@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Shared.Automation;
+using hhnl.HomeAssistantNet.Shared.Entities;
 using HomeAssistant;
 
 namespace hhnl.HomeAssistantNet.TestProject

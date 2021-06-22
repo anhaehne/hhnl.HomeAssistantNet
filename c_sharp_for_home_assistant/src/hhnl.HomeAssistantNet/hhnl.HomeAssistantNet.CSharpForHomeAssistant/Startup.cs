@@ -20,7 +20,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 
@@ -56,15 +55,10 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant
 
             services.Configure<SupervisorConfig>(Configuration.GetSection(nameof(SupervisorConfig)));
             services.Configure<HomeAssistantConfig>(Configuration);
-
             services.PostConfigure<HomeAssistantConfig>(config =>
             {
                 // When not configured otherwise we expect to run in a Home Assistant Add-ons.
-                if (string.IsNullOrEmpty(config.Token))
-                    config.Token = Environment.GetEnvironmentVariable("SUPERVISOR_TOKEN") ?? string.Empty;
-
-                if (string.IsNullOrEmpty(config.Instance))
-                    config.Instance = Environment.GetEnvironmentVariable("HOME_ASSISTANT_API") ?? "http://supervisor/core/";
+                config.HOME_ASSISTANT_API ??= "http://supervisor/core/";
             });
 
             services.AddSingleton<IAutomationsHostService, AutomationsService>();

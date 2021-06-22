@@ -10,6 +10,7 @@ using HADotNet.Core.Domain;
 using hhnl.HomeAssistantNet.Generator.Configuration;
 using hhnl.HomeAssistantNet.Shared.Entities;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 {
@@ -29,8 +30,9 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             //     Debugger.Launch();
             // }
 #endif
+            
 
-            if (!HomeAssistantCompileTimeConfigReader.TryGetConfig(context.AdditionalFiles,
+            if (!HomeAssistantConfigReader.TryGetConfig(context,
                 out var config,
                 out var diagnostic,
                 context.CancellationToken))
@@ -41,20 +43,20 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 
             try
             {
-                ClientFactory.Initialize(config.Instance, config.Token);
+                ClientFactory.Initialize(config.HOME_ASSISTANT_API, config.SUPERVISOR_TOKEN);
                 Task.Run(() => Run(context)).GetAwaiter().GetResult();
             }
             catch (HttpResponseException e)
             {
                 var message =
-                    $"Unable to connect to HomeAssistant api. HomeAssistance url: '{config.Instance}' Token: '{config.Token.Substring(0, 10)}...' StatusCode: '{e.StatusCode}' RequestPath '{e.RequestPath}' NetworkDescription: '{e.NetworkDescription}' Message '{e.Message}' InnerException: '{e.InnerException}' StackTrace: {e.StackTrace}";
+                    $"Unable to connect to HomeAssistant api. HomeAssistance url: '{config.HOME_ASSISTANT_API}' Token: '{config.SUPERVISOR_TOKEN.Substring(0, 10)}...' StatusCode: '{e.StatusCode}' RequestPath '{e.RequestPath}' NetworkDescription: '{e.NetworkDescription}' Message '{e.Message}' InnerException: '{e.InnerException}' StackTrace: {e.StackTrace}";
                 var dd = new DiagnosticDescriptor("HHNL005", message, message, "Error", DiagnosticSeverity.Error, true);
                 context.ReportDiagnostic(Diagnostic.Create(dd, Location.None));
             }
             catch (Exception e)
             {
                 var message =
-                    $"An unhandled exception occured '{e.GetType()}'. HomeAssistance url: '{config.Instance}' Token: '{config.Token.Substring(0, 10)}...'  Message '{e.Message}' InnerException: '{e.InnerException}' StackTrace: {e.StackTrace}";
+                    $"An unhandled exception occured '{e.GetType()}'. HomeAssistance url: '{config.HOME_ASSISTANT_API}' Token: '{config.SUPERVISOR_TOKEN.Substring(0, 10)}...'  Message '{e.Message}' InnerException: '{e.InnerException}' StackTrace: {e.StackTrace}";
                 var dd = new DiagnosticDescriptor("HHNL005", message, message, "Error", DiagnosticSeverity.Error, true);
                 context.ReportDiagnostic(Diagnostic.Create(dd, Location.None));
             }

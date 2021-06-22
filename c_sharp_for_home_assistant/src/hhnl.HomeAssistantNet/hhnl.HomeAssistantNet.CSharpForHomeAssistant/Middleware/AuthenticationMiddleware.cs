@@ -134,7 +134,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Middleware
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri(new Uri(_haConfig.Value.Instance), "api/"),
+                RequestUri = new Uri(new Uri(_haConfig.Value.HOME_ASSISTANT_API), "api/"),
                 Headers =
                 {
                     { HeaderNames.Authorization, headerValue.ToString() }
