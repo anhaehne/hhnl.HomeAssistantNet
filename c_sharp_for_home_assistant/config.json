@@ -1,8 +1,8 @@
 {
   "name": "C#",
   "version": "1",
-  "slug": "c_sharp_for_homeassistant",
-  "description": "1 A touch first ui for home assistant.",
+  "slug": "c_sharp_for_home-assistant",
+  "description": "C# environment for developing Home Assistant automations.",
   "arch": [ "armhf", "armv7", "aarch64", "amd64", "i386" ],
   "startup": "application",
   "boot": "auto",
