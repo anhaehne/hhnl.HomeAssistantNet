@@ -8,7 +8,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 {
     public static class TypeExtensions
     {
-        public static string GetFullName(this ITypeSymbol type, IReadOnlyCollection<string>? entities = null)
+        public static string GetFullName(this ITypeSymbol type, IReadOnlyCollection<string>? entities)
         {
             entities ??= Array.Empty<string>();
             
@@ -25,10 +25,8 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 
             var fullName = sb.ToString();
 
-            if (entities.Contains(fullName))
-                fullName = $"{EntityClassSourceFileGenerator.EntityNamespace}.{fullName}";
-
-            return fullName;
+            var entityFullName = $"{EntityClassSourceFileGenerator.EntityNamespace}.{fullName}";
+            return entities.Contains(entityFullName) ? entityFullName : fullName;
         }
         
         public static string GetFullName(this Type type)

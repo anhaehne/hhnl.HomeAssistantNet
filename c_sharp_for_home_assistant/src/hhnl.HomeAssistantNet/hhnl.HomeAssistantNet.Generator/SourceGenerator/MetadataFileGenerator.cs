@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using hhnl.HomeAssistantNet.Shared.Automation;
-using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.SourceGenerator;
 using Microsoft.CodeAnalysis;
 
@@ -40,11 +39,13 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                     var arguments = string.Join(",",
                         method.Parameters.Select(p =>
                         {
+                            var typeFullName = p.Type.GetFullName(entitiesFullNames);
+
                             // Allow passing the cancellation token.
-                            if (p.Type.GetFullName() == typeof(CancellationToken).GetFullName())
+                            if (typeFullName == typeof(CancellationToken).GetFullName())
                                 return "ct";
-                            
-                            return $"s.GetRequiredService<{p.Type.GetFullName(entitiesFullNames)}>()";
+
+                            return $"s.GetRequiredService<{typeFullName}>()";
                         }));
 
                     var classEntityDependencies = GetClassEntityDependencies(method, entitiesFullNames);
@@ -56,30 +57,30 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                     return $@"            new {typeof(AutomationInfo).GetFullName()}
             {{
                 {nameof(AutomationInfo.GenerationError)} = ""{(error is null ? string.Empty : error.GetMessage())}"",
-                {nameof(AutomationInfo.Method)} = typeof({method.ContainingType.GetFullName()}).GetMethod(""{method.Name}"", BindingFlags.Instance | BindingFlags.Public)!,
+                {nameof(AutomationInfo.Method)} = typeof({method.ContainingType.GetFullName(entitiesFullNames)}).GetMethod(""{method.Name}"", BindingFlags.Instance | BindingFlags.Public)!,
                 {nameof(AutomationInfo.DisplayName)} = ""{attributeData.ConstructorArguments[0].Value ?? method.Name}"",
-                {nameof(AutomationInfo.Name)} = ""{method.ContainingType.GetFullName()}.{method.Name}"",
+                {nameof(AutomationInfo.Name)} = ""{method.ContainingType.GetFullName(entitiesFullNames)}.{method.Name}"",
                 {nameof(AutomationInfo.RunOnStart)} = {(attributeData.ConstructorArguments[1].Value is true ? "true" : "false")},
                 {nameof(AutomationInfo.ReentryPolicy)} = ({typeof(ReentryPolicy).GetFullName()}){attributeData.ConstructorArguments[2].Value},
                 {nameof(AutomationInfo.DependsOnEntities)} = new Type[] {{ {string.Join(", ", entityDependencies)} }},
                 {nameof(AutomationInfo.ListenToEntities)} = new Type[] {{ {string.Join(", ", listenToEntities)} }},
                 {nameof(AutomationInfo.RunAutomation)} = async (s, ct) => 
                 {{
-                    {(method.IsAsync ? "await " : string.Empty)}s.GetRequiredService<{method.ContainingType.GetFullName()}>().{method.Name}({arguments});
+                    {(method.IsAsync ? "await " : string.Empty)}s.GetRequiredService<{method.ContainingType.GetFullName(entitiesFullNames)}>().{method.Name}({arguments});
                 }}
             }},";
                 }));
 
             var registerEntities = string.Join(Environment.NewLine,
                 entitiesFullNames.Select(t =>
-                    $"            serviceCollection.AddSingleton<{EntityClassSourceFileGenerator.EntityNamespace}.{t}>();"));
+                    $"            serviceCollection.AddSingleton<{t}>();"));
 
             var registerAutomationClasses = string.Join(Environment.NewLine,
                 verifiedAutomationMethods.Select(m => m.Method.ContainingType).Distinct()
                     .Select(x => $"            serviceCollection.AddSingleton<{x}>();"));
 
             var entityTypes = string.Join(Environment.NewLine,
-                entitiesFullNames.Select(t => $"            typeof({EntityClassSourceFileGenerator.EntityNamespace}.{t}),"));
+                entitiesFullNames.Select(t => $"            typeof({t}),"));
 
 
             var sourceText = $@"
@@ -113,22 +114,25 @@ namespace {nameof(hhnl)}.{nameof(HomeAssistantNet)}.Generated
 }}";
 
             _context.AddSource("GeneratedMetaData.cs", sourceText);
-
-           
         }
-        
-        private static IEnumerable<string> GetClassEntityDependencies(IMethodSymbol methodSymbol, IReadOnlyCollection<string> entitiesFullNames)
+
+        private static IEnumerable<string> GetClassEntityDependencies(
+            IMethodSymbol methodSymbol,
+            IReadOnlyCollection<string> entitiesFullNames)
         {
             return methodSymbol.ContainingType.Constructors.SelectMany(c => c.Parameters
-                .Where(p => entitiesFullNames.Contains(p.Type.GetFullName()))
+                .Where(p => entitiesFullNames.Contains(p.Type.GetFullName(entitiesFullNames)))
                 .Select(p => $"typeof({p.Type.GetFullName(entitiesFullNames)})"));
         }
-        
-        private static IEnumerable<(string Entity, bool OutputOnly)> GetMethodEntityDependencies(IMethodSymbol methodSymbol, IReadOnlyCollection<string> entitiesFullNames)
+
+        private static IEnumerable<(string Entity, bool OutputOnly)> GetMethodEntityDependencies(
+            IMethodSymbol methodSymbol,
+            IReadOnlyCollection<string> entitiesFullNames)
         {
             return methodSymbol.Parameters
-                .Where(p => entitiesFullNames.Contains(p.Type.GetFullName()))
-                .Select(p => ($"typeof({p.Type.GetFullName(entitiesFullNames)})", p.GetAttributes().Any(a => a.AttributeClass!.ToString() == _outputOnlyAttributeFullAccessName)));
+                .Where(p => entitiesFullNames.Contains(p.Type.GetFullName(entitiesFullNames)))
+                .Select(p => ($"typeof({p.Type.GetFullName(entitiesFullNames)})",
+                    p.GetAttributes().Any(a => a.AttributeClass!.ToString() == _outputOnlyAttributeFullAccessName)));
         }
     }
 }

@@ -50,7 +50,7 @@ namespace hhnl.HomeAssistantNet.Generator.Configuration
 
         private static string? GetUserSecretsId(GeneratorExecutionContext context)
         {
-            var userSecretsAttribute = context.Compilation.Assembly.GetAttributes().SingleOrDefault(x => x.AttributeClass?.GetFullName() == typeof(UserSecretsIdAttribute).GetFullName());
+            var userSecretsAttribute = context.Compilation.Assembly.GetAttributes().SingleOrDefault(x => x.AttributeClass?.GetFullName(null) == typeof(UserSecretsIdAttribute).GetFullName());
 
             if (userSecretsAttribute is null)
                 return null;

@@ -55,7 +55,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 
                 var entityClassName = ToClassName(entity.EntityId);
 
-                entitiesFullNames.Add($"{className}.{entityClassName}");
+                entitiesFullNames.Add($"{EntityNamespace}.{className}.{entityClassName}");
 
                 return $@"
         /// <summary>

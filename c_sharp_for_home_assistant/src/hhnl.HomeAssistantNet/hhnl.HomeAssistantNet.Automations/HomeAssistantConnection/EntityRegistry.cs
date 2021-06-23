@@ -99,7 +99,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
         private string GetEntityId(Type t)
         {
-            return t.GetCustomAttribute<UniqueIdAttribute>().Value;
+            return t.GetCustomAttribute<UniqueIdAttribute>()!.Value;
         }
     }
 
