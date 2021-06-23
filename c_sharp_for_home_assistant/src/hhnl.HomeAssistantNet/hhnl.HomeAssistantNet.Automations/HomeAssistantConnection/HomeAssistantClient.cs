@@ -110,10 +110,28 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             _cancellationTokenSource?.Cancel();
 
             if (_receiveTask != null)
-                await _receiveTask;
+            {
+                try
+                {
+                    await _receiveTask;
+                }
+                catch (Exception)
+                {
+                    // ignore
+                }
+            }
 
             if (_sendTask != null)
-                await _sendTask;
+            {
+                try
+                {
+                    await _sendTask;
+                }
+                catch (Exception)
+                {
+                    // ignore
+                }
+            }
         }
 
         private async Task ReceiveLoopAsync()

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services;
 using hhnl.HomeAssistantNet.Shared.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -18,24 +19,18 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Middleware
 {
     public class AuthenticationMiddleware
     {
-        private readonly IOptions<HomeAssistantConfig> _haConfig;
         private readonly ILogger<AuthenticationMiddleware> _logger;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IMemoryCache _memoryCache;
         private readonly RequestDelegate _next;
+        private readonly IHomeAssistantTokenValidationService _homeAssistantTokenValidationService;
 
 
         public AuthenticationMiddleware(
             RequestDelegate next,
-            IMemoryCache memoryCache,
-            IHttpClientFactory httpClientFactory,
-            IOptions<HomeAssistantConfig> haConfig,
+            IHomeAssistantTokenValidationService homeAssistantTokenValidationService,
             ILogger<AuthenticationMiddleware> logger)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
-            _memoryCache = memoryCache;
-            _httpClientFactory = httpClientFactory;
-            _haConfig = haConfig;
+            _homeAssistantTokenValidationService = homeAssistantTokenValidationService;
             _logger = logger;
         }
 
@@ -71,84 +66,15 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Middleware
                 return;
             }
 
-            var cachedToken = _memoryCache.Get<object>(authenticationHeaderValue.Parameter);
-            if (cachedToken is not null && (cachedToken is not JsonWebToken cachedJwt || cachedJwt.ValidTo > DateTime.Now))
+            if (!await _homeAssistantTokenValidationService.IsValidAsync(authenticationHeaderValue.Parameter))
             {
-                // We know this token already and it is valid.
-                await _next.Invoke(context);
-                return;
-            }
-
-            // Long lived access tokens are JWTs. The supervisor token is only generic string.
-            if (TryGetJwt(authenticationHeaderValue.Parameter, out var jwt))
-            {
-                if (jwt.ValidTo < DateTime.Now)
-                {
-                    _logger.LogWarning($"Unauthorized request! Token expired '{jwt.ValidTo}'. Request: {context.Request.GetDisplayUrl()}");
-                    // Token expired.
-                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    return;
-                }
-            }
-
-            var isValid = await CheckTokenAsync(authenticationHeaderValue);
-
-            if (!isValid)
-            {
-                _logger.LogWarning($"Unauthorized request! Token validation failed. Home assistant responded with 401. Request: {context.Request.GetDisplayUrl()}");
-                // Token expired.
                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                 return;
             }
 
-            _memoryCache.GetOrCreate<object>(authenticationHeaderValue.Parameter,
-                entry =>
-                {
-                    if(jwt is not null)
-                        entry.AbsoluteExpiration = jwt.ValidTo;
-                    
-                    return (object?)jwt ?? authenticationHeaderValue.Parameter;
-                });
-
             await _next.Invoke(context);
 
-            static bool TryGetJwt(string value, [NotNullWhen(true)] out JsonWebToken? token)
-            {
-                var handler = new JsonWebTokenHandler();
-
-                if (!handler.CanReadToken(value))
-                {
-                    token = null;
-                    return false;
-                }
-
-                token = handler.ReadJsonWebToken(value);
-                return true;
-            }
-        }
-
-        private async Task<bool> CheckTokenAsync(AuthenticationHeaderValue headerValue)
-        {
-            var httpClient = _httpClientFactory.CreateClient();
-
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri(new Uri(_haConfig.Value.HOME_ASSISTANT_API), "api/"),
-                Headers =
-                {
-                    { HeaderNames.Authorization, headerValue.ToString() }
-                }
-            };
-
-            var response = await httpClient.SendAsync(request);
-
-            return response.StatusCode switch
-            {
-                HttpStatusCode.Unauthorized => false,
-                HttpStatusCode.OK => true,
-                _ => throw new InvalidOperationException($"Got unexpected status code {response.StatusCode}")
-            };
+            
         }
     }
 }

@@ -56,7 +56,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 
                     return result;
                 }
-                catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.FailedDependency)
+                catch (HttpRequestException e) when (e.StatusCode is HttpStatusCode.FailedDependency or HttpStatusCode.RequestTimeout)
                 {
                     State = ApplicationState.NoConnection;
                 }
@@ -73,7 +73,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
                 if (State != ApplicationState.BuildAndDeploy)
                     State = ApplicationState.ConnectedToHost;
             }
-            catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.FailedDependency)
+            catch (HttpRequestException e) when (e.StatusCode is HttpStatusCode.FailedDependency or HttpStatusCode.RequestTimeout)
             {
                 State = ApplicationState.NoConnection;
             }

@@ -65,6 +65,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant
             services.AddSingleton<IBuildService, BuildService>();
             services.AddSingleton<IHubCallService, HubCallService>();
             services.AddSingleton<IProcessManager, ProcessManager>();
+            services.AddSingleton<IHomeAssistantTokenValidationService, HomeAssistantTokenValidationService>();
 
             services.AddSingleton<NotificationQueue>();
             services.AddSingleton<IHostedService>(s => s.GetRequiredService<NotificationQueue>());
