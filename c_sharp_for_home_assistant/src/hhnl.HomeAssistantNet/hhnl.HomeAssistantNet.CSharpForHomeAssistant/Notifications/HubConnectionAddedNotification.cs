@@ -9,14 +9,16 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Notifications
 {
     public class HubConnectionAddedNotification : INotification
     {
-        public HubConnectionAddedNotification(string connectionId)
+        public HubConnectionAddedNotification(string connectionId, bool isLocal)
         {
             ConnectionId = connectionId;
+            IsLocal = isLocal;
         }
 
-
         private string ConnectionId { get; }
-        
+
+        private bool IsLocal { get; }
+
         public class ProcessInfoHandler : INotificationHandler<HubConnectionAddedNotification>
         {
             private readonly IHubCallService _hubCallService;
@@ -39,11 +41,15 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Notifications
                 var previousConnection = _hubCallService.DefaultConnection;
                 
                 // Register new connection
-                var processId = await _hubCallService.CallService<int>((l, client) => client.GetProcessId(l), connectionId: notification.ConnectionId);
-                _processManager.AddProcess(notification.ConnectionId, processId);
+                if (notification.IsLocal)
+                {
+                    var processId = await _hubCallService.CallService<int>((l, client) => client.GetProcessId(l), connectionId: notification.ConnectionId);
+                    _processManager.AddProcess(notification.ConnectionId, processId);
+                }
+                
                 _hubCallService.DefaultConnection = notification.ConnectionId;
                 
-                _logger.LogDebug($"Connection {notification.ConnectionId} with process id {processId} is now the default connection.");
+                _logger.LogDebug($"Connection {notification.ConnectionId} is now the default connection.");
 
                 if (string.IsNullOrEmpty(previousConnection))
                     return;

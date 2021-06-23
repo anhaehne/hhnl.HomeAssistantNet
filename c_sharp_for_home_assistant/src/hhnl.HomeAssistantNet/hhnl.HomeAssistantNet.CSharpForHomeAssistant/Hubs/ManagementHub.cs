@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Notifications;
@@ -9,6 +10,7 @@ using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests;
 using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services;
 using hhnl.HomeAssistantNet.Shared.Supervisor;
 using MediatR;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
 
 namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Hubs
@@ -28,7 +30,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Hubs
         public override async Task OnConnectedAsync()
         {
             Interlocked.Increment(ref _clientCount);
-            await _notificationQueue.Enqueue(new HubConnectionAddedNotification(Context.ConnectionId));
+            var remoteIp = Context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress;
+
+            await _notificationQueue.Enqueue(new HubConnectionAddedNotification(Context.ConnectionId, remoteIp is not null && IPAddress.IsLoopback(remoteIp)));
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)

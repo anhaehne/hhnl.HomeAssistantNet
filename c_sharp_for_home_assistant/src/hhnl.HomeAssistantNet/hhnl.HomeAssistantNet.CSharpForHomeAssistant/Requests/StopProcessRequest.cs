@@ -31,15 +31,6 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests
 
             public async Task<Unit> Handle(StopProcessRequest request, CancellationToken cancellationToken)
             {
-                if (!_processManager.TryGetProcess(request.ConnectionId, out var processInfo))
-                    return Unit.Value;
-
-                if (processInfo.NativeProcess is null)
-                    return Unit.Value;
-
-                if (processInfo.NativeProcess.HasExited)
-                    return Unit.Value;
-
                 try
                 {
                     await _callService.CallService<bool>((l, client) => client.Shutdown(), connectionId: request.ConnectionId);
@@ -55,6 +46,16 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests
                 using var cts = new CancellationTokenSource(_config.Value.DefaultProcessExitTimeout);
                 using var combinedSource = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
 
+                // If this is a local process we make sure the process gets closed.
+                if (!_processManager.TryGetProcess(request.ConnectionId, out var processInfo))
+                    return Unit.Value;
+
+                if (processInfo.NativeProcess is null)
+                    return Unit.Value;
+
+                if (processInfo.NativeProcess.HasExited)
+                    return Unit.Value;
+                
                 try
                 {
                     await processInfo.NativeProcess.WaitForExitAsync(combinedSource.Token);
