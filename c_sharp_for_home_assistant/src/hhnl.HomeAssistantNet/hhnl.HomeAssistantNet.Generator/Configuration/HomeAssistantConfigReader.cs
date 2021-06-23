@@ -44,6 +44,9 @@ namespace hhnl.HomeAssistantNet.Generator.Configuration
                 return false;
             }
 
+            // When not configured otherwise we expect to run in a Home Assistant Add-ons.
+            config.HOME_ASSISTANT_API ??= "http://supervisor/core/";
+
             diagnostic = null;
             return true;
         }
