@@ -9,27 +9,22 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Notifications
 {
     public class HubConnectionAddedNotification : INotification
     {
-        public HubConnectionAddedNotification(string connectionId, bool isLocal)
+        public HubConnectionAddedNotification(string connectionId)
         {
             ConnectionId = connectionId;
-            IsLocal = isLocal;
         }
 
         private string ConnectionId { get; }
-
-        private bool IsLocal { get; }
-
+        
         public class ProcessInfoHandler : INotificationHandler<HubConnectionAddedNotification>
         {
             private readonly IHubCallService _hubCallService;
-            private readonly IProcessManager _processManager;
             private readonly IMediator _mediator;
             private readonly ILogger<ProcessInfoHandler> _logger;
 
-            public ProcessInfoHandler(IHubCallService hubCallService, IProcessManager processManager, IMediator mediator, ILogger<ProcessInfoHandler> logger)
+            public ProcessInfoHandler(IHubCallService hubCallService, IMediator mediator, ILogger<ProcessInfoHandler> logger)
             {
                 _hubCallService = hubCallService;
-                _processManager = processManager;
                 _mediator = mediator;
                 _logger = logger;
             }
@@ -39,13 +34,6 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Notifications
             {
                 _logger.LogDebug($"Got new connection {notification.ConnectionId}. Getting process info.");
                 var previousConnection = _hubCallService.DefaultConnection;
-                
-                // Register new connection
-                if (notification.IsLocal)
-                {
-                    var processId = await _hubCallService.CallService<int>((l, client) => client.GetProcessId(l), connectionId: notification.ConnectionId);
-                    _processManager.AddProcess(notification.ConnectionId, processId);
-                }
                 
                 _hubCallService.DefaultConnection = notification.ConnectionId;
                 

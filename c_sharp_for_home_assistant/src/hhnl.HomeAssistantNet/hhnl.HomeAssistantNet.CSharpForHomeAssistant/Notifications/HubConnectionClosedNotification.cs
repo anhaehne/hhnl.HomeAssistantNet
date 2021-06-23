@@ -15,22 +15,6 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Notifications
         private string ConnectionId { get; }
 
 
-        public class ProcessUpdateHandler : INotificationHandler<HubConnectionClosedNotification>
-        {
-            private readonly IProcessManager _processManager;
-
-            public ProcessUpdateHandler(IProcessManager processManager)
-            {
-                _processManager = processManager;
-            }
-
-            public Task Handle(HubConnectionClosedNotification notification, CancellationToken cancellationToken)
-            {
-                _processManager.RemoveProcess(notification.ConnectionId);
-                return Task.CompletedTask;
-            }
-        }
-
         public class HubCallUpdateHandler : INotificationHandler<HubConnectionClosedNotification>
         {
             private readonly IHubCallService _hubCallService;

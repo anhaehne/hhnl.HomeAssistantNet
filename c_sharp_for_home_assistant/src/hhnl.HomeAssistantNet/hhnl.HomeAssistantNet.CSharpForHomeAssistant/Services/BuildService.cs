@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Hubs;
 using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests;
 using hhnl.HomeAssistantNet.Shared.Configuration;
 using MediatR;
@@ -24,16 +25,18 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         private readonly IOptions<SupervisorConfig> _config;
         private readonly ILogger<BuildService> _logger;
         private readonly IOptions<HomeAssistantConfig> _haConfig;
+        private readonly IHubCallService _hubCallService;
         private readonly IMediator _mediator;
         private Task<bool> _buildAndDeployTask = Task.FromResult(true);
 
 
-        public BuildService(IOptions<SupervisorConfig> config, IMediator mediator, ILogger<BuildService> logger, IOptions<HomeAssistantConfig> haConfig)
+        public BuildService(IOptions<SupervisorConfig> config, IMediator mediator, ILogger<BuildService> logger, IOptions<HomeAssistantConfig> haConfig, IHubCallService hubCallService)
         {
             _config = config;
             _mediator = mediator;
             _logger = logger;
             _haConfig = haConfig;
+            _hubCallService = hubCallService;
         }
 
         public Task WaitForBuildAndDeployAsync()
@@ -73,10 +76,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 
             var srcDirectory = Path.GetFullPath(_config.Value.SourceDirectory);
 
-
             _logger.LogDebug("Stopping all processes");
 
-            await _mediator.Send(StopProcessesRequest.All);
+            await _mediator.Send(new StopProcessRequest(_hubCallService.DefaultConnection));
 
             _logger.LogDebug("Starting dotnet publish");
 

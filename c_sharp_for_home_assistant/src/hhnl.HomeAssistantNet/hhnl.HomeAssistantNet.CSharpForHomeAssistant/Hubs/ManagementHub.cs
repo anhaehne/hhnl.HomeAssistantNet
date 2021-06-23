@@ -30,9 +30,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Hubs
         public override async Task OnConnectedAsync()
         {
             Interlocked.Increment(ref _clientCount);
-            var remoteIp = Context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress;
-
-            await _notificationQueue.Enqueue(new HubConnectionAddedNotification(Context.ConnectionId, remoteIp is not null && IPAddress.IsLoopback(remoteIp)));
+            await _notificationQueue.Enqueue(new HubConnectionAddedNotification(Context.ConnectionId));
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
