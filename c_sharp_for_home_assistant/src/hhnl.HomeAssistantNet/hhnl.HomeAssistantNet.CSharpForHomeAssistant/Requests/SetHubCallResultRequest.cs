@@ -22,16 +22,16 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests
 
         public class Handler : IRequestHandler<SetHubCallResultRequest>
         {
-            private readonly IHubCallService _hubCallService;
+            private readonly IManagementHubCallService _managementHubCallService;
 
-            public Handler(IHubCallService hubCallService)
+            public Handler(IManagementHubCallService managementHubCallService)
             {
-                _hubCallService = hubCallService;
+                _managementHubCallService = managementHubCallService;
             }
 
             public Task<Unit> Handle(SetHubCallResultRequest request, CancellationToken cancellationToken)
             {
-                _hubCallService.SetResult(request.ConnectionId, request.MessageId, request.Result);
+                _managementHubCallService.SetResult(request.ConnectionId, request.MessageId, request.Result);
                 return Unit.Task;
             }
         }

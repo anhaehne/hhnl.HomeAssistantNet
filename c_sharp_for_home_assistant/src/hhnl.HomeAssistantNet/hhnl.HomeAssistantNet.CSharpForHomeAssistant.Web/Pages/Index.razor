@@ -1,36 +1,52 @@
 ﻿@page "/"
-@using hhnl.HomeAssistantNet.Shared.Supervisor
+@inject SupervisorApiService _supervisorApiService
+@using ReactiveUI
 @using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 @using hhnl.HomeAssistantNet.Shared.Automation
-@inject SupervisorApiService _supervisorApiService
+@using hhnl.HomeAssistantNet.Shared.Supervisor
+@inherits ReactiveUI.Blazor.ReactiveComponentBase<Index.IndexViewModel>
 
 <h1>Automations</h1>
 
-@foreach (var automation in Automations)
+@if (ViewModel?.Connection is not null)
 {
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5 class="card-title">@automation.Info.DisplayName</h5>
-            @if (automation.Runs.FirstOrDefault()?.State != AutomationRunInfo.RunState.Running)
-            {
-                <button  @onclick="() => OnStart(automation)" type="submit" class="btn btn-primary mb-3">Start</button>
-            }
+    @foreach (var automation in ViewModel.Connection.Automations)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">@automation.Info.DisplayName</h5>
+                @if (automation.Runs.FirstOrDefault()?.State != AutomationRunInfo.RunState.Running)
+                {
+                    <button @onclick="() => OnStart(automation)" type="submit" class="btn btn-primary mb-3">Start</button>
+                }
+            </div>
         </div>
-    </div>
+    }
 }
 
 
 @code
 {
-    private IReadOnlyCollection<AutomationInfoDto> Automations { get; set; } = Array.Empty<AutomationInfoDto>();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        Automations = await _supervisorApiService.GetAutomationsAsync();
+        ViewModel = new IndexViewModel(_supervisorApiService);
     }
 
     private Task OnStart(AutomationInfoDto dto)
     {
         return _supervisorApiService.StartAutomationAsync(dto);
+    }
+
+    public class IndexViewModel : ReactiveObject
+    {
+        private readonly ObservableAsPropertyHelper<ConnectionInfo?> _connection;
+
+        public IndexViewModel(SupervisorApiService supervisorApiService)
+        {
+            _connection = supervisorApiService.Connection.ToProperty(this, x => x.Connection, scheduler: RxApp.MainThreadScheduler);
+        }
+
+        public ConnectionInfo? Connection => _connection.Value;
     }
 }

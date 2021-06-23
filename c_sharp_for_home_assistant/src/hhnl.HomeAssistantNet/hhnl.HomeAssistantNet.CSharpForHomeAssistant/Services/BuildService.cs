@@ -25,18 +25,18 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         private readonly IOptions<SupervisorConfig> _config;
         private readonly ILogger<BuildService> _logger;
         private readonly IOptions<HomeAssistantConfig> _haConfig;
-        private readonly IHubCallService _hubCallService;
+        private readonly IManagementHubCallService _managementHubCallService;
         private readonly IMediator _mediator;
         private Task<bool> _buildAndDeployTask = Task.FromResult(true);
 
 
-        public BuildService(IOptions<SupervisorConfig> config, IMediator mediator, ILogger<BuildService> logger, IOptions<HomeAssistantConfig> haConfig, IHubCallService hubCallService)
+        public BuildService(IOptions<SupervisorConfig> config, IMediator mediator, ILogger<BuildService> logger, IOptions<HomeAssistantConfig> haConfig, IManagementHubCallService managementHubCallService)
         {
             _config = config;
             _mediator = mediator;
             _logger = logger;
             _haConfig = haConfig;
-            _hubCallService = hubCallService;
+            _managementHubCallService = managementHubCallService;
         }
 
         public Task WaitForBuildAndDeployAsync()
@@ -76,10 +76,13 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 
             var srcDirectory = Path.GetFullPath(_config.Value.SourceDirectory);
 
-            _logger.LogDebug("Stopping all processes");
+            if (_managementHubCallService.DefaultConnection is not null)
+            {
+                _logger.LogDebug("Stopping connection");
 
-            await _mediator.Send(new StopProcessRequest(_hubCallService.DefaultConnection));
-
+                await _mediator.Send(new StopProcessRequest(_managementHubCallService.DefaultConnection.Id));
+            }
+            
             _logger.LogDebug("Starting dotnet publish");
 
             var buildStartInfo = new ProcessStartInfo

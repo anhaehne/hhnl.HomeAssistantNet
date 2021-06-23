@@ -14,6 +14,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IModalService _modalService;
+        private bool? _needToken; 
 
         public AuthenticationService(HttpClient httpClient, IModalService modalService)
         {
@@ -27,6 +28,14 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 
         private TaskCompletionSource? _tokenRequestTcs;
         private readonly object _tokenRequestTcsLock = new();
+
+        public async Task<string> GetTokenAsync()
+        {
+            if (Token is null)
+                await WaitForTokenRequestAsync();
+                
+            return Token!;
+        }
 
         public Task WaitForTokenRequestAsync()
         {
@@ -42,7 +51,33 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
                 return _tokenRequestTcs.Task;
             }
         }
-        
+
+        public async Task<bool> NeedsTokenAsync()
+        {
+            if (_needToken.HasValue)
+                return _needToken.Value;
+            
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("api", UriKind.Relative),
+            };
+
+            var response = await _httpClient.SendAsync(request);
+            
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    _needToken = false;
+                    return false;
+                case HttpStatusCode.Unauthorized:
+                    _needToken = true;
+                    return true;
+                default:
+                    throw new HttpRequestException($"Unexpected status code {response.StatusCode} from supervisor api.");
+            }
+        }
+
         public async Task<bool> ValidateTokenAsync(string token)
         {
             var request = new HttpRequestMessage

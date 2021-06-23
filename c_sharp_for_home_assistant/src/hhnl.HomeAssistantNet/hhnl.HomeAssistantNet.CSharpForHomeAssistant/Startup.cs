@@ -63,7 +63,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant
 
             services.AddSingleton<IAutomationsHostService, AutomationsService>();
             services.AddSingleton<IBuildService, BuildService>();
-            services.AddSingleton<IHubCallService, HubCallService>();
+            services.AddSingleton<IManagementHubCallService, ManagementHubCallService>();
             services.AddSingleton<IHomeAssistantTokenValidationService, HomeAssistantTokenValidationService>();
 
             services.AddSingleton<NotificationQueue>();
@@ -100,6 +100,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant
             {
                 endpoints.MapRazorPages();
                 endpoints.MapHub<ManagementHub>("api/client-management");
+                endpoints.MapHub<SupervisorApiHub>("api/supervisor-api");
                 endpoints.MapControllers();
                 endpoints.MapFallback(ServeIndexHtml);
             });

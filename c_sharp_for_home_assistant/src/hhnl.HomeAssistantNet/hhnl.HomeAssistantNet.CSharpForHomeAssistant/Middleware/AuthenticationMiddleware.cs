@@ -49,24 +49,40 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Middleware
                 return;
             }
 
-            var authenticationHeader = context.Request.Headers[HeaderNames.Authorization];
+            string? token = null;
 
-            if (authenticationHeader == StringValues.Empty)
+            var authenticationHeader = context.Request.Headers[HeaderNames.Authorization];
+            
+            // SignalR sends this header as lowercase.
+            if(authenticationHeader == StringValues.Empty)
+                authenticationHeader = context.Request.Headers[HeaderNames.Authorization.ToLower()];
+
+            if (authenticationHeader != StringValues.Empty)
+            {
+                if (!AuthenticationHeaderValue.TryParse(authenticationHeader, out var authenticationHeaderValue) ||
+                    authenticationHeaderValue.Parameter is null)
+                {
+                    _logger.LogWarning($"Unauthorized request! Unable to parse authorization header. Request: {context.Request.GetDisplayUrl()}");
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    return;
+                }
+
+                token = authenticationHeaderValue.Parameter;
+            }
+            else if (context.Request.Query.ContainsKey("access_token"))
+            {
+                // SignalR sends the token as part of the query when upgrading the connection to websockets.
+                token = context.Request.Query["access_token"];
+            }
+
+            if (token is null)
             {
                 _logger.LogWarning($"Unauthorized request! Authorization header not set. Request: {context.Request.GetDisplayUrl()}");
                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                 return;
             }
 
-            if (!AuthenticationHeaderValue.TryParse(authenticationHeader, out var authenticationHeaderValue) ||
-                authenticationHeaderValue.Parameter is null)
-            {
-                _logger.LogWarning($"Unauthorized request! Unable to parse authorization header. Request: {context.Request.GetDisplayUrl()}");
-                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                return;
-            }
-
-            if (!await _homeAssistantTokenValidationService.IsValidAsync(authenticationHeaderValue.Parameter))
+            if (!await _homeAssistantTokenValidationService.IsValidAsync(token))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                 return;

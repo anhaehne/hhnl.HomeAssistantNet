@@ -1,31 +1,64 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Shared.Supervisor;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 {
     public class SupervisorApiService
     {
-        private readonly AuthenticationService _authenticationService;
-        private readonly HttpClient _httpClient;
+        public enum ApplicationState
+        {
+            Connecting,
+            ConnectedToHost,
+            BuildAndDeploy,
+            NoConnection
+        }
 
-        public SupervisorApiService(HttpClient httpClient, AuthenticationService authenticationService)
+        private readonly AuthenticationService _authenticationService;
+        private readonly NavigationManager _navigationManager;
+        private readonly HttpClient _httpClient;
+        private readonly BehaviorSubject<ConnectionInfo?> _connectionInfoSubject = new(null);
+        private HubConnection? _hubConnection;
+
+        public SupervisorApiService(HttpClient httpClient, AuthenticationService authenticationService, NavigationManager navigationManager)
         {
             _httpClient = httpClient;
             _authenticationService = authenticationService;
+            _navigationManager = navigationManager;
         }
 
         public ApplicationState State { get; private set; } = ApplicationState.ConnectedToHost;
-        
-        public async Task<IReadOnlyCollection<AutomationInfoDto>> GetAutomationsAsync()
+
+        public IObservable<ConnectionInfo?> Connection => _connectionInfoSubject;
+
+        public async Task StartAsync()
         {
-            return await GetAsync<IReadOnlyCollection<AutomationInfoDto>>("api/automation") ??
-                   ArraySegment<AutomationInfoDto>.Empty;
+            var builder = new HubConnectionBuilder()
+                .WithAutomaticReconnect();
+
+            var needToken = await _authenticationService.NeedsTokenAsync();
+
+            if (needToken)
+            {
+                builder.WithUrl(_navigationManager.ToAbsoluteUri("api/supervisor-api"),
+                    options => options.AccessTokenProvider = async () => await _authenticationService.GetTokenAsync());
+            }
+            else
+                builder.WithUrl(_navigationManager.ToAbsoluteUri("api/supervisor-api"));
+
+            _hubConnection = builder.Build();
+
+            _hubConnection.On<ConnectionInfo?>(nameof(ISupervisorApiClient.OnConnectionChanged),
+                info => _connectionInfoSubject.OnNext(info));
+
+            await _hubConnection.StartAsync();
         }
 
         public Task StartAutomationAsync(AutomationInfoDto automation)
@@ -38,9 +71,6 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
             State = ApplicationState.BuildAndDeploy;
             await PostAsync("api/build/deploy");
             State = ApplicationState.Connecting;
-            
-            // TODO renew automations
-            await GetAutomationsAsync();
         }
 
         private async Task<T?> GetAsync<T>(string uri)
@@ -50,19 +80,20 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
                 try
                 {
                     var result = await SendWithAuthorizationRetry(client => client.GetFromJsonAsync<T>(uri));
-                
+
                     if (State != ApplicationState.BuildAndDeploy)
                         State = ApplicationState.ConnectedToHost;
 
                     return result;
                 }
-                catch (HttpRequestException e) when (e.StatusCode is HttpStatusCode.FailedDependency or HttpStatusCode.RequestTimeout)
+                catch (HttpRequestException e) when (e.StatusCode is HttpStatusCode.FailedDependency or HttpStatusCode
+                    .RequestTimeout)
                 {
                     State = ApplicationState.NoConnection;
                 }
             }
         }
-        
+
         private async Task PostAsync(string uri)
         {
             try
@@ -73,7 +104,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
                 if (State != ApplicationState.BuildAndDeploy)
                     State = ApplicationState.ConnectedToHost;
             }
-            catch (HttpRequestException e) when (e.StatusCode is HttpStatusCode.FailedDependency or HttpStatusCode.RequestTimeout)
+            catch (HttpRequestException e) when (
+                e.StatusCode is HttpStatusCode.FailedDependency or HttpStatusCode.RequestTimeout)
             {
                 State = ApplicationState.NoConnection;
             }
@@ -87,13 +119,15 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
                 return Task.FromResult(true);
             });
         }
-        
+
         private async Task<T> SendWithAuthorizationRetry<T>(Func<HttpClient, Task<T>> send)
         {
             if (!string.IsNullOrEmpty(_authenticationService.Token))
+            {
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", _authenticationService.Token);
-            
+            }
+
             try
             {
                 return await send(_httpClient);
@@ -102,18 +136,11 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
             {
                 // Request token and try again.
                 await _authenticationService.WaitForTokenRequestAsync();
+
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", _authenticationService.Token);
                 return await send(_httpClient);
             }
         }
-
-        public enum ApplicationState
-        {
-            Connecting,
-            ConnectedToHost,
-            BuildAndDeploy,
-            NoConnection
-        } 
     }
 }

@@ -10,28 +10,30 @@ using Polly;
 
 namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 {
-    public interface IHubCallService
+    public interface IManagementHubCallService
     {
+        ConnectionInfo? DefaultConnection { get; set; }
+
         Task<T?> CallService<T>(
             Func<long, IManagementClient, Task> call,
             TimeSpan? timeout = null,
             string? connectionId = null);
 
-        string DefaultConnection { get; set; }
-        
         void SetResult(string connectionId, long messageId, object? result);
         void RemoveConnection(string connectionId);
     }
 
-    public class HubCallService : IHubCallService
+    public class ManagementHubCallService : IManagementHubCallService
     {
-        private readonly ConcurrentDictionary<string, ConnectionInfo> _clients = new();
+        private readonly ConcurrentDictionary<string, ClientInfo> _clients = new();
         private readonly IOptions<SupervisorConfig> _config;
         private readonly Policy _defaultPolicy = Policy.Handle<TaskCanceledException>().Retry(3);
         private readonly IHubContext<ManagementHub, IManagementClient> _hubContext;
         private long _messageIdCounter;
 
-        public HubCallService(IHubContext<ManagementHub, IManagementClient> hubContext, IOptions<SupervisorConfig> config)
+        public ManagementHubCallService(
+            IHubContext<ManagementHub, IManagementClient> hubContext,
+            IOptions<SupervisorConfig> config)
         {
             _hubContext = hubContext;
             _config = config;
@@ -47,18 +49,18 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             {
                 if (connectionId is null)
                 {
-                    if (string.IsNullOrEmpty(DefaultConnection))
+                    if (DefaultConnection is null)
                         throw new NoAutomationHostConnectedException();
-                    
-                    connectionId = DefaultConnection;
+
+                    connectionId = DefaultConnection.Id;
                 }
-                
+
                 var connection = _hubContext.Clients.Client(connectionId);
 
                 var messageId = Interlocked.Increment(ref _messageIdCounter);
                 var completionSource = new TaskCompletionSource<object?>();
 
-                var connectionInfo = _clients.GetOrAdd(connectionId, s => new ConnectionInfo(s));
+                var connectionInfo = _clients.GetOrAdd(connectionId, s => new ClientInfo(s));
 
                 connectionInfo.MessageCompletionSources.TryAdd(messageId, completionSource);
                 await call(messageId, connection);
@@ -76,7 +78,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             });
         }
 
-        public string DefaultConnection { get; set; } = string.Empty;
+        public ConnectionInfo? DefaultConnection { get; set; }
 
         public void SetResult(string connectionId, long messageId, object? result)
         {
@@ -100,11 +102,11 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             }
         }
 
-        private class ConnectionInfo
+        private class ClientInfo
         {
             private long _messageIdCounter;
 
-            public ConnectionInfo(string clientId)
+            public ClientInfo(string clientId)
             {
                 ClientId = clientId;
             }

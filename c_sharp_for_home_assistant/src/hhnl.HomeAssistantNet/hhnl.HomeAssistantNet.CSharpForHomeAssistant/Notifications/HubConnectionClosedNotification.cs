@@ -17,16 +17,16 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Notifications
 
         public class HubCallUpdateHandler : INotificationHandler<HubConnectionClosedNotification>
         {
-            private readonly IHubCallService _hubCallService;
+            private readonly IManagementHubCallService _managementHubCallService;
 
-            public HubCallUpdateHandler(IHubCallService hubCallService)
+            public HubCallUpdateHandler(IManagementHubCallService managementHubCallService)
             {
-                _hubCallService = hubCallService;
+                _managementHubCallService = managementHubCallService;
             }
 
             public Task Handle(HubConnectionClosedNotification notification, CancellationToken cancellationToken)
             {
-                _hubCallService.RemoveConnection(notification.ConnectionId);
+                _managementHubCallService.RemoveConnection(notification.ConnectionId);
                 return Task.CompletedTask;
             }
         }

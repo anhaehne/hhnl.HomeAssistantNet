@@ -1,11 +1,13 @@
 ﻿@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
-@inherits LayoutComponentBase
+@using hhnl.HomeAssistantNet.Shared.Supervisor
+@using ReactiveUI
 @inject SupervisorApiService _supervisorApiService
+@inherits ReactiveUI.Blazor.ReactiveLayoutComponentBase<MainLayout.MainLayoutViewModel>
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">C# for Home Assistant</a>
-        <div class="navbar-text">@NavBarText</div>
+        <div class="navbar-text">@ViewModel?.NavBarText</div>
         <button disabled="@(_supervisorApiService.State == SupervisorApiService.ApplicationState.BuildAndDeploy)" class="d-flex btn btn-primary" @onclick="OnBuildClick" type="submit">Build & Deploy</button>
     </div>
 </nav>
@@ -16,7 +18,7 @@
         </div>
     </div>
 </div>
-@if (_supervisorApiService.State != SupervisorApiService.ApplicationState.ConnectedToHost)
+@if (ViewModel?.Connection is null)
 {
     <div class="overlay">
         <div class="spinner-border text-primary"></div>
@@ -25,17 +27,34 @@
 
 @code
 {
+    protected override  Task OnInitializedAsync()
+    {
+        ViewModel = new MainLayoutViewModel(_supervisorApiService);
+        return _supervisorApiService.StartAsync();
+    }
+
     private async Task OnBuildClick()
     {
         await _supervisorApiService.BuildAndDeployAsync();
     }
 
-    private string NavBarText => _supervisorApiService.State switch
+    public class MainLayoutViewModel : ReactiveObject
     {
-        SupervisorApiService.ApplicationState.NoConnection => "No connection. Waiting for connection ...",
-        SupervisorApiService.ApplicationState.BuildAndDeploy => "Build and deploy in progress ...",
-        SupervisorApiService.ApplicationState.ConnectedToHost => "Connection established",
-        SupervisorApiService.ApplicationState.Connecting => "Connecting ...",
-        _ => throw new ArgumentOutOfRangeException()
-    };
+        private readonly ObservableAsPropertyHelper<ConnectionInfo?> _connection;
+
+        public MainLayoutViewModel(SupervisorApiService supervisorApiService)
+        {
+            _connection = supervisorApiService.Connection.ToProperty(this, x => x.Connection, scheduler: RxApp.MainThreadScheduler);
+            supervisorApiService.Connection.BindTo(this, x => x.NavBarText);
+        }
+
+        public ConnectionInfo? Connection => _connection.Value;
+
+        public string NavBarText => _connection.Value switch
+        {
+            null => "Not connected - Waiting for connection ...",
+            { IsRemote: true} => "Connected - Remote",
+            _ => "Connected - Local",
+        };
+    }
 }

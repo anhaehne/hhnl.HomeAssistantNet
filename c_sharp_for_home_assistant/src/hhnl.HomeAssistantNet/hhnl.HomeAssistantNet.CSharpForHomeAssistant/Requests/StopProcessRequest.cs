@@ -18,10 +18,10 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests
 
         public class Handler : IRequestHandler<StopProcessRequest>
         {
-            private readonly IHubCallService _callService;
+            private readonly IManagementHubCallService _callService;
             private readonly IOptions<SupervisorConfig> _config;
 
-            public Handler(IHubCallService callService, IOptions<SupervisorConfig> config)
+            public Handler(IManagementHubCallService callService, IOptions<SupervisorConfig> config)
             {
                 _callService = callService;
                 _config = config;
