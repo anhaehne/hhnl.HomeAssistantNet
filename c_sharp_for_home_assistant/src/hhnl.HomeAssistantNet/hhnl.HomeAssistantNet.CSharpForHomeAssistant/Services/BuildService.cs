@@ -160,11 +160,18 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         {
             var srcDirectory = Path.GetFullPath(_config.Value.SourceDirectory);
 
-            var projectPath = Directory.EnumerateFiles(srcDirectory, "*.csproj").Single();
+            // The src directory is the solution directory so we have to find the automation project.
+            if (!TryFindAutomationProject(srcDirectory, out var projectDirectory))
+            {
+                throw new InvalidOperationException($"Unable to determine automation project. Make sure the project directly references hhnl.HomeAssistantNet.Automations. SourceDirectory: '{srcDirectory}'");
+            }
+
+            var projectPath = Directory.EnumerateFiles(projectDirectory, "*.csproj").Single();
 
             var fileInfo = new FileInfo(projectPath);
 
             return fileInfo.Name.Replace(fileInfo.Extension, "");
         }
+
     }
 }
