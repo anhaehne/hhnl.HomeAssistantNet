@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -17,6 +18,32 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
     [Generator]
     public class SourceGenerator : ISourceGenerator
     {
+        static SourceGenerator()
+        {
+            AppDomain.CurrentDomain.AssemblyResolve += (_, args) =>
+            {
+                AssemblyName name = new(args.Name);
+                Assembly loadedAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().FullName == name.FullName);
+                if (loadedAssembly != null)
+                {
+                    return loadedAssembly;
+                }
+
+                string resourceName = $"hhnl.HomeAssistantNet.Generator.{name.Name}.dll";
+
+                using Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+                if (resourceStream == null)
+                {
+                    return null;
+                }
+
+                using MemoryStream memoryStream = new MemoryStream();
+                resourceStream.CopyTo(memoryStream);
+
+                return Assembly.Load(memoryStream.ToArray());
+            };
+        }
+
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new AutomationClassSyntaxReceiver());
@@ -25,12 +52,12 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
         public void Execute(GeneratorExecutionContext context)
         {
 #if DEBUG
-            // if (!Debugger.IsAttached)
-            // {
-            //     Debugger.Launch();
-            // }
+            //if (!Debugger.IsAttached)
+            //{
+            //    Debugger.Launch();
+            //}
 #endif
-            
+
 
             if (!HomeAssistantConfigReader.TryGetConfig(context,
                 out var config,

@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Shared.Supervisor;
@@ -25,6 +28,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
         private readonly NavigationManager _navigationManager;
         private readonly HttpClient _httpClient;
         private readonly BehaviorSubject<ConnectionInfo?> _connectionInfoSubject = new(null);
+        private readonly ConcurrentDictionary<Guid, ReplaySubject<LogMessageDto>> _logMessageSubjects = new();
         private HubConnection? _hubConnection;
 
         public SupervisorApiService(HttpClient httpClient, AuthenticationService authenticationService, NavigationManager navigationManager)
@@ -36,7 +40,32 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 
         public ApplicationState State { get; private set; } = ApplicationState.ConnectedToHost;
 
-        public IObservable<ConnectionInfo?> Connection => _connectionInfoSubject;
+        public IObservable<ConnectionInfo?> Connection => _connectionInfoSubject.Throttle(TimeSpan.FromMilliseconds(50));
+
+        public async Task<IObservable<LogMessageDto>> ListenToLogMessagesAsync(Guid runId)
+        {
+            var subject = _logMessageSubjects.GetOrAdd(runId, runId => new ReplaySubject<LogMessageDto>());
+
+            var messages = await PostAsync<IReadOnlyCollection<LogMessageDto>>($"api/run/{runId}/logs/start-listen") ?? Array.Empty<LogMessageDto>();
+
+            foreach (var message in messages)
+            {
+                subject.OnNext(message);
+            }
+
+            return subject;
+        }
+
+        public async Task StopListenToLogMessagesAsync(Guid runId)
+        {
+            await PostAsync($"api/run/{runId}/logs/stop-listen");
+
+            if (!_logMessageSubjects.TryRemove(runId, out var runSubject))
+                return;
+
+            runSubject.OnCompleted();
+            runSubject.Dispose();
+        }
 
         public async Task StartAsync()
         {
@@ -54,9 +83,19 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
                 builder.WithUrl(_navigationManager.ToAbsoluteUri("api/supervisor-api"));
 
             _hubConnection = builder.Build();
+            _hubConnection.Reconnecting += exception =>
+            {
+                _connectionInfoSubject.OnNext(null);
+                return Task.CompletedTask;
+            };
 
             _hubConnection.On<ConnectionInfo?>(nameof(ISupervisorApiClient.OnConnectionChanged),
                 info => _connectionInfoSubject.OnNext(info));
+            _hubConnection.On<LogMessageDto>(nameof(ISupervisorApiClient.OnNewLogMessage), message =>
+            {
+                if (_logMessageSubjects.TryGetValue(message.RunId, out var messageSubject))
+                    messageSubject.OnNext(message);
+            });
 
             await _hubConnection.StartAsync();
         }
@@ -64,6 +103,11 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
         public Task StartAutomationAsync(AutomationInfoDto automation)
         {
             return PostAsync($"api/automation/{automation.Info.Name}/start");
+        }
+        
+        public Task StopAutomationAsync(AutomationInfoDto automation)
+        {
+            return PostAsync($"api/automation/{automation.Info.Name}/stop");
         }
 
         public async Task BuildAndDeployAsync()
@@ -108,6 +152,25 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
                 e.StatusCode is HttpStatusCode.FailedDependency or HttpStatusCode.RequestTimeout)
             {
                 State = ApplicationState.NoConnection;
+            }
+        }
+        private async Task<T?> PostAsync<T>(string uri)
+        {
+            try
+            {
+                var responseMessage = await SendWithAuthorizationRetry(client => client.PostAsJsonAsync<object>(uri, null!));
+                responseMessage.EnsureSuccessStatusCode();
+
+                if (State != ApplicationState.BuildAndDeploy)
+                    State = ApplicationState.ConnectedToHost;
+
+                return await responseMessage.Content.ReadFromJsonAsync<T>();
+            }
+            catch (HttpRequestException e) when (
+                e.StatusCode is HttpStatusCode.FailedDependency or HttpStatusCode.RequestTimeout)
+            {
+                State = ApplicationState.NoConnection;
+                return default;
             }
         }
 

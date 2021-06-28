@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace hhnl.HomeAssistantNet.Shared.Supervisor
@@ -9,6 +8,10 @@ namespace hhnl.HomeAssistantNet.Shared.Supervisor
         Task StartAutomationAsync(long messageId, string name);
         
         Task StopAutomationAsync(long messageId, string name);
+
+        Task StartListenToRunLog(long messageId, Guid runId);
+
+        Task StopListenToRunLog(long messageId, Guid runId);
 
         Task GetAutomationsAsync(long messageId);
 

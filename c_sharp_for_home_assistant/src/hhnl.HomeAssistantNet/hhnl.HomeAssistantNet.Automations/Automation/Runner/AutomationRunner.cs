@@ -2,18 +2,22 @@
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Shared.Automation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 {
     public abstract class AutomationRunner
     {
         private readonly IServiceProvider _provider;
+        protected readonly ILogger<AutomationRunner> _logger;
 
         protected AutomationRunner(AutomationEntry entry, IServiceProvider provider)
         {
             Entry = entry;
             _provider = provider;
+            _logger = _provider.GetRequiredService<ILogger<AutomationRunner>>();
         }
 
         protected AutomationEntry Entry { get; }
@@ -40,6 +44,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
         {
             var run = new AutomationRunInfo
             {
+                Id = Guid.NewGuid(),
                 Started = DateTimeOffset.Now,
                 State = initialState,
                 CancellationTokenSource = new CancellationTokenSource(),
@@ -52,10 +57,14 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                 run.Task = Task.Run(async () =>
                 {
                     startTcs?.TrySetResult();
+
                     using var scope = _provider.CreateScope();
+                    await scope.ServiceProvider.GetRequiredService<IMediator>().Publish(new AutomationRunStateChangedNotification(Entry, run));
 
                     AutomationRunContext.Current =
                         new AutomationRunContext(run.CancellationTokenSource.Token, scope.ServiceProvider, run);
+
+                    _logger.LogDebug($"Starting automation run at: {run.Started}");
 
                     try
                     {
@@ -80,6 +89,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                         run.CancellationTokenSource.Dispose();
                         run.CancellationTokenSource = null;
                     }
+                    
+                    await scope.ServiceProvider.GetRequiredService<IMediator>().Publish(new AutomationRunStateChangedNotification(Entry, run));
                 });
             };
             

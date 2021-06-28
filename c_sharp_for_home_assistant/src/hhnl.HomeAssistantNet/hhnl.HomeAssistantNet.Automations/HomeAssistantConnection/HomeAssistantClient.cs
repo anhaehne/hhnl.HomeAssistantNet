@@ -143,8 +143,8 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                 // We start a new task here so who ever handles the message can't block the receiving of new messages.
                 // This prevents deadlocks where the waiting of a result of a request blocks the result from being processed.
                 // TODO: This should probably be revised. Once the automation execution runs on a different thread, this can be removed.
-                Task.Run(async () =>
-                {
+                //_ = Task.Run(async () =>
+                //{
                     try
                     {
                         // If the server return a new message id, we increment our counter.
@@ -161,14 +161,9 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                     catch (Exception e)
                     {
                         _logger.LogError(e, "Error occured while handling message from home assistant.");
-
-#if DEBUG
-                        Debugger.Break();
-#endif
-
                         throw;
                     }
-                });
+                //});
             }
         }
 

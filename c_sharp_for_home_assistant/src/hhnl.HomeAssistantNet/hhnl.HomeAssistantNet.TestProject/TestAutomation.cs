@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using hhnl.HomeAssistantNet.Automations.BuildingBlocks;
 using hhnl.HomeAssistantNet.Shared.Automation;
-using hhnl.HomeAssistantNet.Shared.Entities;
 using HomeAssistant;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace hhnl.HomeAssistantNet.TestProject
 {
@@ -15,6 +17,15 @@ namespace hhnl.HomeAssistantNet.TestProject
         {
             if (office.IsOn && sun.State != "below_horizon")
                 await office.TurnOffAsync();
+        }
+
+        [Automation(displayName: "Infinate run automation")]
+        public async Task InfiniteRun(CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                await Time.Wait(TimeSpan.FromSeconds(2));   
+            }
         }
     }
 }

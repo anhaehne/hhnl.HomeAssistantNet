@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
@@ -30,6 +30,7 @@
         <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Primitives" Version="5.0.0" GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="System.Text.Json" Version="5.0.2" GeneratePathProperty="true" PrivateAssets="all" />
 
         <PackageReference Include="HADotNet.Core" Version="1.5.1" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" GeneratePathProperty="true" PrivateAssets="all" />
@@ -47,50 +48,28 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- Package DLLs -->
-        <None Include="$(PKGHADotNet_Core)\lib\netstandard2.0\HADotNet.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGRestSharp)\lib\netstandard2.0\RestSharp.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(TargetDir)\hhnl.HomeAssistantNet.Shared.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        
-        <None Include="$(PKGMicrosoft_Extensions_Configuration)\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGMicrosoft_Extensions_Configuration_UserSecrets)\lib\netstandard2.0\Microsoft.Extensions.Configuration.UserSecrets.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGMicrosoft_Extensions_Configuration_FileExtensions)\lib\netstandard2.0\Microsoft.Extensions.Configuration.FileExtensions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGMicrosoft_Extensions_Configuration_Json)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Json.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGMicrosoft_Extensions_Configuration_EnvironmentVariables)\lib\netstandard2.0\Microsoft.Extensions.Configuration.EnvironmentVariables.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGMicrosoft_Extensions_Configuration_Binder)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Binder.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGMicrosoft_Extensions_Configuration_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGMicrosoft_Extensions_FileProviders_Physical)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Physical.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGMicrosoft_Extensions_FileProviders_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PKGMicrosoft_Extensions_Primitives)\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+       <!--Package DLLs--> 
+      <EmbeddedResource  Include="$(PKGHADotNet_Core)\lib\netstandard2.0\HADotNet.Core.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGRestSharp)\lib\netstandard2.0\RestSharp.dll"  Visible="false" />
+      <EmbeddedResource  Include="..\hhnl.HomeAssistantNet.Shared\bin\$(Configuration)\netstandard2.0\hhnl.HomeAssistantNet.Shared.dll"  Visible="false" />
+
+      <EmbeddedResource  Include="$(PKGSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration)\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_UserSecrets)\lib\netstandard2.0\Microsoft.Extensions.Configuration.UserSecrets.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_FileExtensions)\lib\netstandard2.0\Microsoft.Extensions.Configuration.FileExtensions.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_Json)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Json.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_EnvironmentVariables)\lib\netstandard2.0\Microsoft.Extensions.Configuration.EnvironmentVariables.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_Binder)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Binder.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_FileProviders_Physical)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Physical.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_FileProviders_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll"  Visible="false" />
+      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Primitives)\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll"  Visible="false" />
 
     </ItemGroup>
-    
+  
     <ItemGroup>
       <ProjectReference Include="..\hhnl.HomeAssistantNet.Shared\hhnl.HomeAssistantNet.Shared.csproj" />
     </ItemGroup>
 
-    <PropertyGroup>
-        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-    </PropertyGroup>
-
-    <Target Name="GetDependencyTargetPaths">
-        <ItemGroup>
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGHADotNet_Core)\lib\netstandard2.0\HADotNet.Core.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGRestSharp)\lib\netstandard2.0\RestSharp.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(TargetDir)\hhnl.HomeAssistantNet.Shared.dll" IncludeRuntimeDependency="false" />
-            
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_Configuration_UserSecrets)\lib\netstandard2.0\Microsoft.Extensions.Configuration.UserSecrets.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_Configuration_FileExtensions)\lib\netstandard2.0\Microsoft.Extensions.Configuration.FileExtensions.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_Configuration_Json)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Json.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_Configuration_EnvironmentVariables)\lib\netstandard2.0\Microsoft.Extensions.Configuration.EnvironmentVariables.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_Configuration_Binder)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Binder.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_Configuration)\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_Configuration_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_FileProviders_Physical)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Physical.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_FileProviders_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Extensions_Primitives)\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll" IncludeRuntimeDependency="false" />
-        </ItemGroup>
-    </Target>
 </Project>

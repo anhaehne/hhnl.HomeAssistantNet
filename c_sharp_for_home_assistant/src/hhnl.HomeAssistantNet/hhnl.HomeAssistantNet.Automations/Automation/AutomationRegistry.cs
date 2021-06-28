@@ -53,9 +53,14 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 : Array.Empty<AutomationEntry>();
         }
 
-        private string GetEntityId(Type t)
+        private static string GetEntityId(Type t)
         {
-            return t.GetCustomAttribute<UniqueIdAttribute>().Value;
+            var uniqueIdAttribute = t.GetCustomAttribute<UniqueIdAttribute>();
+
+            if (uniqueIdAttribute is null)
+                throw new ArgumentException($"Type '{t}' is not an entity.");
+            
+            return uniqueIdAttribute.Value;
         }
     }
 }

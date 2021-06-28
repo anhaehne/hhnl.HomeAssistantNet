@@ -1,13 +1,15 @@
-﻿@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
-@using hhnl.HomeAssistantNet.Shared.Supervisor
+﻿@inject SupervisorApiService _supervisorApiService
 @using ReactiveUI
-@inject SupervisorApiService _supervisorApiService
-@inherits ReactiveUI.Blazor.ReactiveLayoutComponentBase<MainLayout.MainLayoutViewModel>
+@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
+@using hhnl.HomeAssistantNet.Shared.Supervisor
+@using System.Reactive.Disposables
+@inherits LayoutComponentBase
+@implements IDisposable
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">C# for Home Assistant</a>
-        <div class="navbar-text">@ViewModel?.NavBarText</div>
+        <div class="navbar-text">@NavBarText</div>
         <button disabled="@(_supervisorApiService.State == SupervisorApiService.ApplicationState.BuildAndDeploy)" class="d-flex btn btn-primary" @onclick="OnBuildClick" type="submit">Build & Deploy</button>
     </div>
 </nav>
@@ -18,7 +20,7 @@
         </div>
     </div>
 </div>
-@if (ViewModel?.Connection is null)
+@if (Connection is null || !Connection.IsComplete)
 {
     <div class="overlay">
         <div class="spinner-border text-primary"></div>
@@ -27,10 +29,24 @@
 
 @code
 {
-    protected override  Task OnInitializedAsync()
+    private IDisposable? _connectionChangedSubscription;
+
+    protected override Task OnInitializedAsync()
     {
-        ViewModel = new MainLayoutViewModel(_supervisorApiService);
+        _connectionChangedSubscription = _supervisorApiService.Connection.Subscribe(t =>
+        {
+            Connection = t;
+            StateHasChanged();
+        });
+
         return _supervisorApiService.StartAsync();
+    }
+
+    ConnectionInfo? Connection { get; set; }
+
+    public void Dispose()
+    {
+        _connectionChangedSubscription?.Dispose();
     }
 
     private async Task OnBuildClick()
@@ -38,23 +54,12 @@
         await _supervisorApiService.BuildAndDeployAsync();
     }
 
-    public class MainLayoutViewModel : ReactiveObject
+    private string NavBarText => Connection switch
     {
-        private readonly ObservableAsPropertyHelper<ConnectionInfo?> _connection;
-
-        public MainLayoutViewModel(SupervisorApiService supervisorApiService)
-        {
-            _connection = supervisorApiService.Connection.ToProperty(this, x => x.Connection, scheduler: RxApp.MainThreadScheduler);
-            supervisorApiService.Connection.BindTo(this, x => x.NavBarText);
-        }
-
-        public ConnectionInfo? Connection => _connection.Value;
-
-        public string NavBarText => _connection.Value switch
-        {
-            null => "Not connected - Waiting for connection ...",
-            { IsRemote: true} => "Connected - Remote",
-            _ => "Connected - Local",
-        };
-    }
+        null => "Not connected - Waiting for connection ...",
+        { IsComplete: false, IsRemote: true } => "Connected (Remote) - Retrieving automations ...",
+        { IsComplete: false, IsRemote: false } => "Connected (Local) - Retrieving automations ...",
+        { IsComplete: true, IsRemote: true } => "Connected (Remote)",
+        { IsComplete: true, IsRemote: false } => "Connected (Local)"
+    };
 }

@@ -53,8 +53,11 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Notifications
 
                 _managementHubCallService.DefaultConnection = new ConnectionInfo(notification.ConnectionId,
                     notification.IsRemote,
-                    ArraySegment<AutomationInfoDto>.Empty);
+                    ArraySegment<AutomationInfoDto>.Empty, false);
 
+                // Send intermediate info
+                await _supervisorApiHub.Clients.All.OnConnectionChanged(_managementHubCallService.DefaultConnection);
+                
                 _logger.LogDebug($"Connection {notification.ConnectionId} is now the default connection.");
 
                 if (previousConnection is not null)
@@ -72,8 +75,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Notifications
 
                 _logger.LogDebug($"Got {automations.Count} automations.");
                 
-                _managementHubCallService.DefaultConnection =
-                    new ConnectionInfo(notification.ConnectionId, notification.IsRemote, automations);
+                _managementHubCallService.DefaultConnection.Automations = automations;
+                _managementHubCallService.DefaultConnection.IsComplete = true;
                 
                 // Send new connection to all web clients
                 await _supervisorApiHub.Clients.All.OnConnectionChanged(_managementHubCallService.DefaultConnection);

@@ -1,12 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using hhnl.HomeAssistantNet.Shared.Automation;
 
 namespace hhnl.HomeAssistantNet.Shared.Supervisor
 {
     public class AutomationInfoDto
     {
-        public AutomationInfo Info { get; set; }
+        [JsonConstructor]
+        public AutomationInfoDto(AutomationInfo info, IReadOnlyCollection<AutomationRunInfo> runs)
+        {
+            Info = info;
+            Runs = runs;
+        }
 
-        public IReadOnlyCollection<AutomationRunInfo> Runs { get; set; }
+        public AutomationInfo Info { get; }
+
+        public IReadOnlyCollection<AutomationRunInfo> Runs { get; }
     }
 }

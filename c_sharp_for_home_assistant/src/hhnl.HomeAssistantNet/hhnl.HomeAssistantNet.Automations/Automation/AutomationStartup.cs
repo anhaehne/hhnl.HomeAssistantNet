@@ -6,7 +6,6 @@ using hhnl.HomeAssistantNet.Automations.Automation.Runner;
 using hhnl.HomeAssistantNet.Automations.HomeAssistantConnection;
 using hhnl.HomeAssistantNet.Automations.Supervisor;
 using hhnl.HomeAssistantNet.Shared.Configuration;
-using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
 using hhnl.HomeAssistantNet.Shared.SourceGenerator;
 using MediatR;
@@ -64,7 +63,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             services.AddSingleton<IAutomationRegistry, AutomationRegistry>();
             services.AddSingleton<IAutomationRunnerFactory, AutomationRunnerFactory>();
 
-            services.AddHostedService<SupervisorClient>();
+            services.AddSingleton<SupervisorClient>();
+            services.AddSingleton<IHostedService>(s => s.GetRequiredService<SupervisorClient>());
             
             // Handler
             services
@@ -72,7 +72,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                     StateChangedNotificationHandler>();
             
             // Dependencies
-            services.AddMediatR(GetType());
+            services.AddMediatR(typeof(AutomationStartup));
         }
 
         protected virtual void ConfigureServices(HostBuilderContext builderContext, IServiceCollection serviceCollection)
@@ -90,6 +90,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 })
                 .ConfigureServices(ConfigureServices)
                 .ConfigureServices(ConfigureServiceInternal)
+                .ConfigureLogging(x => x.AddProvider(new AutomationLogger.Provider()))
                 
                 #if DEBUG
                 .ConfigureLogging(x => x.SetMinimumLevel(LogLevel.Debug))
@@ -102,7 +103,12 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         {
             var metaDataType = _assembly.GetTypes().Single(t => t.Name == GeneratorConstants.MetaDataClassName);
 
-            return (IGeneratedMetaData)Activator.CreateInstance(metaDataType);
+            var metaData = Activator.CreateInstance(metaDataType);
+
+            if (metaData is IGeneratedMetaData data)
+                return data;
+            
+            throw new InvalidOperationException("Generated meta data not found.");
         }
     }
 }

@@ -1,0 +1,35 @@
+﻿@using System.Reactive.Linq
+@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
+@using hhnl.HomeAssistantNet.Shared.Supervisor
+@implements IAsyncDisposable
+@inject SupervisorApiService _supervisorApiService
+
+@foreach(var message in Log)
+{
+    <h6>@message.Message</h6>
+}
+
+
+@code {
+    private IDisposable? _subscription;
+
+    [Parameter] public Guid RunId { get; set; }
+
+    private List<LogMessageDto> Log { get; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var observable = await _supervisorApiService.ListenToLogMessagesAsync(RunId);
+        _subscription = observable.Buffer(TimeSpan.FromMilliseconds(50)).Subscribe(nextBatch =>
+        {
+            Log.AddRange(nextBatch);
+            StateHasChanged();
+        });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _supervisorApiService.StopListenToLogMessagesAsync(RunId);
+        _subscription?.Dispose();
+    }
+}

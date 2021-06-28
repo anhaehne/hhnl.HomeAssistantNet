@@ -18,6 +18,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 
         public AuthenticationService(HttpClient httpClient, IModalService modalService)
         {
+            Console.WriteLine("New AuthenticationService");
             _httpClient = httpClient;
             _modalService = modalService;
         }

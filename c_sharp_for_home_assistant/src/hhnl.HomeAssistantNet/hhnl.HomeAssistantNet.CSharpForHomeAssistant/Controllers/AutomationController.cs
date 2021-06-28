@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services;
-using hhnl.HomeAssistantNet.Shared.Automation;
+﻿using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services;
 using hhnl.HomeAssistantNet.Shared.Supervisor;
-using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Hubs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Hosting;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
 {
-    [Route("api/automation")]
+    [Route("api/[controller]")]
+    [ApiController]
     public class AutomationController : Controller
     {
         private readonly IAutomationsHostService _hostService;
@@ -24,7 +18,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
         {
             _hostService = hostService;
         }
-        
+
         [HttpGet]
         public Task<ActionResult<IReadOnlyCollection<AutomationInfoDto>>> GetAutomationsAsync()
         {
@@ -32,13 +26,13 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
         }
 
         [HttpPost("{name}/start")]
-        public Task<ActionResult<AutomationInfoDto>> StartAutomationAsync([FromRoute]string name)
+        public Task<ActionResult<AutomationInfoDto>> StartAutomationAsync([FromRoute] string name)
         {
             return CallHostService(service => service.StartAutomationAsync(name));
         }
-        
+
         [HttpPost("{name}/stop")]
-        public Task<ActionResult<AutomationInfoDto>> StopAutomationAsync([FromRoute]string name, TimeSpan? timeout = null)
+        public Task<ActionResult<AutomationInfoDto>> StopAutomationAsync([FromRoute] string name, TimeSpan? timeout = null)
         {
             return CallHostService(service => service.StopAutomationAsync(name, timeout ?? TimeSpan.FromSeconds(30)));
         }
@@ -62,7 +56,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
 
             if (result is null)
                 return Problem("No automation found with the given name.", statusCode: (int)HttpStatusCode.NotFound);
-            
+
             return Ok(result);
         }
     }

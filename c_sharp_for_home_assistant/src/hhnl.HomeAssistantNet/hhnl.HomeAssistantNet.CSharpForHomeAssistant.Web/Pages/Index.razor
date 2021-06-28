@@ -1,23 +1,45 @@
 ﻿@page "/"
-@inject SupervisorApiService _supervisorApiService
-@using ReactiveUI
+@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Components
 @using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 @using hhnl.HomeAssistantNet.Shared.Automation
 @using hhnl.HomeAssistantNet.Shared.Supervisor
-@inherits ReactiveUI.Blazor.ReactiveComponentBase<Index.IndexViewModel>
+@inject SupervisorApiService _supervisorApiService
+@inject IModalService _modalService
+@implements IDisposable
 
 <h1>Automations</h1>
 
-@if (ViewModel?.Connection is not null)
+@if (Connection is not null)
 {
-    @foreach (var automation in ViewModel.Connection.Automations)
+    @foreach (var automation in Connection.Automations)
     {
         <div class="card mb-3">
             <div class="card-body">
                 <h5 class="card-title">@automation.Info.DisplayName</h5>
-                @if (automation.Runs.FirstOrDefault()?.State != AutomationRunInfo.RunState.Running)
+                <button @onclick="() => OnStart(automation)" type="submit" class="btn btn-primary mb-3">Start</button>
+                <button disabled="@automation.Runs.All(r => r.State != AutomationRunInfo.RunState.Running)" @onclick="() => OnStop(automation)" type="submit" class="btn btn-primary mb-3">Stop</button>
+                @if (automation.Runs.Any())
                 {
-                    <button @onclick="() => OnStart(automation)" type="submit" class="btn btn-primary mb-3">Start</button>
+                    <ul class="list-group">
+                        @foreach (var run in automation.Runs)
+                        {
+                            <li class="list-group-item">
+                                <h6>
+                                    @Humanize(run.Started)
+                                    @if (run.Ended is not null)
+                                    {
+                                        <span> - @Humanize(run.Ended.Value)</span>
+                                    }
+                                </h6>
+                                <button @onclick="() => ShowLogs(run)" type="submit" class="btn btn-primary mb-3">Logs</button>
+                                @run.State - @run.Reason
+                                @if (run.Error is not null)
+                                {
+                                    <div class="alert alert-danger" role="alert">@run.Error</div>
+                                }
+                            </li>
+                        }
+                    </ul>
                 }
             </div>
         </div>
@@ -27,10 +49,30 @@
 
 @code
 {
+    private IDisposable? _connectionChangedSubscription;
 
     protected override void OnInitialized()
     {
-        ViewModel = new IndexViewModel(_supervisorApiService);
+        _connectionChangedSubscription = _supervisorApiService.Connection.Subscribe(c =>
+        {
+            Connection = c;
+            StateHasChanged();
+        });
+    }
+
+    public ConnectionInfo? Connection { get; set; }
+
+    public void Dispose()
+    {
+        _connectionChangedSubscription?.Dispose();
+    }
+
+    private void ShowLogs(AutomationRunInfo automationRun)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(Logs.RunId), automationRun.Id);
+
+        _modalService.Show<Logs>("Log", parameters);
     }
 
     private Task OnStart(AutomationInfoDto dto)
@@ -38,15 +80,14 @@
         return _supervisorApiService.StartAutomationAsync(dto);
     }
 
-    public class IndexViewModel : ReactiveObject
+    private Task OnStop(AutomationInfoDto dto)
     {
-        private readonly ObservableAsPropertyHelper<ConnectionInfo?> _connection;
+        return _supervisorApiService.StopAutomationAsync(dto);
+    }
 
-        public IndexViewModel(SupervisorApiService supervisorApiService)
-        {
-            _connection = supervisorApiService.Connection.ToProperty(this, x => x.Connection, scheduler: RxApp.MainThreadScheduler);
-        }
-
-        public ConnectionInfo? Connection => _connection.Value;
+    private string Humanize(DateTimeOffset dateTime)
+    {
+        var local = dateTime.ToLocalTime();
+        return local.ToString(local.Date == DateTime.Now.Date ? "t" : "g");
     }
 }
