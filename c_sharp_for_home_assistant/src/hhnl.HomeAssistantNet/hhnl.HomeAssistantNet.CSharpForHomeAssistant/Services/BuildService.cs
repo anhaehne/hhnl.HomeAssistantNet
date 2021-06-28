@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Hubs;
@@ -28,6 +30,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         private readonly IManagementHubCallService _managementHubCallService;
         private readonly IMediator _mediator;
         private Task<bool> _buildAndDeployTask = Task.FromResult(true);
+
+        private static readonly Regex _automationRefRegex = new Regex("<\\s*(ProjectReference|PackageReference)\\s*Include\\s*=\\s*\".*hhnl\\.HomeAssistantNet\\.Automations.*\"");
 
 
         public BuildService(IOptions<SupervisorConfig> config, IMediator mediator, ILogger<BuildService> logger, IOptions<HomeAssistantConfig> haConfig, IManagementHubCallService managementHubCallService)
@@ -76,6 +80,13 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 
             var srcDirectory = Path.GetFullPath(_config.Value.SourceDirectory);
 
+            // The src directory is the solution directory so we have to find the automation project.
+            if(!TryFindAutomationProject(srcDirectory, out var projectDirectory))
+            {
+                _logger.LogError($"Unable to determine automation project. Make sure the project directly references hhnl.HomeAssistantNet.Automations. SourceDirectory: '{srcDirectory}'");
+                return false;
+            }
+
             if (_managementHubCallService.DefaultConnection is not null)
             {
                 _logger.LogDebug("Stopping connection");
@@ -87,7 +98,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 
             var buildStartInfo = new ProcessStartInfo
             {
-                WorkingDirectory = srcDirectory, FileName = "dotnet",
+                WorkingDirectory = projectDirectory, FileName = "dotnet",
                 Arguments = $"publish --force -c Release -o {Path.GetFullPath(_config.Value.DeployDirectory)}"
             };
 
@@ -116,6 +127,26 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             DeleteFolder("obj");
             
             return true;
+        }
+
+        private bool TryFindAutomationProject(string sourceRoot, [NotNullWhen(true)]out string? automationProjectFolder)
+        {
+            automationProjectFolder = null;
+            var projectFiles = Directory.GetFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories);
+
+            if (!projectFiles.Any())
+                return false;
+
+            foreach (var projectFile in projectFiles)
+            {
+                if (_automationRefRegex.IsMatch(File.ReadAllText(projectFile)))
+                {
+                    automationProjectFolder = new FileInfo(projectFile).DirectoryName!;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void DeleteFolder(string folder)
