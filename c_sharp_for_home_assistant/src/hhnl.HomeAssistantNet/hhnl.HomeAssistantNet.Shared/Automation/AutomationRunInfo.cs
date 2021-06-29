@@ -51,6 +51,7 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
             RunOnStart,
             EntityChanged,
             Manual,
+            Schedule,
         }
     }
 }

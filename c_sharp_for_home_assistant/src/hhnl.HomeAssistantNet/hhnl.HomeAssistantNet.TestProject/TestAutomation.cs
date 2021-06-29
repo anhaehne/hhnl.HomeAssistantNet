@@ -22,6 +22,7 @@ namespace hhnl.HomeAssistantNet.TestProject
         }
 
         [Automation(displayName: "Infinate run automation")]
+        [Schedule(Every.Hour)]
         public async Task InfiniteRun(CancellationToken ct)
         {
             while (!ct.IsCancellationRequested)
