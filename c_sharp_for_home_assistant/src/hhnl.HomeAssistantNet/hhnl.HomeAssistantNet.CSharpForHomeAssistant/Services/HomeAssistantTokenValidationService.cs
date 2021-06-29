@@ -178,6 +178,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             };
         }
 
+#pragma warning disable 8618
         private class AuthConfig
         {
             [JsonPropertyName("data")] public AuthConfigData Data { get; set; }

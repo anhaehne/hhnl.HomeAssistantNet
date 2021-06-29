@@ -12,7 +12,7 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
 
         public T? GetValue<T>()
         {
-            return State is null ? default : JsonSerializer.Deserialize<T>(State);
+            return CurrentState.ToObject<T>();
         }
     }
 }

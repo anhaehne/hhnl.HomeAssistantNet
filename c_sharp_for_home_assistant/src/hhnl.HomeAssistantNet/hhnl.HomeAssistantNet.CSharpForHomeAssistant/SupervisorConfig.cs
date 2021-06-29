@@ -2,6 +2,7 @@
 
 namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant
 {
+#pragma warning disable 8618
     public class SupervisorConfig
     {
         public string DeployDirectory { get; set; }

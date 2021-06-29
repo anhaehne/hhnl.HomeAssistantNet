@@ -2,10 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Shared.Automation;
-using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
 using HomeAssistant;
-using Microsoft.Extensions.Logging;
 
 namespace hhnl.HomeAssistantNet.TestProject
 {

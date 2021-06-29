@@ -12,5 +12,12 @@
             var json = element.GetRawText();
             return JsonSerializer.Deserialize<T>(json);
         }
+        public static T? ToObject<T>(this JsonElement? element)
+        {
+            if (element is null)
+                return default;
+
+            return element.Value.ToObject<T>();
+        }
     }
 }
