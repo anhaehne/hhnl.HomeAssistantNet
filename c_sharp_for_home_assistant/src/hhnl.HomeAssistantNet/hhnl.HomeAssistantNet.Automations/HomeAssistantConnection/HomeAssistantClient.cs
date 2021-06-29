@@ -207,7 +207,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                         {
                             id = i,
                             type = "subscribe_events",
-                            event_type = "state_changed"
+                            event_type = "state_changed",
                         });
 
                     break;

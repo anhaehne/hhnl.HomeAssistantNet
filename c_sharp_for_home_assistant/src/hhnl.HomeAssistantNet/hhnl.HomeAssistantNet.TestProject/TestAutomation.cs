@@ -12,11 +12,13 @@ namespace hhnl.HomeAssistantNet.TestProject
         /// <summary>
         /// Prevent the lights from being turned on before 8pm.
         /// </summary>
-        //[Automation(runOnStart: true)]
-        public async Task TurnOffOfficeWhenTurnedOnBeforeSunSet(Lights.Buro office, Entities.SunSun sun)
+        [Automation(runOnStart: true)]
+        public async Task TurnOffOfficeWhenTurnedOnBeforeSunSet([NoTrack]Entities.SunSun sun)
         {
-            if (office.IsOn && sun.State != "below_horizon")
-                await office.TurnOffAsync();
+            if (sun.State != "below_horizon")
+            {
+
+            }
         }
 
         [Automation(displayName: "Infinate run automation")]
