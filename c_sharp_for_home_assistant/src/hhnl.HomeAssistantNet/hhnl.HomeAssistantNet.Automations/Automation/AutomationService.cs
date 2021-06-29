@@ -46,10 +46,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         public async Task EnqueueAutomationForEntityChangeAsync(AutomationEntry automation, string changedEntity)
         {
-            TaskCompletionSource tcs =
-                new(TaskCreationOptions.RunContinuationsAsynchronously);
-            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.EntityChanged, changedEntity, tcs);
-            await tcs.Task;
+            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.EntityChanged, changedEntity, null);
         }
 
         public async Task EnqueueAutomationForManualStartAsync(AutomationEntry automation)
