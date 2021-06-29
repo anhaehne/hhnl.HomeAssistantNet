@@ -80,6 +80,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                     }
                     catch (Exception e)
                     {
+                        _logger.LogError(e, "Unhanled exception occurred while executing automation.");
                         run.State = AutomationRunInfo.RunState.Error;
                         run.Error = e.ToString();
                     }
