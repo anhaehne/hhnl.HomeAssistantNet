@@ -75,7 +75,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
             foreach (var runOnStartAutomations in _automationRegistry.Automations.Values.Where(a => a.Info.RunOnStart))
             {
-                await EnqueueAutomationRunAsync(runOnStartAutomations, AutomationRunInfo.StartReason.Manual, null, null);
+                await EnqueueAutomationRunAsync(runOnStartAutomations, AutomationRunInfo.StartReason.RunOnStart, null, null);
             }
         }
 

@@ -66,11 +66,6 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             services.AddSingleton<SupervisorClient>();
             services.AddSingleton<IHostedService>(s => s.GetRequiredService<SupervisorClient>());
             
-            // Handler
-            services
-                .AddTransient<INotificationHandler<HomeAssistantClient.StateChangedNotification>,
-                    StateChangedNotificationHandler>();
-            
             // Dependencies
             services.AddMediatR(typeof(AutomationStartup));
         }

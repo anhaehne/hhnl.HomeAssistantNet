@@ -64,7 +64,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                     AutomationRunContext.Current =
                         new AutomationRunContext(run.CancellationTokenSource.Token, scope.ServiceProvider, run);
 
-                    _logger.LogDebug($"Starting automation run at: {run.Started}");
+                    _logger.LogDebug($"Starting automation run '{run.Id}' at: {run.Started} Reasons: '{run.Reason}' ChangedEntity: '{run.ChangedEntity}'");
 
                     try
                     {
