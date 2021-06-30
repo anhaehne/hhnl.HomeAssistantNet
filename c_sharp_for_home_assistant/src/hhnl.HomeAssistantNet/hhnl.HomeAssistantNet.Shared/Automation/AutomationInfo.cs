@@ -1,8 +1,7 @@
-﻿//using System;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -14,10 +13,22 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 {
     public class AutomationInfo
     {
+        private MethodInfo _method;
+
         public string Name { get; set; }
 
         [JsonIgnore]
-        public MethodInfo Method { get; set; }
+        public MethodInfo Method 
+        { 
+            get => _method; 
+            set 
+            {
+                _method = value;
+
+                if(value is not null)
+                    Schedules = GetSchedules(value);
+            }
+        }
 
         public bool RunOnStart { get; set; }
 
@@ -27,13 +38,25 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 
         [JsonIgnore]
         public IReadOnlyCollection<Type> DependsOnEntities { get; set; }
-        
+
         [JsonIgnore]
         public IReadOnlyCollection<Type> ListenToEntities { get; set; }
 
         [JsonIgnore]
         public Func<IServiceProvider, CancellationToken, Task> RunAutomation { get; set; }
 
+        public IReadOnlyCollection<string> Schedules { get; set; } = Array.Empty<string>();
+
         public ReentryPolicy ReentryPolicy { get; set; }
+
+        private IReadOnlyCollection<string> GetSchedules(MethodInfo methodInfo)
+        {
+            var attr = methodInfo.GetCustomAttributes<ScheduleAttribute>();
+
+            if (!attr.Any())
+                return Array.Empty<string>();
+
+            return attr.Select(x => x.CronExpression).ToList();
+        }
     }
 }

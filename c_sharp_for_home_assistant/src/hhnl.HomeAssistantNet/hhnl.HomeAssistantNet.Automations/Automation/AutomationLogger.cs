@@ -41,7 +41,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 runContext.CurrentRun.Log.Add(messageDto);
 
             if (_subscribedRuns.ContainsKey(runContext.CurrentRun.Id))
-                runContext.ServiceProvider.GetRequiredService<SupervisorClient>().OnNewLogMessage(messageDto);
+                _ = runContext.ServiceProvider.GetRequiredService<SupervisorClient>().OnNewLogMessage(messageDto);
         }
 
         public static void RegisterRun(Guid runId) => _subscribedRuns.TryAdd(runId, false);

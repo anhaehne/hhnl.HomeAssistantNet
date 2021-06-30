@@ -19,6 +19,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
         private readonly IAutomationService _automationService;
         private readonly HubConnection? _hubConnection;
         private readonly ILogger<SupervisorClient> _logger;
+        private readonly TaskCompletionSource _clientStarted = new ();
 
         public SupervisorClient(
             IAutomationRegistry automationRegistry,
@@ -62,6 +63,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
 
             await _hubConnection.StartAsync(cancellationToken);
             _logger.LogInformation("Supervisor client started");
+            _clientStarted.SetResult();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
@@ -127,15 +129,20 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             return _hubConnection.SendAsync("ProcessIdGot", messageId, Process.GetCurrentProcess().Id);
         }
 
-        public Task OnAutomationsChanged()
+        public async Task OnAutomationsChanged()
         {
             var automations = _automationRegistry.Automations.Values.Select(ToDto).ToArray();
-            return _hubConnection.SendAsync("OnAutomationsChanged", automations);
+
+            // This can try to send messages before the client is connected so we have to wait first.
+            await _clientStarted.Task;
+            await _hubConnection.SendAsync("OnAutomationsChanged", automations);
         }
 
-        public Task OnNewLogMessage(LogMessageDto logMessageDto)
+        public async Task OnNewLogMessage(LogMessageDto logMessageDto)
         {
-            return _hubConnection.SendAsync("OnNewLogMessage", logMessageDto);
+            // This can try to send messages before the client is connected so we have to wait first.
+            await _clientStarted.Task;
+            await _hubConnection.SendAsync("OnNewLogMessage", logMessageDto);
         }
 
         private static AutomationInfoDto ToDto(AutomationEntry entry)

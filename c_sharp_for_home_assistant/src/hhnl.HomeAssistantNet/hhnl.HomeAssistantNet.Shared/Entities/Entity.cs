@@ -24,13 +24,24 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
         /// <summary>
         /// Name of the entity.
         /// </summary>
-        public string? FriendlyName =>
-            CurrentState?.GetPropertyOrNull("attributes")?.GetPropertyOrNull("friendly_name")?.GetString();
+        public string? FriendlyName => GetAttributeOrDefault<string>("friendly_name");
 
         /// <summary>
         /// A unique identifier for this entity.
         /// </summary>
         public string UniqueId { get; }
+
+        public T? GetAttributeOrDefault<T>(string attributeName)
+        {
+            var attribute = CurrentState?.GetPropertyOrNull("attributes")?.GetPropertyOrNull(attributeName);
+            return attribute.ToObject<T>() ?? default;
+        }
+
+        //public T? GetAttributeOrDefault<T>(string attributeName) where T : class
+        //{
+        //    var attribute = CurrentState?.GetPropertyOrNull("attributes")?.GetPropertyOrNull(attributeName);
+        //    return attribute?.ToObject<T>() ?? default;
+        //}
 
         protected IHomeAssistantClient HomeAssistantClient { get; }
 

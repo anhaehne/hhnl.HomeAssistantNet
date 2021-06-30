@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Automations.Automation.Runner;
 using hhnl.HomeAssistantNet.Automations.HomeAssistantConnection;
 using hhnl.HomeAssistantNet.Automations.Supervisor;
+using hhnl.HomeAssistantNet.Automations.Utils;
 using hhnl.HomeAssistantNet.Shared.Configuration;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
 using hhnl.HomeAssistantNet.Shared.SourceGenerator;
@@ -65,7 +66,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
             services.AddSingleton<SupervisorClient>();
             services.AddSingleton<IHostedService>(s => s.GetRequiredService<SupervisorClient>());
-            
+
             // Dependencies
             services.AddMediatR(typeof(AutomationStartup));
         }
