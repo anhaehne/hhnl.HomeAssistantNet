@@ -12,6 +12,7 @@ using hhnl.HomeAssistantNet.Automations.Utils;
 using hhnl.HomeAssistantNet.Shared.Automation;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace hhnl.HomeAssistantNet.Automations.Automation
 {
@@ -40,6 +41,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         private readonly ILogger<AutomationService> _logger;
         private readonly ConcurrentDictionary<AutomationEntry, Lazy<AutomationRunner>> _runners =
             new();
+        private CancellationTokenSource? _serviceCts;
 
         public AutomationService(
             IAutomationRegistry automationRegistry,
@@ -77,6 +79,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            _serviceCts = new();
+
             // Move this stuff to a background task.
             await Initialization.WaitForEntitiesLoadedAsync();
 
@@ -115,6 +119,9 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 {
                     t.Stop();
                     t.Elapsed -= ScheduleRun;
+
+                    if ((_serviceCts?.Token ?? default).IsCancellationRequested)
+                        return;
 
                     await EnqueueAutomationRunAsync(entry, AutomationRunInfo.StartReason.Schedule, null, null);
 
@@ -167,6 +174,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
+            _serviceCts?.Cancel();
+
             var runners = _runners.Values.Where(v => v.IsValueCreated).Select(v => v.Value).ToList();
 
             _logger.LogInformation("Stopping running automations ...");

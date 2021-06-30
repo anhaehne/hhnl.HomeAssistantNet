@@ -107,6 +107,8 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Stopping HomeAssistantClient ...");
+
             _cancellationTokenSource?.Cancel();
 
             if (_receiveTask != null)
@@ -132,6 +134,8 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                     // ignore
                 }
             }
+
+            _logger.LogDebug("HomeAssistantClient stopped");
         }
 
         private async Task ReceiveLoopAsync()
@@ -171,7 +175,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         {
             while (!_cancellationTokenSource?.IsCancellationRequested ?? false)
             {
-                var bytes = await _messagesToSend.Reader.ReadAsync();
+                var bytes = await _messagesToSend.Reader.ReadAsync(_cancellationTokenSource ?.Token ?? default);
 
                 await _webSocket!.SendAsync(bytes,
                     WebSocketMessageType.Text,
