@@ -9,6 +9,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant
 
         public string SourceDirectory { get; set; }
 
+        public string BuildDirectory { get; set; }
+
         public TimeSpan DefaultClientCallTimeout { get; set; } = TimeSpan.FromSeconds(5);
         
         public TimeSpan DefaultProcessExitTimeout { get; set; } = TimeSpan.FromSeconds(5);

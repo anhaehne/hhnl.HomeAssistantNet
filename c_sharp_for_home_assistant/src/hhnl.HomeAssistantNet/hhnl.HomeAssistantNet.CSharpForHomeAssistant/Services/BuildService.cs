@@ -1,4 +1,9 @@
-﻿using System;
+﻿using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests;
+using hhnl.HomeAssistantNet.Shared.Configuration;
+using MediatR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -6,12 +11,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Hubs;
-using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests;
-using hhnl.HomeAssistantNet.Shared.Configuration;
-using MediatR;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 {
@@ -51,7 +50,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         public Task<bool> BuildAndDeployAsync()
         {
             if (_config.Value.SuppressAutomationDeploy)
+            {
                 return Task.FromResult(true);
+            }
 
             _buildAndDeployTask = BuildAndDeployAsyncInternal();
             return _buildAndDeployTask;
@@ -60,18 +61,20 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         public void RunDeployedApplication()
         {
             if (_config.Value.SuppressAutomationDeploy)
+            {
                 return;
-            
-            var dllPath = Path.Combine(Path.GetFullPath(_config.Value.DeployDirectory), $"{GetProjectFileName()}.dll");
+            }
+
+            string? dllPath = Path.Combine(Path.GetFullPath(_config.Value.DeployDirectory), $"{GetProjectFileName()}.dll");
 
             _logger.LogInformation($"Starting deployed application: '{dllPath}'");
-            
-            var runStartInfo = new ProcessStartInfo
+
+            ProcessStartInfo? runStartInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
                 Arguments = $"{dllPath} Token={_haConfig.Value.SUPERVISOR_TOKEN} SupervisorUrl=http://localhost:20777",
             };
-            var runProcess = Process.Start(runStartInfo);
+            Process? runProcess = Process.Start(runStartInfo);
         }
 
         private async Task<bool> BuildAndDeployAsyncInternal()
@@ -79,9 +82,16 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             _logger.LogDebug("Starting build and deploy");
 
             var srcDirectory = Path.GetFullPath(_config.Value.SourceDirectory);
+            var buildDirectory = Path.GetFullPath(_config.Value.BuildDirectory);
+            var deployDirectory = Path.GetFullPath(_config.Value.DeployDirectory);
+
+            // Copy source to build directory
+            if(Directory.Exists(buildDirectory))
+                Directory.Delete(buildDirectory, true);
+            DirectoryCopy(srcDirectory, buildDirectory);
 
             // The src directory is the solution directory so we have to find the automation project.
-            if(!TryFindAutomationProject(srcDirectory, out var projectDirectory))
+            if (!TryFindAutomationProject(buildDirectory, out string? projectDirectory))
             {
                 _logger.LogError($"Unable to determine automation project. Make sure the project directly references hhnl.HomeAssistantNet.Automations. SourceDirectory: '{srcDirectory}'");
                 return false;
@@ -93,18 +103,19 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 
                 await _mediator.Send(new StopProcessRequest(_managementHubCallService.DefaultConnection.Id));
             }
-            
+
             _logger.LogDebug("Starting dotnet publish");
 
-            var buildStartInfo = new ProcessStartInfo
+            ProcessStartInfo? buildStartInfo = new ProcessStartInfo
             {
-                WorkingDirectory = projectDirectory, FileName = "dotnet",
-                Arguments = $"publish --force -c Release -o {Path.GetFullPath(_config.Value.DeployDirectory)}"
+                WorkingDirectory = projectDirectory,
+                FileName = "dotnet",
+                Arguments = $"publish --force -c Release -o {deployDirectory}"
             };
 
-            var buildProcess = Process.Start(buildStartInfo);
+            Process? buildProcess = Process.Start(buildStartInfo);
 
-            using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            using CancellationTokenSource? cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(3));
 
             try
             {
@@ -122,22 +133,47 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
                 return false;
             }
 
-            // Delete the bin and obj folder so the next time the users opens the project they don't get an error due to missing nuget packages.
-            DeleteFolder("bin");
-            DeleteFolder("obj");
-            
             return true;
         }
 
-        private bool TryFindAutomationProject(string sourceRoot, [NotNullWhen(true)]out string? automationProjectFolder)
+        private static void DirectoryCopy(string sourceDirName, string destDirName)
+        {
+            // Get the subdirectories for the specified directory.
+            var dir = new DirectoryInfo(sourceDirName);
+            var dirs = dir.GetDirectories().Where(d => !d.Name.StartsWith(".") && d.Name != "obj" && d.Name != "bin");
+
+            // If the destination directory doesn't exist, create it.       
+            Directory.CreateDirectory(destDirName);
+
+            // Get the files in the directory and copy them to the new location.
+            var files = dir.GetFiles();
+            foreach (var file in files)
+            {
+                string tempPath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(tempPath, false);
+            }
+
+            
+
+            // Copy subdirectories
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string tempPath = Path.Combine(destDirName, subdir.Name);
+                DirectoryCopy(subdir.FullName, tempPath);
+            }
+        }
+
+        private bool TryFindAutomationProject(string sourceRoot, [NotNullWhen(true)] out string? automationProjectFolder)
         {
             automationProjectFolder = null;
-            var projectFiles = Directory.GetFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories);
+            string[]? projectFiles = Directory.GetFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories);
 
             if (!projectFiles.Any())
+            {
                 return false;
+            }
 
-            foreach (var projectFile in projectFiles)
+            foreach (string? projectFile in projectFiles)
             {
                 if (_automationRefRegex.IsMatch(File.ReadAllText(projectFile)))
                 {
@@ -149,26 +185,19 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             return false;
         }
 
-        private void DeleteFolder(string folder)
-        {
-            var path = Path.Combine(Path.GetFullPath(_config.Value.SourceDirectory), folder);
-            if(Directory.Exists(path))
-                Directory.Delete(path, true);
-        }
-        
         private string GetProjectFileName()
         {
-            var srcDirectory = Path.GetFullPath(_config.Value.SourceDirectory);
+            string? srcDirectory = Path.GetFullPath(_config.Value.SourceDirectory);
 
             // The src directory is the solution directory so we have to find the automation project.
-            if (!TryFindAutomationProject(srcDirectory, out var projectDirectory))
+            if (!TryFindAutomationProject(srcDirectory, out string? projectDirectory))
             {
                 throw new InvalidOperationException($"Unable to determine automation project. Make sure the project directly references hhnl.HomeAssistantNet.Automations. SourceDirectory: '{srcDirectory}'");
             }
 
-            var projectPath = Directory.EnumerateFiles(projectDirectory, "*.csproj").Single();
+            string? projectPath = Directory.EnumerateFiles(projectDirectory, "*.csproj").Single();
 
-            var fileInfo = new FileInfo(projectPath);
+            FileInfo? fileInfo = new FileInfo(projectPath);
 
             return fileInfo.Name.Replace(fileInfo.Extension, "");
         }

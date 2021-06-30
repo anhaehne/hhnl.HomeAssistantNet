@@ -10,6 +10,7 @@ COPY src/hhnl.HomeAssistantNet/ProjectTemplate/ ProjectTemplate/
 # Configure supervisor
 ENV SupervisorConfig__DeployDirectory=/config/c-sharp-for-homeassistant/deploy/
 ENV SupervisorConfig__SourceDirectory=/config/c-sharp-for-homeassistant/source/
+ENV SupervisorConfig__BuildDirectory=/temp/build/
 
 # Configure supervisor client
 ENV SupervisorUrl=http://localhost:8099
