@@ -81,7 +81,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
                 {
                     // Ignored
                 }
-                catch (Exception e) when (e is not TaskCanceledException)
+                catch (Exception e)
                 {
                     _logger.LogError(e, $"An exception occured while processing notification {notification}.");
                     throw;

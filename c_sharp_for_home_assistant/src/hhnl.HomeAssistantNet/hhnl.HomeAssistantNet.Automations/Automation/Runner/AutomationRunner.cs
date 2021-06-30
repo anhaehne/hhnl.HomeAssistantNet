@@ -59,15 +59,16 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                     startTcs?.TrySetResult();
 
                     using var scope = _provider.CreateScope();
-                    await scope.ServiceProvider.GetRequiredService<IMediator>().Publish(new AutomationRunStateChangedNotification(Entry, run));
-
-                    AutomationRunContext.Current =
-                        new AutomationRunContext(run.CancellationTokenSource.Token, scope.ServiceProvider, run);
-
-                    _logger.LogDebug($"Starting automation run '{run.Id}' at: {run.Started} Reasons: '{run.Reason}' ChangedEntity: '{run.ChangedEntity}'");
-
+                    
                     try
                     {
+                        await scope.ServiceProvider.GetRequiredService<IMediator>().Publish(new AutomationRunStateChangedNotification(Entry, run));
+
+                        AutomationRunContext.Current =
+                            new AutomationRunContext(run.CancellationTokenSource.Token, scope.ServiceProvider, run);
+
+                        _logger.LogDebug($"Starting automation run '{run.Id}' at: {run.Started} Reasons: '{run.Reason}' ChangedEntity: '{run.ChangedEntity}'");
+
                         await Entry.Info.RunAutomation(scope.ServiceProvider, run.CancellationTokenSource.Token);
 
                         run.State = run.CancellationTokenSource.Token.IsCancellationRequested
@@ -80,7 +81,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError(e, "Unhanled exception occurred while executing automation.");
+                        _logger.LogError(e, "Unhandled exception occurred while executing automation.");
                         run.State = AutomationRunInfo.RunState.Error;
                         run.Error = e.ToString();
                     }

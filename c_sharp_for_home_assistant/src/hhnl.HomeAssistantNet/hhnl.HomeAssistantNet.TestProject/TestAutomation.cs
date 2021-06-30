@@ -13,6 +13,7 @@ namespace hhnl.HomeAssistantNet.TestProject
         /// Prevent the lights from being turned on before 8pm.
         /// </summary>
         [Automation(runOnStart: true)]
+        [Schedule(Every.Minute)]
         public async Task TurnOffOfficeWhenTurnedOnBeforeSunSet([NoTrack]Entities.SunSun sun)
         {
             if (sun.State != "below_horizon")
@@ -22,7 +23,6 @@ namespace hhnl.HomeAssistantNet.TestProject
         }
 
         [Automation(displayName: "Infinate run automation")]
-        [Schedule(Every.Hour)]
         public async Task InfiniteRun(CancellationToken ct)
         {
             while (!ct.IsCancellationRequested)

@@ -8,12 +8,12 @@ namespace hhnl.HomeAssistantNet.TestProject
 {
     public class Startup : AutomationStartup
     {
-        public static Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainOnAssemblyResolve;
 
-
-            return new Startup().RunAsync(args);
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            await new Startup().RunAsync(args);
         }
 
         private static Assembly? CurrentDomainOnAssemblyResolve(object? sender, ResolveEventArgs args)
