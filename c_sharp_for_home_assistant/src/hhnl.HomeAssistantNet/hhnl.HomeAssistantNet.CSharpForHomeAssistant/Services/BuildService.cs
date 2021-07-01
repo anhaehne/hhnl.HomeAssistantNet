@@ -27,19 +27,27 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         private readonly ILogger<BuildService> _logger;
         private readonly IOptions<HomeAssistantConfig> _haConfig;
         private readonly IManagementHubCallService _managementHubCallService;
+        private readonly ISecretsService _secretsService;
         private readonly IMediator _mediator;
         private Task<bool> _buildAndDeployTask = Task.FromResult(true);
 
         private static readonly Regex _automationRefRegex = new Regex("<\\s*(ProjectReference|PackageReference)\\s*Include\\s*=\\s*\".*hhnl\\.HomeAssistantNet\\.Automations.*\"");
 
 
-        public BuildService(IOptions<SupervisorConfig> config, IMediator mediator, ILogger<BuildService> logger, IOptions<HomeAssistantConfig> haConfig, IManagementHubCallService managementHubCallService)
+        public BuildService(
+            IOptions<SupervisorConfig> config, 
+            IMediator mediator, 
+            ILogger<BuildService> logger, 
+            IOptions<HomeAssistantConfig> haConfig, 
+            IManagementHubCallService managementHubCallService,
+            ISecretsService secretsService)
         {
             _config = config;
             _mediator = mediator;
             _logger = logger;
             _haConfig = haConfig;
             _managementHubCallService = managementHubCallService;
+            _secretsService = secretsService;
         }
 
         public Task WaitForBuildAndDeployAsync()
@@ -88,6 +96,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             // Copy source to build directory
             if(Directory.Exists(buildDirectory))
                 Directory.Delete(buildDirectory, true);
+
             DirectoryCopy(srcDirectory, buildDirectory);
 
             // The src directory is the solution directory so we have to find the automation project.
@@ -132,6 +141,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
                 _logger.LogError($"dotnet published finished with exit code {buildProcess.ExitCode}.");
                 return false;
             }
+
+            _secretsService.DeploySecretsFile();
 
             return true;
         }
