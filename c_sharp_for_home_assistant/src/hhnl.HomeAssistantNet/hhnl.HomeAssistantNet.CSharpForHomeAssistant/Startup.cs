@@ -70,7 +70,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant
             services.AddSingleton<IHostedService>(s => s.GetRequiredService<NotificationQueue>());
             services.AddSingleton<INotificationQueue>(s => s.GetRequiredService<NotificationQueue>());
 
-            services.AddSingleton<INotification>(NoConnectionNotification.Instance);
+            services.AddSingleton<ISecretsService, SecretsService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
