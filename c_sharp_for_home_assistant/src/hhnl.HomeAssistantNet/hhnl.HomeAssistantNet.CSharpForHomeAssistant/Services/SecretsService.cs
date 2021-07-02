@@ -60,7 +60,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 
         public void DeploySecretsFile()
         {
-            File.Copy(_secretsConfigPath, _secretsDeployPath, true);
+            if(File.Exists(_secretsConfigPath))
+                File.Copy(_secretsConfigPath, _secretsDeployPath, true);
         }
 
         private class SecretsFile

@@ -73,7 +73,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
                 return;
             }
 
-            string? dllPath = Path.Combine(Path.GetFullPath(_config.Value.DeployDirectory), $"{GetProjectFileName()}.dll");
+            var deployPath = Path.GetFullPath(_config.Value.DeployDirectory);
+            var dllPath = Path.Combine(deployPath, $"{GetProjectFileName()}.dll");
 
             _logger.LogInformation($"Starting deployed application: '{dllPath}'");
 
@@ -81,8 +82,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             {
                 FileName = "dotnet",
                 Arguments = $"{dllPath} Token={_haConfig.Value.SUPERVISOR_TOKEN} SupervisorUrl=http://localhost:20777",
+                WorkingDirectory = deployPath,
             };
-            Process? runProcess = Process.Start(runStartInfo);
+            Process.Start(runStartInfo);
         }
 
         private async Task<bool> BuildAndDeployAsyncInternal()
