@@ -76,7 +76,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Empty on purpose.
         }
 
-        protected void ConfigureHost(IHostBuilder hostBuilder)
+        protected virtual void ConfigureHost(IHostBuilder hostBuilder)
         {
             hostBuilder
                 .ConfigureAppConfiguration((context, builder) =>
