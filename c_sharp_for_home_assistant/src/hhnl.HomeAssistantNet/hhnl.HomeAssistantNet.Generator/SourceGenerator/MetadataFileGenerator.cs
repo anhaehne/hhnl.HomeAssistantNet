@@ -91,6 +91,8 @@ using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
+#pragma warning disable CS1998
+
 namespace {nameof(hhnl)}.{nameof(HomeAssistantNet)}.Generated
 {{
     public class {GeneratorConstants.MetaDataClassName} : {typeof(IGeneratedMetaData).GetFullName()} 
