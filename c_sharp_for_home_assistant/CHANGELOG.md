@@ -6,6 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.4.3] - 2021-07-02
+## [0.4.2] - 2021-07-02
 ### Fixed
 - Fixed local application host not being started on supervisor startup.
