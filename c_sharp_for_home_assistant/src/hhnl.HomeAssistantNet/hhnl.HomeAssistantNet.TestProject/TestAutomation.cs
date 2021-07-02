@@ -22,14 +22,16 @@ namespace hhnl.HomeAssistantNet.TestProject
         /// <summary>
         /// Prevent the lights from being turned on before 8pm.
         /// </summary>
-        [Automation(runOnStart: true)]
-        [Schedule(Every.Minute)]
-        public async Task TurnOffOfficeWhenTurnedOnBeforeSunSet([NoTrack]Entities.SunSun sun)
+        [Automation]
+        public async Task StartScript([NoTrack]Scripts.Test vac)
         {
-            if (sun.State != "below_horizon")
-            {
+            await vac.TurnOnAsync();
+        }
 
-            }
+        [Automation]
+        public async Task OnStartScript(Scripts.Test vac)
+        {
+            _logger.LogInformation($"Script turn on works. {vac.CurrentState.ToString()}");
         }
 
         [Automation(displayName: "Infinate run automation")]

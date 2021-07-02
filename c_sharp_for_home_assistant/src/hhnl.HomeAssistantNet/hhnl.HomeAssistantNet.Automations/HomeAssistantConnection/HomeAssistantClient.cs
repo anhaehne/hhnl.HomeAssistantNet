@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using hhnl.HomeAssistantNet.Automations.Automation;
 using hhnl.HomeAssistantNet.Automations.Utils;
 using hhnl.HomeAssistantNet.Shared.Configuration;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
@@ -68,6 +69,9 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             dynamic? serviceData = null,
             CancellationToken cancellationToken = default)
         {
+            if (cancellationToken == default && AutomationRunContext.Current is not null)
+                cancellationToken = AutomationRunContext.Current.CancellationToken;
+
             var response = await SendRequestAsync(id => new
                 {
                     id,
@@ -77,6 +81,33 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                     service_data = serviceData
                 },
                 cancellationToken);
+
+
+            return response.Result;
+        }
+
+        public async Task<JsonElement> CallServiceAsync(
+            string domain,
+            string service,
+            string targetId,
+            dynamic? serviceData = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (cancellationToken == default && AutomationRunContext.Current is not null)
+                cancellationToken = AutomationRunContext.Current.CancellationToken;
+
+            var response = await SendRequestAsync(id => new
+            {
+                id,
+                type = "call_service",
+                domain,
+                service,
+                target = new {
+                    entity_id = targetId,
+                },
+                service_data = serviceData ?? new { }
+            },
+            cancellationToken);
 
 
             return response.Result;
