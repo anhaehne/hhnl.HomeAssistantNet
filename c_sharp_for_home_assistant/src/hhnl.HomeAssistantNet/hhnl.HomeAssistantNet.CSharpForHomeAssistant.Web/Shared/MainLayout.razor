@@ -1,6 +1,9 @@
 ﻿@inject SupervisorApiService _supervisorApiService
+@inject IModalService _modalService
 @using ReactiveUI
+@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Components
 @using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
+@using hhnl.HomeAssistantNet.Shared.Configuration
 @using hhnl.HomeAssistantNet.Shared.Supervisor
 @using System.Reactive.Disposables
 @inherits LayoutComponentBase
@@ -10,7 +13,10 @@
     <div class="container-fluid">
         <a class="navbar-brand" href="#">C# for Home Assistant</a>
         <div class="navbar-text">@NavBarText</div>
-        <button disabled="@(_supervisorApiService.State == SupervisorApiService.ApplicationState.BuildAndDeploy)" class="d-flex btn btn-primary" @onclick="OnBuildClick" type="submit">Build & Deploy</button>
+        <div class="d-flex">
+            <button disabled="@(_supervisorApiService.State != SupervisorApiService.ApplicationState.ConnectedToHost)" class="btn btn-primary mr-3" @onclick="ManageSecrets" type="submit">Manage Secrets</button>
+        <button disabled="@(_supervisorApiService.State == SupervisorApiService.ApplicationState.BuildAndDeploy)" class="btn btn-primary" @onclick="OnBuildClick" type="submit">Build & Deploy</button>
+        </div>
     </div>
 </nav>
 <div class="page">
@@ -52,6 +58,27 @@
     private async Task OnBuildClick()
     {
         await _supervisorApiService.BuildAndDeployAsync();
+    }
+
+    private async Task ManageSecrets()
+    {
+        var secrets = await _supervisorApiService.GetSecretsAsync();
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(SecretsEditor.Secrets), secrets);
+
+        var editor = _modalService.Show<SecretsEditor>("Secrets", parameters, new ModalOptions
+        {
+            DisableBackgroundCancel = true,
+        });
+
+        var result = await editor.Result;
+
+        if(!result.Cancelled)
+        {
+            var newSecrets = (AutomationSecrets)result.Data;
+            await _supervisorApiService.SaveSecretsAsync(newSecrets);
+        }
     }
 
     private string NavBarText => Connection switch

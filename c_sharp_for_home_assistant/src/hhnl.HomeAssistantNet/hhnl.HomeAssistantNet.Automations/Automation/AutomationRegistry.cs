@@ -39,7 +39,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 automationsListeningToEntity.Add(automation);
             }
 
-            RelevantEntities = _automationsListeningToEntities.Keys.ToHashSet();
+            RelevantEntities = Automations.SelectMany(a => a.Value.Info.DependsOnEntities).Select(GetEntityId).ToHashSet(); ;
         }
 
         public IReadOnlyDictionary<string, AutomationEntry> Automations { get; }

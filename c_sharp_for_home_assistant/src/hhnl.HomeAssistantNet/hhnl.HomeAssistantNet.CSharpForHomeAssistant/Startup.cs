@@ -70,6 +70,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant
             services.AddSingleton<IHostedService>(s => s.GetRequiredService<NotificationQueue>());
             services.AddSingleton<INotificationQueue>(s => s.GetRequiredService<NotificationQueue>());
 
+            services.AddSingleton<ISecretsService, SecretsService>();
+
+            // These notifcations will populate the notification queue on startup.
             services.AddSingleton<INotification>(NoConnectionNotification.Instance);
         }
 

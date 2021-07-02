@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
 {
@@ -10,7 +9,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
         /// Can be called to check authentication.
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult> GetAsync()
+        public IActionResult Get()
         {
             return Ok();
         }

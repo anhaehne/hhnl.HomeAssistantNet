@@ -38,31 +38,20 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
         {
         }
 
-        public SupportedFeature SupportedFeatures => (SupportedFeature)(CurrentState?.GetPropertyOrNull("attributes")
-                                                                              ?.GetPropertyOrNull("supported_features")
-                                                                              ?.GetInt32() ??
-                                                                          0);
+        public SupportedFeature SupportedFeatures => (SupportedFeature)GetAttributeOrDefault<int>("supported_features");
 
         public bool IsPlaying => State == "playing";
         
         public bool IsPaused => State == "paused";
 
-        public double? Volume => CurrentState?.GetPropertyOrNull("attributes")
-            ?.GetPropertyOrNull("volume_level")
-            ?.GetDouble();
+        public double? Volume => GetAttributeOrDefault<double?>("volume_level");
         
-        public bool? IsMuted => CurrentState?.GetPropertyOrNull("attributes")
-            ?.GetPropertyOrNull("is_volume_muted")
-            ?.GetBoolean();
+        public bool? IsMuted => GetAttributeOrDefault<bool?>("is_volume_muted");
         
-        public bool? IsShuffle => CurrentState?.GetPropertyOrNull("attributes")
-            ?.GetPropertyOrNull("shuffle")
-            ?.GetBoolean();
-        
-        public bool? IsRepeat => CurrentState?.GetPropertyOrNull("attributes")
-            ?.GetPropertyOrNull("repeat")
-            ?.GetBoolean();
-        
+        public bool? IsShuffle => GetAttributeOrDefault<bool?>("shuffle");
+
+        public bool? IsRepeat => GetAttributeOrDefault<bool?>("repeat");
+
         [RequiresSupportedFeature(SupportedFeature.SupportPause)]
         public async Task PauseAsync(CancellationToken ct = default)
         {

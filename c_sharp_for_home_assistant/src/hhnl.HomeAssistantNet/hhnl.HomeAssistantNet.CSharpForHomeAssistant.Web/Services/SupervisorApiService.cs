@@ -8,6 +8,7 @@ using System.Net.Http.Json;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using hhnl.HomeAssistantNet.Shared.Configuration;
 using hhnl.HomeAssistantNet.Shared.Supervisor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -117,6 +118,16 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
             State = ApplicationState.Connecting;
         }
 
+        public async Task<AutomationSecrets> GetSecretsAsync()
+        {
+            return await GetAsync<AutomationSecrets>("api/secrets") ?? AutomationSecrets.Empty;
+        }
+
+        public Task SaveSecretsAsync(AutomationSecrets secrets)
+        {
+            return PostAsync("api/secrets", secrets);
+        }
+
         private async Task<T?> GetAsync<T>(string uri)
         {
             while (true)
@@ -171,6 +182,23 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
             {
                 State = ApplicationState.NoConnection;
                 return default;
+            }
+        }
+
+        private async Task PostAsync<T>(string uri, T body)
+        {
+            try
+            {
+                var responseMessage = await SendWithAuthorizationRetry(client => client.PostAsJsonAsync(uri, body));
+                responseMessage.EnsureSuccessStatusCode();
+
+                if (State != ApplicationState.BuildAndDeploy)
+                    State = ApplicationState.ConnectedToHost;
+            }
+            catch (HttpRequestException e) when (
+                e.StatusCode is HttpStatusCode.FailedDependency or HttpStatusCode.RequestTimeout)
+            {
+                State = ApplicationState.NoConnection;
             }
         }
 
