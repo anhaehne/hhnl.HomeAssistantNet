@@ -12,6 +12,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
     {
         private static readonly string _automationAttributeFullAccessName = typeof(AutomationAttribute).ToString();
         private static readonly string _outputOnlyAttributeFullAccessName = typeof(NoTrackAttribute).ToString();
+        private static readonly string _snapshotAttributeFullAccessName = typeof(SnapshotAttribute).ToString();
 
         private readonly GeneratorExecutionContext _context;
 
@@ -45,6 +46,9 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                             if (typeFullName == typeof(CancellationToken).GetFullName())
                                 return "ct";
 
+                            if (ParameterHasSnapshotAttribute(p))
+                                return $"s.GetRequiredService<{typeof(IEntitySnapshotProvider).GetFullName()}>().{nameof(IEntitySnapshotProvider.GetSnapshot)}<{typeFullName}>()";
+
                             return $"s.GetRequiredService<{typeFullName}>()";
                         }));
 
@@ -53,6 +57,8 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 
                     var entityDependencies = classEntityDependencies.Concat(dependingOnEntities.Select(x => x.Entity));
                     var listenToEntities = dependingOnEntities.Where(x => !x.OutputOnly).Select(x => x.Entity);
+
+                    var snapshotEntities = GetMethodSnapshotEntities(method, entitiesFullNames);
 
                     return $@"            new {typeof(AutomationInfo).GetFullName()}
             {{
@@ -64,6 +70,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                 {nameof(AutomationInfo.ReentryPolicy)} = ({typeof(ReentryPolicy).GetFullName()}){attributeData.ConstructorArguments[2].Value},
                 {nameof(AutomationInfo.DependsOnEntities)} = new Type[] {{ {string.Join(", ", entityDependencies)} }},
                 {nameof(AutomationInfo.ListenToEntities)} = new Type[] {{ {string.Join(", ", listenToEntities)} }},
+                {nameof(AutomationInfo.SnapshotEntities)} = new Type[] {{ {string.Join(", ", snapshotEntities)} }},
                 {nameof(AutomationInfo.RunAutomation)} = async (s, ct) => 
                 {{
                     {(method.IsAsync ? "await " : string.Empty)}s.GetRequiredService<{method.ContainingType.GetFullName(entitiesFullNames)}>().{method.Name}({arguments});
@@ -136,5 +143,16 @@ namespace {nameof(hhnl)}.{nameof(HomeAssistantNet)}.Generated
                 .Select(p => ($"typeof({p.Type.GetFullName(entitiesFullNames)})",
                     p.GetAttributes().Any(a => a.AttributeClass!.ToString() == _outputOnlyAttributeFullAccessName)));
         }
+
+        private static IEnumerable<string> GetMethodSnapshotEntities(
+            IMethodSymbol methodSymbol,
+            IReadOnlyCollection<string> entitiesFullNames)
+        {
+            return methodSymbol.Parameters
+                .Where(p => entitiesFullNames.Contains(p.Type.GetFullName(entitiesFullNames)) && ParameterHasSnapshotAttribute(p))
+                .Select(p => $"typeof({p.Type.GetFullName(entitiesFullNames)})");
+        }
+
+        private static bool ParameterHasSnapshotAttribute(IParameterSymbol p) => p.GetAttributes().Any(a => a.AttributeClass!.ToString() == _snapshotAttributeFullAccessName);
     }
 }

@@ -27,9 +27,9 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Update entities
             await _entityRegistry.UpdateEntityAsync(notification.EntityId, notification.NewState);
 
-            // Run automations
             var automations = _automationRegistry.GetAutomationsTrackingEntity(notification.EntityId);
 
+            // Run automations
             foreach (var automation in automations)
             {
                 await _automationService.EnqueueAutomationForEntityChangeAsync(automation, notification.EntityId);

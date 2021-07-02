@@ -189,6 +189,15 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             string? changedEntity,
             TaskCompletionSource? startTcs)
         {
+            // Create entity snapshot
+            if (entry.Info.SnapshotEntities.Any())
+            {
+                var snapshotEntities = entry.Info.SnapshotEntities.Select(e => e.ToString());
+                _logger.LogDebug($"Creating snapshot of entities {string.Join(", ", snapshotEntities)}.");
+
+                // TODO: Create snapshot and IEntitySnapshotProvider.
+            }
+
             _logger.LogDebug($"Enqueueing automation run '{entry.Info.Name}'. Reason: '{reason}'");
 
             var runner = _runners.GetOrAdd(entry,

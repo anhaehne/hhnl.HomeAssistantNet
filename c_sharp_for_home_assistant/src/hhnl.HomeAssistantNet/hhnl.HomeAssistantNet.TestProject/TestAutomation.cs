@@ -29,7 +29,7 @@ namespace hhnl.HomeAssistantNet.TestProject
         }
 
         [Automation]
-        public async Task OnStartScript(Scripts.Test vac)
+        public async Task OnStartScript([Snapshot]Scripts.Test vac)
         {
             _logger.LogInformation($"Script turn on works. {vac.CurrentState.ToString()}");
         }
