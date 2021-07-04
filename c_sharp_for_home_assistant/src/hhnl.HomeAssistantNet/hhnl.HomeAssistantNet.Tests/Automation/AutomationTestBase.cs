@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Automations.Automation;
 using hhnl.HomeAssistantNet.Automations.Utils;
 using hhnl.HomeAssistantNet.Shared.Automation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,6 +17,8 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         private AutomationInfo? _automationInfo;
         private AutomationEntry? _entry;
         private IServiceProvider? _serviceProvider;
+
+        protected static IReadOnlyDictionary<Type, object> EmptySnapshot { get; } = new Dictionary<Type, object>();
 
         protected IServiceProvider ServiceProvider =>
             _serviceProvider ?? throw new InvalidOperationException("Test base not initialized.");
@@ -44,6 +47,9 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             _automationClassInstances = new List<MockAutomationClass>();
 
             var services = new ServiceCollection();
+
+            services.AddLogging();
+            services.AddMediatR(typeof(AutomationTestBase));
 
             services.AddTransient(_ =>
             {

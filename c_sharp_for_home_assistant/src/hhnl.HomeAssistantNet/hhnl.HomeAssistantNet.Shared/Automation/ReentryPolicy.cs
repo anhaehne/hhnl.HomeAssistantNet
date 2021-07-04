@@ -10,9 +10,15 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
     public enum ReentryPolicy
     {
         /// <summary>
-        /// Will queue the execution and wait for the previous execution to complete.
+        /// Will queue the execution.
         /// </summary>
         Queue,
+
+        /// <summary>
+        /// Will queue the execution and wait for the previous execution to complete.
+        /// Will only ever queue one execution. If an execution is already queued, that one is removed and the current one will be queued.
+        /// </summary>
+        QueueLatest,
 
         /// <summary>
         /// Will discard the new execution.
@@ -20,7 +26,7 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
         Discard,
 
         /// <summary>
-        /// Will queue the execution and tries to cancel the previous one.
+        /// Same as <see cref="QueueLatest"/> but will try to cancel the previous execution.
         /// </summary>
         CancelPrevious,
 

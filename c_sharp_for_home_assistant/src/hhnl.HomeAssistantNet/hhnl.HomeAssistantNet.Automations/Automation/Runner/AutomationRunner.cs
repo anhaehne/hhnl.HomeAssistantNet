@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Shared.Automation;
@@ -25,7 +26,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
         public abstract Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
-            TaskCompletionSource? startTcs);
+            TaskCompletionSource? startTcs,
+            IReadOnlyDictionary<Type, object> snapshot);
 
         public virtual void Start()
         {
@@ -40,6 +42,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
             TaskCompletionSource? startTcs,
+            IReadOnlyDictionary<Type, object> snapshot,
             AutomationRunInfo.RunState initialState = AutomationRunInfo.RunState.Running)
         {
             var run = new AutomationRunInfo
@@ -49,7 +52,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                 State = initialState,
                 CancellationTokenSource = new CancellationTokenSource(),
                 Reason = reason,
-                ChangedEntity = changedEntity
+                ChangedEntity = changedEntity,
+                EntitySnapshot = snapshot,
             };
 
             run.Start = () =>

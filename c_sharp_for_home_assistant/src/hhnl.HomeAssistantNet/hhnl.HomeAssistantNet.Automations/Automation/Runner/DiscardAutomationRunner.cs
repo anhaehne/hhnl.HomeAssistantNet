@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Shared.Automation;
@@ -17,7 +18,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
         public override async Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
-            TaskCompletionSource? startTcs)
+            TaskCompletionSource? startTcs,
+            IReadOnlyDictionary<Type, object> snapshot)
         {
             await _semaphore.WaitAsync();
 
@@ -30,7 +32,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                     return;
                 }
 
-                var run = CreateAutomationRun(reason, changedEntity, startTcs);
+                var run = CreateAutomationRun(reason, changedEntity, startTcs, snapshot);
                 
                 Entry.AddRun(run);
                 run.Start();

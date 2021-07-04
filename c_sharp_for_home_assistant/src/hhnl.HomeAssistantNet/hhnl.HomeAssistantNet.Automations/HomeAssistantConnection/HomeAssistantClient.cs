@@ -9,8 +9,10 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using hhnl.HomeAssistantNet.Automations.Automation;
 using hhnl.HomeAssistantNet.Automations.Utils;
 using hhnl.HomeAssistantNet.Shared.Configuration;
+using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
 using MediatR;
 using Microsoft.Extensions.Hosting;
@@ -27,6 +29,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         private readonly ILogger<HomeAssistantClient> _logger;
         private readonly IMediator _mediator;
         private readonly Channel<byte[]> _messagesToSend;
+        private readonly bool _publishEventNotification;
         private CancellationTokenSource? _cancellationTokenSource;
         private long _id;
         private Task? _receiveTask;
@@ -36,12 +39,14 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         public HomeAssistantClient(
             ILogger<HomeAssistantClient> logger,
             IOptions<HomeAssistantConfig> haConfig,
-            IMediator mediator)
+            IMediator mediator,
+            IAutomationRegistry automationRegistry)
         {
             _logger = logger;
             _haConfig = haConfig;
             _mediator = mediator;
             _messagesToSend = Channel.CreateBounded<byte[]>(10);
+            _publishEventNotification = automationRegistry.HasAutomationsTrackingAnyEvents;
         }
 
         public void Dispose()
@@ -68,6 +73,9 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             dynamic? serviceData = null,
             CancellationToken cancellationToken = default)
         {
+            if (cancellationToken == default && AutomationRunContext.Current is not null)
+                cancellationToken = AutomationRunContext.Current.CancellationToken;
+
             var response = await SendRequestAsync(id => new
                 {
                     id,
@@ -77,6 +85,33 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                     service_data = serviceData
                 },
                 cancellationToken);
+
+
+            return response.Result;
+        }
+
+        public async Task<JsonElement> CallServiceAsync(
+            string domain,
+            string service,
+            string targetId,
+            dynamic? serviceData = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (cancellationToken == default && AutomationRunContext.Current is not null)
+                cancellationToken = AutomationRunContext.Current.CancellationToken;
+
+            var response = await SendRequestAsync(id => new
+            {
+                id,
+                type = "call_service",
+                domain,
+                service,
+                target = new {
+                    entity_id = targetId,
+                },
+                service_data = serviceData ?? new { }
+            },
+            cancellationToken);
 
 
             return response.Result;
@@ -210,8 +245,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                         new
                         {
                             id = i,
-                            type = "subscribe_events",
-                            event_type = "state_changed",
+                            type = "subscribe_events"
                         });
 
                     break;
@@ -223,7 +257,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
                     break;
                 case "event":
-                    var apiEvent = await apiMessage.Event.ToObjectAsync<WebsocketApiEvent>();
+                    var apiEvent = await apiMessage.Event.ToObjectAsync<Events.Current>();
 
                     if (apiEvent is null)
                         return;
@@ -235,7 +269,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         }
 
 
-        private async Task HandleEventAsync(WebsocketApiEvent apiEvent)
+        private async Task HandleEventAsync(Events.Current apiEvent)
         {
             switch (apiEvent.EventType)
             {
@@ -245,9 +279,15 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                     if (eventData is null)
                         return;
 
+                    eventData.SourceEvent = apiEvent;
+
                     await _mediator.Publish(eventData);
                     break;
             }
+
+            // We only publish this event if anyone is listening.
+            if(_publishEventNotification)
+                await _mediator.Publish(new EventFiredNotification(apiEvent));
         }
 
         private async Task<WebsocketApiMessage> ReadNextEventAsync()
@@ -360,17 +400,6 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             [JsonPropertyName("message")] public string? Message { get; set; }
         }
 
-        private class WebsocketApiEvent
-        {
-            [JsonPropertyName("time_fired")] public DateTimeOffset TimeFired { get; set; }
-
-            [JsonPropertyName("event_type")] public string EventType { get; set; }
-
-            [JsonPropertyName("origin")] public string Origin { get; set; }
-
-            [JsonPropertyName("data")] public JsonElement Data { get; set; }
-        }
-
         public class HomeAssistantCallFailedException : Exception
         {
             public HomeAssistantCallFailedException(string code, string message)
@@ -387,6 +416,19 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             [JsonPropertyName("entity_id")] public string EntityId { get; set; }
 
             [JsonPropertyName("new_state")] public JsonElement NewState { get; set; }
+
+            [JsonIgnore]
+            public Events.Current SourceEvent { get; set; }
+        }
+
+        public class EventFiredNotification : INotification
+        {
+            public EventFiredNotification(Events.Current @event)
+            {
+                Event = @event;
+            }
+
+            public Events.Current Event { get; set; }
         }
 #pragma warning restore 8618
     }

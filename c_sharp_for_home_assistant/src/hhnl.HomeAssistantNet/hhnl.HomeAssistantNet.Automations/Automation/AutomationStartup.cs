@@ -67,6 +67,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             services.AddSingleton<SupervisorClient>();
             services.AddSingleton<IHostedService>(s => s.GetRequiredService<SupervisorClient>());
 
+            services.AddSingleton<IEntitySnapshotProvider, EntitySnapshotProvider>();
+
             // Dependencies
             services.AddMediatR(typeof(AutomationStartup));
         }

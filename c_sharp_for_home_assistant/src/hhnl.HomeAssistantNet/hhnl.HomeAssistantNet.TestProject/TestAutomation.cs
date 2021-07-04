@@ -1,12 +1,14 @@
 ﻿using hhnl.HomeAssistantNet.Automations.BuildingBlocks;
 using hhnl.HomeAssistantNet.Shared.Automation;
 using hhnl.HomeAssistantNet.Shared.Configuration;
+using hhnl.HomeAssistantNet.Shared.Entities;
 using HomeAssistant;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace hhnl.HomeAssistantNet.TestProject
 {
@@ -22,15 +24,19 @@ namespace hhnl.HomeAssistantNet.TestProject
         /// <summary>
         /// Prevent the lights from being turned on before 8pm.
         /// </summary>
-        [Automation(runOnStart: true)]
-        [Schedule(Every.Minute)]
-        public async Task TurnOffOfficeWhenTurnedOnBeforeSunSet([NoTrack]Entities.SunSun sun)
+        [Automation]
+        public async Task StartScript(Lights.Buro t, Events.Current currentEvent)
         {
-            if (sun.State != "below_horizon")
-            {
+            
 
-            }
         }
+
+        [Automation]
+        public async Task MyFirstAutomation(Entities.SunSun sun, Events.Current currentEvent)
+        {
+            _logger.LogInformation($"This state_change event was triggered by {currentEvent.Context.UserId}");
+        }
+
 
         [Automation(displayName: "Infinate run automation")]
         public async Task InfiniteRun(CancellationToken ct)

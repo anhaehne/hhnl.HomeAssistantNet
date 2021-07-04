@@ -36,11 +36,23 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 
         public string? GenerationError { get; set; }
 
+        /// <summary>
+        /// The entities that the autmation depends on.
+        /// </summary>
         [JsonIgnore]
         public IReadOnlyCollection<Type> DependsOnEntities { get; set; }
 
+        /// <summary>
+        /// The entities that trigger a new automation run.
+        /// </summary>
         [JsonIgnore]
         public IReadOnlyCollection<Type> ListenToEntities { get; set; }
+
+        /// <summary>
+        /// The entities that are served as snapshot.
+        /// </summary>
+        [JsonIgnore]
+        public IReadOnlyCollection<Type> SnapshotEntities { get; set;  }
 
         [JsonIgnore]
         public Func<IServiceProvider, CancellationToken, Task> RunAutomation { get; set; }
