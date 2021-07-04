@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - [Snapshot] attribute
+- 'Event' class. Allows to listen for abitrary events.
+- Script entity
 - ReentryPolicy.QueueLatest - Behaves similar to what ReentryPolicy.Queue was before
 
 ### Changed

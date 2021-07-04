@@ -14,6 +14,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         ISet<string> RelevantEntities { get; }
 
         IReadOnlyCollection<AutomationEntry> GetAutomationsTrackingEntity(string entity);
+
+        public bool HasAutomationsTrackingEvent { get;}
     }
 
     public class AutomationRegistry : IAutomationRegistry
@@ -39,12 +41,16 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 automationsListeningToEntity.Add(automation);
             }
 
-            RelevantEntities = Automations.SelectMany(a => a.Value.Info.DependsOnEntities).Select(GetEntityId).ToHashSet(); ;
+            RelevantEntities = Automations.SelectMany(a => a.Value.Info.DependsOnEntities).Select(GetEntityId).Where(x => x != Event.UniqueId).ToHashSet();
+
+            HasAutomationsTrackingEvent = Automations.Any(a => a.Value.Info.ListenToEntities.Contains(typeof(Event)));
         }
 
         public IReadOnlyDictionary<string, AutomationEntry> Automations { get; }
 
         public ISet<string> RelevantEntities { get; }
+
+        public bool HasAutomationsTrackingEvent { get; }
 
         public IReadOnlyCollection<AutomationEntry> GetAutomationsTrackingEntity(string entity)
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using hhnl.HomeAssistantNet.Shared.Automation;
+using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.SourceGenerator;
 using Microsoft.CodeAnalysis;
 
@@ -13,6 +14,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
         private static readonly string _automationAttributeFullAccessName = typeof(AutomationAttribute).ToString();
         private static readonly string _outputOnlyAttributeFullAccessName = typeof(NoTrackAttribute).ToString();
         private static readonly string _snapshotAttributeFullAccessName = typeof(SnapshotAttribute).ToString();
+        private static readonly string _eventFullAccessName = typeof(Event).ToString();
 
         private readonly GeneratorExecutionContext _context;
 
@@ -25,6 +27,9 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             IReadOnlyCollection<IMethodSymbol> automationMethods,
             IReadOnlyCollection<string> entitiesFullNames)
         {
+            // Add the Event type to the list so it gets tracked.
+            entitiesFullNames = entitiesFullNames.Append(_eventFullAccessName).ToList();
+
             var verifiedAutomationMethods =
                 AutomationMethodValidator.VerifyMethodSymbols(automationMethods, _context.ReportDiagnostic)
                     .ToList();
@@ -46,7 +51,8 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                             if (typeFullName == typeof(CancellationToken).GetFullName())
                                 return "ct";
 
-                            if (ParameterHasSnapshotAttribute(p))
+                            // Request snapshot entites and the source event from the IEntitySnapshotProvider
+                            if (ParameterHasSnapshotAttribute(p) || typeFullName == _eventFullAccessName)
                                 return $"s.GetRequiredService<{typeof(IEntitySnapshotProvider).GetFullName()}>().{nameof(IEntitySnapshotProvider.GetSnapshot)}<{typeFullName}>()";
 
                             return $"s.GetRequiredService<{typeFullName}>()";
@@ -56,7 +62,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                     var dependingOnEntities = GetMethodEntityDependencies(method, entitiesFullNames).ToList();
 
                     var entityDependencies = classEntityDependencies.Concat(dependingOnEntities.Select(x => x.Entity));
-                    var listenToEntities = dependingOnEntities.Where(x => !x.OutputOnly).Select(x => x.Entity);
+                    var listenToEntities = dependingOnEntities.Where(x => !x.NoTrack).Select(x => x.Entity);
 
                     var snapshotEntities = GetMethodSnapshotEntities(method, entitiesFullNames);
 
@@ -134,7 +140,7 @@ namespace {nameof(hhnl)}.{nameof(HomeAssistantNet)}.Generated
                 .Select(p => $"typeof({p.Type.GetFullName(entitiesFullNames)})"));
         }
 
-        private static IEnumerable<(string Entity, bool OutputOnly)> GetMethodEntityDependencies(
+        private static IEnumerable<(string Entity, bool NoTrack)> GetMethodEntityDependencies(
             IMethodSymbol methodSymbol,
             IReadOnlyCollection<string> entitiesFullNames)
         {
@@ -146,12 +152,18 @@ namespace {nameof(hhnl)}.{nameof(HomeAssistantNet)}.Generated
 
         private static IEnumerable<string> GetMethodSnapshotEntities(
             IMethodSymbol methodSymbol,
-            IReadOnlyCollection<string> entitiesFullNames)
-        {
-            return methodSymbol.Parameters
-                .Where(p => entitiesFullNames.Contains(p.Type.GetFullName(entitiesFullNames)) && ParameterHasSnapshotAttribute(p))
+            IReadOnlyCollection<string> entitiesFullNames) => methodSymbol.Parameters
+                .Where(p =>
+                {
+                    var fullName = p.Type.GetFullName(entitiesFullNames);
+
+                    // If the soure event is requested, we include it in the snapshot
+                    if (fullName == _eventFullAccessName)
+                        return true;
+
+                    return entitiesFullNames.Contains(fullName) && ParameterHasSnapshotAttribute(p);
+                })
                 .Select(p => $"typeof({p.Type.GetFullName(entitiesFullNames)})");
-        }
 
         private static bool ParameterHasSnapshotAttribute(IParameterSymbol p) => p.GetAttributes().Any(a => a.AttributeClass!.ToString() == _snapshotAttributeFullAccessName);
     }

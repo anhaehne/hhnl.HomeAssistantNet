@@ -1,6 +1,7 @@
 ﻿using hhnl.HomeAssistantNet.Automations.BuildingBlocks;
 using hhnl.HomeAssistantNet.Shared.Automation;
 using hhnl.HomeAssistantNet.Shared.Configuration;
+using hhnl.HomeAssistantNet.Shared.Entities;
 using HomeAssistant;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,8 +30,11 @@ namespace hhnl.HomeAssistantNet.TestProject
         }
 
         [Automation]
-        public async Task OnStartScript([Snapshot]Scripts.Test tst)
+        public async Task OnStartScript([Snapshot]Scripts.Test tst, Event @event)
         {
+            if (!tst.IsOn)
+                return;
+
             _logger.LogInformation($"Script turn on works. {tst.IsOn}");
         }
 
