@@ -24,13 +24,15 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         /// </summary>
         /// <param name="automation">The automation to start.</param>
         /// <param name="changedEntity">The entity who's changes caused this automation to be enqueued.</param>
-        Task EnqueueAutomationForEntityChangeAsync(AutomationEntry automation, string changedEntity, Event @event);
+        /// <param name="currentEvent">The current event.</param>
+        Task EnqueueAutomationForEntityChangeAsync(AutomationEntry automation, string changedEntity, Events.Current currentEvent);
 
         /// <summary>
         /// Enqueues a new automation and waits for it's start.
         /// </summary>
         /// <param name="automation">The automation to start.</param>
-        Task EnqueueAutomationForEventFiredAsync(AutomationEntry automation, Event @event);
+        /// <param name="currentEvent">The current event.</param>
+        Task EnqueueAutomationForEventFiredAsync(AutomationEntry automation, Events.Current currentEvent);
 
         /// <summary>
         /// Enqueues a new automation and waits for it's start.
@@ -64,21 +66,21 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             _serviceProvider = serviceProvider;
         }
 
-        public async Task EnqueueAutomationForEntityChangeAsync(AutomationEntry automation, string changedEntity, Event @event)
+        public async Task EnqueueAutomationForEntityChangeAsync(AutomationEntry automation, string changedEntity, Events.Current currentEvent)
         {
-            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.EntityChanged, changedEntity, null, @event);
+            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.EntityChanged, changedEntity, null, currentEvent);
         }
 
-        public async Task EnqueueAutomationForEventFiredAsync(AutomationEntry automation, Event @event)
+        public async Task EnqueueAutomationForEventFiredAsync(AutomationEntry automation, Events.Current currentEvent)
         {
-            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.EventFired, null, null, @event);
+            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.EventFired, null, null, currentEvent);
         }
 
         public async Task EnqueueAutomationForManualStartAsync(AutomationEntry automation)
         {
             TaskCompletionSource tcs =
                 new(TaskCreationOptions.RunContinuationsAsynchronously);
-            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.Manual, null, tcs, Event.Empty);
+            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.Manual, null, tcs, Events.Empty);
             await tcs.Task;
         }
 
@@ -105,7 +107,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Start all automations that are configure to run on startup
             foreach (AutomationEntry? runOnStartAutomations in _automationRegistry.Automations.Values.Where(a => a.Info.RunOnStart))
             {
-                await EnqueueAutomationRunAsync(runOnStartAutomations, AutomationRunInfo.StartReason.RunOnStart, null, null, Event.Empty);
+                await EnqueueAutomationRunAsync(runOnStartAutomations, AutomationRunInfo.StartReason.RunOnStart, null, null, Events.Empty);
             }
 
             // Start schedules
@@ -143,7 +145,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                         return;
                     }
 
-                    await EnqueueAutomationRunAsync(entry, AutomationRunInfo.StartReason.Schedule, null, null, Event.Empty);
+                    await EnqueueAutomationRunAsync(entry, AutomationRunInfo.StartReason.Schedule, null, null, Events.Empty);
 
                     ScheduleNextRun(entry);
                 }
@@ -212,7 +214,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
             TaskCompletionSource? startTcs,
-            Event @event)
+            Events.Current currentEvent)
         {
             Dictionary<Type, object>? snapshot = null;
 
@@ -239,8 +241,11 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
             object CreateEntitySnapshot(Type entityType)
             {
-                if (entityType == typeof(Event))
-                    return @event;
+                if (entityType == typeof(Events.Current))
+                    return currentEvent;
+
+                if (entityType == typeof(Events.Any))
+                    return new Events.Any(currentEvent);
 
                 if (!entityType.IsAssignableTo(typeof(Entity)))
                     throw new InvalidOperationException($"Type {entityType} is not an entity");

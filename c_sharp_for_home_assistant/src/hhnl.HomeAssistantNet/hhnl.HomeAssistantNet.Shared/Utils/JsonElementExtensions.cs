@@ -6,6 +6,7 @@
         {
             return element.TryGetProperty(property, out var prop) ? prop : null;
         }
+
         public static JsonElement? GetPropertyOrNull(this JsonElement? element, string property)
         {
             if (!element.HasValue)

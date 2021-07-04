@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace hhnl.HomeAssistantNet.TestProject
 {
@@ -24,19 +25,18 @@ namespace hhnl.HomeAssistantNet.TestProject
         /// Prevent the lights from being turned on before 8pm.
         /// </summary>
         [Automation]
-        public async Task StartScript([NoTrack]Scripts.Test tst)
+        public async Task StartScript(Lights.Buro t, Events.Current currentEvent)
         {
-            await tst.TurnOnAsync();
+            
+
         }
 
         [Automation]
-        public async Task OnStartScript([Snapshot]Scripts.Test tst, Event @event)
+        public async Task MyFirstAutomation(Entities.SunSun sun, Events.Current currentEvent)
         {
-            if (!tst.IsOn)
-                return;
-
-            _logger.LogInformation($"Script turn on works. {tst.IsOn}");
+            _logger.LogInformation($"This state_change event was triggered by {currentEvent.Context.UserId}");
         }
+
 
         [Automation(displayName: "Infinate run automation")]
         public async Task InfiniteRun(CancellationToken ct)

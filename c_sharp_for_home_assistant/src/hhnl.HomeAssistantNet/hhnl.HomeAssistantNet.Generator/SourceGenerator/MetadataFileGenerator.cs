@@ -14,7 +14,8 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
         private static readonly string _automationAttributeFullAccessName = typeof(AutomationAttribute).ToString();
         private static readonly string _outputOnlyAttributeFullAccessName = typeof(NoTrackAttribute).ToString();
         private static readonly string _snapshotAttributeFullAccessName = typeof(SnapshotAttribute).ToString();
-        private static readonly string _eventFullAccessName = typeof(Event).ToString();
+        private static readonly string _eventAnyFullAccessName = typeof(Events.Any).ToString().Replace("+", "."); 
+        private static readonly string _eventCurrentFullAccessName = typeof(Events.Current).ToString().Replace("+", ".");
 
         private readonly GeneratorExecutionContext _context;
 
@@ -27,8 +28,8 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             IReadOnlyCollection<IMethodSymbol> automationMethods,
             IReadOnlyCollection<string> entitiesFullNames)
         {
-            // Add the Event type to the list so it gets tracked.
-            entitiesFullNames = entitiesFullNames.Append(_eventFullAccessName).ToList();
+            // Add the Event types to the list so they get tracked.
+            entitiesFullNames = entitiesFullNames.Concat(new[] { _eventAnyFullAccessName, _eventCurrentFullAccessName }).ToList();
 
             var verifiedAutomationMethods =
                 AutomationMethodValidator.VerifyMethodSymbols(automationMethods, _context.ReportDiagnostic)
@@ -52,7 +53,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                                 return "ct";
 
                             // Request snapshot entites and the source event from the IEntitySnapshotProvider
-                            if (ParameterHasSnapshotAttribute(p) || typeFullName == _eventFullAccessName)
+                            if (ParameterHasSnapshotAttribute(p) || IsEventFullName(typeFullName))
                                 return $"s.GetRequiredService<{typeof(IEntitySnapshotProvider).GetFullName()}>().{nameof(IEntitySnapshotProvider.GetSnapshot)}<{typeFullName}>()";
 
                             return $"s.GetRequiredService<{typeFullName}>()";
@@ -158,7 +159,7 @@ namespace {nameof(hhnl)}.{nameof(HomeAssistantNet)}.Generated
                     var fullName = p.Type.GetFullName(entitiesFullNames);
 
                     // If the soure event is requested, we include it in the snapshot
-                    if (fullName == _eventFullAccessName)
+                    if (IsEventFullName(fullName))
                         return true;
 
                     return entitiesFullNames.Contains(fullName) && ParameterHasSnapshotAttribute(p);
@@ -166,5 +167,7 @@ namespace {nameof(hhnl)}.{nameof(HomeAssistantNet)}.Generated
                 .Select(p => $"typeof({p.Type.GetFullName(entitiesFullNames)})");
 
         private static bool ParameterHasSnapshotAttribute(IParameterSymbol p) => p.GetAttributes().Any(a => a.AttributeClass!.ToString() == _snapshotAttributeFullAccessName);
+
+        private static bool IsEventFullName(string fullName) => fullName == _eventAnyFullAccessName || fullName == _eventCurrentFullAccessName; 
     }
 }

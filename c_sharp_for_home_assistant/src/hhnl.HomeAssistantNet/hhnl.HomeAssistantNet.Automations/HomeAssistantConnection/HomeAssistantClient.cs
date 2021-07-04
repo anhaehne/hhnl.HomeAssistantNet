@@ -46,7 +46,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             _haConfig = haConfig;
             _mediator = mediator;
             _messagesToSend = Channel.CreateBounded<byte[]>(10);
-            _publishEventNotification = automationRegistry.HasAutomationsTrackingEvent;
+            _publishEventNotification = automationRegistry.HasAutomationsTrackingAllEvents;
         }
 
         public void Dispose()
@@ -257,7 +257,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
                     break;
                 case "event":
-                    var apiEvent = await apiMessage.Event.ToObjectAsync<Event>();
+                    var apiEvent = await apiMessage.Event.ToObjectAsync<Events.Current>();
 
                     if (apiEvent is null)
                         return;
@@ -269,7 +269,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         }
 
 
-        private async Task HandleEventAsync(Event apiEvent)
+        private async Task HandleEventAsync(Events.Current apiEvent)
         {
             switch (apiEvent.EventType)
             {
@@ -418,17 +418,17 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             [JsonPropertyName("new_state")] public JsonElement NewState { get; set; }
 
             [JsonIgnore]
-            public Event SourceEvent { get; set; }
+            public Events.Current SourceEvent { get; set; }
         }
 
         public class EventFiredNotification : INotification
         {
-            public EventFiredNotification(Event @event)
+            public EventFiredNotification(Events.Current @event)
             {
                 Event = @event;
             }
 
-            public Event Event { get; set; }
+            public Events.Current Event { get; set; }
         }
 #pragma warning restore 8618
     }

@@ -21,7 +21,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         public async Task Handle(HomeAssistantClient.EventFiredNotification notification, CancellationToken cancellationToken)
         {
-            var automations = _automationRegistry.GetAutomationsTrackingEntity(Event.UniqueId);
+            var automations = _automationRegistry.GetAutomationsTrackingEntity(Events.Any.UniqueId);
 
             // Run automations
             foreach (var automation in automations)

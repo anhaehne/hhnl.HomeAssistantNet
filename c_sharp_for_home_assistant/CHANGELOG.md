@@ -5,14 +5,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [0.5.0] - 2021-07-04
 ### Added
-- [Snapshot] attribute
-- 'Event' class. Allows to listen for abitrary events.
+- Snapshot attribute
+- Events.All class. Allows to listen for abitrary events.
+- Events.Current class. Allows to access the current event.
 - Script entity
 - ReentryPolicy.QueueLatest - Behaves similar to what ReentryPolicy.Queue was before
 
 ### Changed
 - ReentryPolicy.Queue - Will now queue runs without a limit
+- Updated project template to latest nuget packages
+
+## Fixed
+- UI secrets editor layout
 
 ## [0.4.2] - 2021-07-02
 ### Fixed
