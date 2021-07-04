@@ -46,7 +46,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             _haConfig = haConfig;
             _mediator = mediator;
             _messagesToSend = Channel.CreateBounded<byte[]>(10);
-            _publishEventNotification = automationRegistry.HasAutomationsTrackingAllEvents;
+            _publishEventNotification = automationRegistry.HasAutomationsTrackingAnyEvents;
         }
 
         public void Dispose()
