@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Shared.Automation;
 
 namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 {
-    public class CancelPreviousAutomationRunner : QueueAutomationRunner
+    public class CancelPreviousAutomationRunner : QueueLatestAutomationRunner
     {
         public CancelPreviousAutomationRunner(AutomationEntry entry, IServiceProvider provider) : base(entry, provider)
         {
@@ -13,10 +14,11 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
         public override Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
-            TaskCompletionSource? startTcs)
+            TaskCompletionSource? startTcs,
+            IReadOnlyDictionary<Type, object> snapshot)
         {
             Entry.LatestRun?.CancellationTokenSource?.Cancel();
-            return base.EnqueueAsync(reason, changedEntity, startTcs);
+            return base.EnqueueAsync(reason, changedEntity, startTcs, snapshot);
         }
     }
 }

@@ -9,7 +9,8 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 {
     public class AutomationRunInfo
     {
-        private static Action _noop = () => { };
+        private readonly static Dictionary<Type, object> _emptySnapshot = new();
+        private readonly static Action _noop = () => { };
 
         public Guid Id { get; set; }
 
@@ -36,7 +37,10 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
         
         [JsonIgnore]
         public CancellationTokenSource? CancellationTokenSource { get; set; }
-        
+
+        [JsonIgnore]
+        public IReadOnlyDictionary<Type, object> EntitySnapshot { get; set; } = _emptySnapshot;
+
         public enum RunState
         {
             Running,

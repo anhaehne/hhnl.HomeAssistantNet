@@ -19,14 +19,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation.Runner
             sut.Start();
 
             var startTcs = new TaskCompletionSource();
-            await sut.EnqueueAsync(AutomationRunInfo.StartReason.Manual, null, startTcs);
+            await sut.EnqueueAsync(AutomationRunInfo.StartReason.Manual, null, startTcs, EmptySnapshot);
             await Assert.That.TaskCompletesAsync(startTcs.Task, TimeSpan.FromSeconds(1), "Run didn't start in time.");
 
             var firstRun = Entry.LatestRun;
             var firstInstance = await WaitForAutomationInstance(1);
 
             // Act
-            await sut.EnqueueAsync(AutomationRunInfo.StartReason.Manual, null, null);
+            await sut.EnqueueAsync(AutomationRunInfo.StartReason.Manual, null, null, EmptySnapshot);
 
             // Assert
             Assert.IsNotNull(Entry.LatestRun, "No run has been added to the entry.");

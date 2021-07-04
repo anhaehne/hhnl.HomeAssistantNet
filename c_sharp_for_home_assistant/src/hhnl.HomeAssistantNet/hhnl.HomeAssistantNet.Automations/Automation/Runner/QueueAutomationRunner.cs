@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
         private readonly CancellationTokenSource _cts = new();
 
         private readonly
-            Channel<AutomationRunInfo> _runs = Channel.CreateBounded<AutomationRunInfo>(1);
+            Channel<AutomationRunInfo> _runs = Channel.CreateUnbounded<AutomationRunInfo>();
 
         private Task _runTask = Task.CompletedTask;
 
@@ -33,21 +34,16 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
             await _runTask.IgnoreCancellationAsync();
         }
 
-        public override Task EnqueueAsync(
+        public override async Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
-            TaskCompletionSource? startTcs)
+            TaskCompletionSource? startTcs,
+            IReadOnlyDictionary<Type, object> snapshot)
         {
-            var run = CreateAutomationRun(reason, changedEntity, startTcs, AutomationRunInfo.RunState.WaitingInQueue);
+            var run = CreateAutomationRun(reason, changedEntity, startTcs, snapshot, AutomationRunInfo.RunState.WaitingInQueue);
 
-            if (!_runs.Writer.TryWrite(run))
-            {
-                startTcs?.TrySetResult();
-                return Task.CompletedTask;
-            }
-            
+            await _runs.Writer.WriteAsync(run);
             Entry.AddRun(run);
-            return Task.CompletedTask;
         }
 
         private async Task Run()

@@ -11,6 +11,10 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
         {
         }
 
+        public bool IsOn => State == "on";
+
+        public bool IsOff => State == "off";
+
         public async Task TurnOnAsync(dynamic? data = null, CancellationToken cancellationToken = default)
         {
             await HomeAssistantClient.CallServiceAsync("script", "turn_on", UniqueId, data, cancellationToken);

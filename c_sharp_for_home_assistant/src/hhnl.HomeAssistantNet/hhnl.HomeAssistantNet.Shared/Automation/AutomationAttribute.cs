@@ -19,7 +19,7 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
         /// The policy to use when an automation is triggered while the previous execution hasn't finished yet.
         /// See: <see cref="ReentryPolicy"/>
         /// </param>
-        public AutomationAttribute(string? displayName = null, bool runOnStart = false, ReentryPolicy reentryPolicy = ReentryPolicy.Queue)
+        public AutomationAttribute(string? displayName = null, bool runOnStart = false, ReentryPolicy reentryPolicy = ReentryPolicy.QueueLatest)
         {
         }
     }
