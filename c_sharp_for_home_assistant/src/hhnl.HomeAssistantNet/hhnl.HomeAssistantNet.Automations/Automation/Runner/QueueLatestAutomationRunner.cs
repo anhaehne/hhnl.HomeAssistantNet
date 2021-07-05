@@ -13,7 +13,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
         private readonly CancellationTokenSource _cts = new();
 
         private Task _runTask = Task.CompletedTask;
-        private (AutomationRunInfo RunInfo, TaskCompletionSource? StartTcs) _next;
+        private AutomationRunInfo? _next;
 
         private readonly AsyncAutoResetEvent _runTrigger = new();
         private readonly SemaphoreSlim _nextSemaphore = new(1);
@@ -35,6 +35,24 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
             await _runTask.IgnoreCancellationAsync();
         }
 
+        public override async Task StopRunAsync(AutomationRunInfo run)
+        {
+            await _nextSemaphore.WaitAsync();
+
+            try
+            {
+                // If the run is the next run, remove it from the queue
+                if (_next is not null && _next == run)
+                    _next = null;
+            }
+            finally
+            {
+                _nextSemaphore.Release();
+            }
+
+            await base.StopRunAsync(run);
+        }
+
         public override async Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
@@ -48,14 +66,18 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
             try
             {
                 // Cancel previously enqueued run
-                if (_next.RunInfo is not null)
-                    _next.RunInfo.State = AutomationRunInfo.RunState.Cancelled;
-
-                _next.StartTcs?.SetResult();
+                if (_next is not null)
+                {
+                    _next.State = AutomationRunInfo.RunState.Cancelled;
+                    await PublishRunChangedAsync(_next);
+                }
 
                 // Enqueue next run
-                _next = (run, startTcs);
+                _next = run;
                 Entry.AddRun(run);
+
+                startTcs?.TrySetResult();
+                await PublishRunChangedAsync(run);
 
                 // Signal run task
                 _runTrigger.Set();
@@ -85,18 +107,17 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 
                 try
                 {
-                    next = _next.RunInfo;
-                    _next = default;
+                    next = _next;
+                    _next = null;
                 }
                 finally
                 {
                     _nextSemaphore.Release();
                 }
 
+                // Check if the next has been canceled.
                 if (next is null)
-                {
-                    throw new InvalidOperationException("_next can't be null when the next run is triggerd.");
-                }
+                    return;
 
                 next.Start();
                 next.State = AutomationRunInfo.RunState.Running;

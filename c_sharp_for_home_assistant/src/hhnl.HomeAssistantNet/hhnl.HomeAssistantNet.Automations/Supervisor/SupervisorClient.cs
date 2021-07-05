@@ -50,7 +50,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
                 .Build();
             _hubConnection.On<long>(nameof(IManagementClient.GetAutomationsAsync), GetAutomationsAsync);
             _hubConnection.On<long, string>(nameof(IManagementClient.StartAutomationAsync), StartAutomationAsync);
-            _hubConnection.On<long, string>(nameof(IManagementClient.StopAutomationAsync), StopAutomationAsync);
+            _hubConnection.On<long, Guid>(nameof(IManagementClient.StopAutomationRunAsync), StopAutomationRunAsync);
             _hubConnection.On(nameof(IManagementClient.Shutdown), Shutdown);
             _hubConnection.On<long>(nameof(IManagementClient.GetProcessId), GetProcessId);
             _hubConnection.On<long, Guid>(nameof(IManagementClient.StartListenToRunLog), StartListenToRunLog);
@@ -87,16 +87,18 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             await _hubConnection.SendAsync("AutomationStarted", messageId, ToDto(automation));
         }
 
-        public async Task StopAutomationAsync(long messageId, string name)
+        public async Task StopAutomationRunAsync(long messageId, Guid runId)
         {
-            if (!_automationRegistry.Automations.TryGetValue(name, out var automation))
+            var entry = _automationRegistry.Automations.SelectMany(x => x.Value.Runs.Select(run => (Automation: x.Value, Run: run))).SingleOrDefault(x => x.Run.Id == runId);
+
+            if (entry == default)
             {
-                await _hubConnection.SendAsync("AutomationStopped", messageId, null);
+                await _hubConnection.SendAsync("AutomationRunStopped", messageId);
                 return;
             }
 
-            await _automationService.StopAutomationAsync(automation);
-            await _hubConnection.SendAsync("AutomationStopped", messageId, ToDto(automation));
+            await _automationService.StopAutomationRunAsync(entry.Automation, entry.Run);
+            await _hubConnection.SendAsync("AutomationRunStopped", messageId);
         }
 
         public Task GetAutomationsAsync(long messageId)

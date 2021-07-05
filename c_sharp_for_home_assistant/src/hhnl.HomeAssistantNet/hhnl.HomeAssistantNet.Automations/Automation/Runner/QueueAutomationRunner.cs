@@ -42,8 +42,12 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
         {
             var run = CreateAutomationRun(reason, changedEntity, startTcs, snapshot, AutomationRunInfo.RunState.WaitingInQueue);
 
+            await PublishRunChangedAsync(run);
+
             await _runs.Writer.WriteAsync(run);
             Entry.AddRun(run);
+
+            startTcs?.TrySetResult();
         }
 
         private async Task Run()
@@ -51,6 +55,11 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
             while (!_cts.Token.IsCancellationRequested)
             {
                 var next = await _runs.Reader.ReadAsync(_cts.Token);
+
+                // Skip cancelled runs.
+                if (next.State == AutomationRunInfo.RunState.Cancelled)
+                    continue; 
+
                 next.Start();
                 next.State = AutomationRunInfo.RunState.Running;
                 await next.Task;

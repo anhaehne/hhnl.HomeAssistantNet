@@ -40,7 +40,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         /// <param name="automation">The automation to start.</param>
         Task EnqueueAutomationForManualStartAsync(AutomationEntry automation);
 
-        Task StopAutomationAsync(AutomationEntry automation);
+        Task StopAutomationRunAsync(AutomationEntry automation, AutomationRunInfo run);
     }
 
     public class AutomationService : IHostedService, IAutomationService
@@ -81,20 +81,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             TaskCompletionSource tcs =
                 new(TaskCreationOptions.RunContinuationsAsynchronously);
             await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.Manual, null, tcs, Events.Empty);
-            await tcs.Task;
-        }
-
-        public Task StopAutomationAsync(AutomationEntry automation)
-        {
-            AutomationRunInfo? run = automation.LatestRun;
-
-            if (run is null || run.State != AutomationRunInfo.RunState.Running)
-            {
-                return Task.CompletedTask;
-            }
-
-            run.CancellationTokenSource?.Cancel();
-            return run.Task;
+            await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -207,6 +194,14 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             _logger.LogInformation("Stopping running automations ...");
             await Task.WhenAll(runners.Select(r => r.StopAsync()));
             _logger.LogInformation("Automations stopped");
+        }
+
+        public Task StopAutomationRunAsync(AutomationEntry automation, AutomationRunInfo run)
+        {
+            if (!_runners.TryGetValue(automation, out var runner))
+                throw new InvalidOperationException($"Can't find runner for automation {automation.Info.Name}.");
+
+            return Task.WhenAny(runner.Value.StopRunAsync(run), Task.Delay(TimeSpan.FromSeconds(2)));
         }
 
         private Task EnqueueAutomationRunAsync(

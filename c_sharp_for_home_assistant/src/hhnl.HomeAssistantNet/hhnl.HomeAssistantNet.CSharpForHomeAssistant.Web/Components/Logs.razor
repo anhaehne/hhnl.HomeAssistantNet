@@ -4,10 +4,12 @@
 @implements IAsyncDisposable
 @inject SupervisorApiService _supervisorApiService
 
-@foreach(var message in Log)
-{
-    <h6>@message.Message</h6>
-}
+<div class="container">
+    @foreach(var message in Log)
+    {
+        <h6>@message.Message</h6>
+    }
+</div>
 
 
 @code {

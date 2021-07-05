@@ -38,6 +38,16 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
             return Task.CompletedTask;
         }
 
+        public virtual async Task StopRunAsync(AutomationRunInfo run)
+        {
+            run.CancellationTokenSource?.Cancel();
+            run.State = AutomationRunInfo.RunState.Cancelled;
+            await PublishRunChangedAsync(run);
+            await run.Task;
+        }
+
+        protected Task PublishRunChangedAsync(AutomationRunInfo run) => _provider.GetRequiredService<IMediator>().Publish(new AutomationRunStateChangedNotification(Entry, run));
+
         protected AutomationRunInfo CreateAutomationRun(
             AutomationRunInfo.StartReason reason,
             string? changedEntity,
@@ -66,7 +76,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                     
                     try
                     {
-                        await scope.ServiceProvider.GetRequiredService<IMediator>().Publish(new AutomationRunStateChangedNotification(Entry, run));
+                        await PublishRunChangedAsync(run);
 
                         AutomationRunContext.Current =
                             new AutomationRunContext(run.CancellationTokenSource.Token, scope.ServiceProvider, run);
@@ -95,8 +105,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                         run.CancellationTokenSource.Dispose();
                         run.CancellationTokenSource = null;
                     }
-                    
-                    await scope.ServiceProvider.GetRequiredService<IMediator>().Publish(new AutomationRunStateChangedNotification(Entry, run));
+
+                    await PublishRunChangedAsync(run);
                 });
             };
             

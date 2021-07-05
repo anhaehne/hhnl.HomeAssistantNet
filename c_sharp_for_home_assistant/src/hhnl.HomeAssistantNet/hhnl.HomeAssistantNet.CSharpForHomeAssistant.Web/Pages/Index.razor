@@ -1,51 +1,38 @@
 ﻿@page "/"
+@using System.Net
 @using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Components
 @using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 @using hhnl.HomeAssistantNet.Shared.Automation
 @using hhnl.HomeAssistantNet.Shared.Supervisor
 @inject SupervisorApiService _supervisorApiService
-@inject IModalService _modalService
 @implements IDisposable
 
 <h1>Automations</h1>
 
-@if (Connection is not null)
-{
-    @foreach (var automation in Connection.Automations)
+<div class="list-group">
+    @if (Connection is not null)
     {
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">@automation.Info.DisplayName</h5>
-                <button @onclick="() => OnStart(automation)" type="submit" class="btn btn-primary mb-3">Start</button>
-                <button disabled="@automation.Runs.All(r => r.State != AutomationRunInfo.RunState.Running)" @onclick="() => OnStop(automation)" type="submit" class="btn btn-primary mb-3">Stop</button>
-                @if (automation.Runs.Any())
-                {
-                    <ul class="list-group">
-                        @foreach (var run in automation.Runs)
-                        {
-                            <li class="list-group-item">
-                                <h6>
-                                    @Humanize(run.Started)
-                                    @if (run.Ended is not null)
-                                    {
-                                        <span> - @Humanize(run.Ended.Value)</span>
-                                    }
-                                </h6>
-                                <button @onclick="() => ShowLogs(run)" type="submit" class="btn btn-primary mb-3">Logs</button>
-                                @run.State - @run.Reason
-                                @if (run.Error is not null)
-                                {
-                                    <div class="alert alert-danger" role="alert">@run.Error</div>
-                                }
-                            </li>
-                        }
-                    </ul>
-                }
-            </div>
-        </div>
+        @foreach (var automation in Connection.Automations)
+        {
+            <a href="automation/@automation.Info.Name.Replace(".", "|")" class="list-group-item list-group-item-action">
+                <div class="w-100">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">@automation.Info.DisplayName</h5>
+                        <div>
+                            <small>@automation.Runs.Count Runs |</small>
+                            <span class="badge rounded-pill bg-info text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.WaitingInQueue).Count()</span>
+                            <span class="badge rounded-pill bg-success text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Running).Count()</span>
+                            <span class="badge rounded-pill bg-secondary text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Completed).Count()</span>
+                            <span class="badge rounded-pill bg-warning">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Cancelled).Count()</span>
+                            <span class="badge rounded-pill bg-danger text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Error).Count()</span>
+                        </div>
+                    </div>
+                    <small class="text-muted">@automation.Info.Name</small>
+                </div>
+            </a>
+        }
     }
-}
-
+</div>
 
 @code
 {
@@ -65,29 +52,5 @@
     public void Dispose()
     {
         _connectionChangedSubscription?.Dispose();
-    }
-
-    private void ShowLogs(AutomationRunInfo automationRun)
-    {
-        var parameters = new ModalParameters();
-        parameters.Add(nameof(Logs.RunId), automationRun.Id);
-
-        _modalService.Show<Logs>("Log", parameters);
-    }
-
-    private Task OnStart(AutomationInfoDto dto)
-    {
-        return _supervisorApiService.StartAutomationAsync(dto);
-    }
-
-    private Task OnStop(AutomationInfoDto dto)
-    {
-        return _supervisorApiService.StopAutomationAsync(dto);
-    }
-
-    private string Humanize(DateTimeOffset dateTime)
-    {
-        var local = dateTime.ToLocalTime();
-        return local.ToString(local.Date == DateTime.Now.Date ? "t" : "g");
     }
 }

@@ -31,12 +31,6 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
             return CallHostService(service => service.StartAutomationAsync(name));
         }
 
-        [HttpPost("{name}/stop")]
-        public Task<ActionResult<AutomationInfoDto>> StopAutomationAsync([FromRoute] string name, TimeSpan? timeout = null)
-        {
-            return CallHostService(service => service.StopAutomationAsync(name, timeout ?? TimeSpan.FromSeconds(30)));
-        }
-
         private async Task<ActionResult<T>> CallHostService<T>(Func<IAutomationsHostService, Task<T?>> serviceCalls)
         {
             T? result;
