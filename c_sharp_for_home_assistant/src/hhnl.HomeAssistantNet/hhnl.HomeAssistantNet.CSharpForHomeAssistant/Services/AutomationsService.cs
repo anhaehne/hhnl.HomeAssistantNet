@@ -10,7 +10,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
     {
         Task<IReadOnlyCollection<AutomationInfoDto>> GetAutomationsAsync();
         Task<AutomationInfoDto?> StartAutomationAsync(string name);
-        Task<AutomationInfoDto?> StopAutomationAsync(string name, TimeSpan timeout);
+        Task StopAutomationRunAsync(Guid runId);
     }
 
     public class AutomationsService : IAutomationsHostService
@@ -38,11 +38,10 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             return _managementHubCallService.CallService<AutomationInfoDto>((id, client) => client.StartAutomationAsync(id, name));
         }
 
-        public Task<AutomationInfoDto?> StopAutomationAsync(string name, TimeSpan timeout)
+        public Task StopAutomationRunAsync(Guid runId)
         {
-            _logger.LogDebug($"Stopping automation '{name}'.");
-            return _managementHubCallService.CallService<AutomationInfoDto>((id, client) => client.StopAutomationAsync(id, name),
-                timeout);
+            _logger.LogDebug($"Stopping automation run '{runId}'.");
+            return _managementHubCallService.CallService<bool>((id, client) => client.StopAutomationRunAsync(id, runId));
         }
     }
 }

@@ -1,0 +1,115 @@
+﻿@page "/automation/{name}"
+@using System.Reactive.Linq
+@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Components
+@using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
+@using hhnl.HomeAssistantNet.Shared.Automation
+@using hhnl.HomeAssistantNet.Shared.Supervisor
+@inject SupervisorApiService _supervisorApiService
+@inject IModalService _modalService
+@implements IDisposable
+
+@if(Model is not null)
+{
+    <h1>@Model.Info.DisplayName</h1>
+
+    <button @onclick="() => Start()" type="submit" class="btn btn-success mb-3"><span class="oi oi-media-play mr-1"></span> Start new</button>
+
+    <div class="list-group">
+        @foreach (var run in Model.Runs)
+        {
+            <div class="list-group-item">
+                <div class="w-100">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">
+                            @run.Id
+                            <span class="badge @ToBadge(run.State)">@run.State</span>
+                        </h5>
+                        <span>
+                            @run.Reason |
+                            @Humanize(run.Started)
+                            @if (run.Ended is not null)
+                            {
+                                <span> - @Humanize(run.Ended.Value)</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="mt-3">
+                        <button @onclick="() => Stop(run)" disabled="@(run.State != AutomationRunInfo.RunState.Running && run.State != AutomationRunInfo.RunState.WaitingInQueue)" type="submit" class="btn btn-danger"><span class="oi oi-media-stop mr-1"></span> Stop</button>
+                        <button @onclick="() => ShowLogs(run)" type="submit" class="btn btn-primary"><span class="oi oi-file mr-1"></span> Logs</button>
+                    </div>
+                    
+                    @if (run.Error is not null)
+                    {
+                        <div class="mt-3 alert alert-danger" role="alert">@run.Error</div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? Name { get; set; }
+
+    private string? _realName;
+
+    private AutomationInfoDto? Model { get; set; }
+    
+    private IDisposable? _connectionChangedSubscription;
+
+    protected override void OnInitialized()
+    {
+        _connectionChangedSubscription = _supervisorApiService.Connection.Subscribe(OnNewConnection);
+        _realName = Name?.Replace("|", ".");
+    }
+
+    private void OnNewConnection(ConnectionInfo? connection)
+    {
+        Model = connection?.Automations.SingleOrDefault(a => a.Info.Name == _realName);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        _connectionChangedSubscription?.Dispose();
+    }
+
+    private string Humanize(DateTimeOffset dateTime)
+    {
+        var local = dateTime.ToLocalTime();
+        return local.ToString(local.Date == DateTime.Now.Date ? "t" : "g");
+    }
+
+    private string ToBadge(AutomationRunInfo.RunState state)
+    {
+        return state switch
+        {
+            AutomationRunInfo.RunState.Completed => "bg-secondary text-light",
+            AutomationRunInfo.RunState.Cancelled => "bg-warning",
+            AutomationRunInfo.RunState.Error => "bg-danger text-light",
+            AutomationRunInfo.RunState.Running => "bg-success text-light",
+            AutomationRunInfo.RunState.WaitingInQueue => "bg-info",
+            _ => throw new ArgumentException("Unkown run state", nameof(state)),
+        };
+    }
+
+    private void ShowLogs(AutomationRunInfo automationRun)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(Logs.RunId), automationRun.Id);
+
+        _modalService.Show<Logs>("Log", parameters);
+    }
+
+
+    private Task Start()
+    {
+        return _supervisorApiService.StartAutomationAsync(Model!);
+    }
+
+    private Task Stop(AutomationRunInfo run)
+    {
+        return _supervisorApiService.StopAutomationRunAsync(run);
+    }
+}

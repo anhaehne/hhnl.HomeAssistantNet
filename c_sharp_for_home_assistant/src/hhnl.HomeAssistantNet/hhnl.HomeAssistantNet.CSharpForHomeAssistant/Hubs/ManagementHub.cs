@@ -67,9 +67,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Hubs
             return _supervisorHub.Clients.All.OnNewLogMessage(message);
         }
 
-        public Task AutomationStopped(long messageId, AutomationInfoDto? info)
+        public Task AutomationRunStopped(long messageId)
         {
-            return _mediator.Send(new SetHubCallResultRequest(info, messageId, Context.ConnectionId));
+            return _mediator.Send(new SetHubCallResultRequest(true, messageId, Context.ConnectionId));
         }
 
         public Task AutomationStarted(long messageId, AutomationInfoDto? info)

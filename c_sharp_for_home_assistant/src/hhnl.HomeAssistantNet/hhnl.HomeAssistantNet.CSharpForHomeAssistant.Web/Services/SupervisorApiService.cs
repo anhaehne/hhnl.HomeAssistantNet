@@ -8,6 +8,7 @@ using System.Net.Http.Json;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using hhnl.HomeAssistantNet.Shared.Automation;
 using hhnl.HomeAssistantNet.Shared.Configuration;
 using hhnl.HomeAssistantNet.Shared.Supervisor;
 using Microsoft.AspNetCore.Components;
@@ -106,9 +107,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
             return PostAsync($"api/automation/{automation.Info.Name}/start");
         }
         
-        public Task StopAutomationAsync(AutomationInfoDto automation)
+        public Task StopAutomationRunAsync(AutomationRunInfo runInfo)
         {
-            return PostAsync($"api/automation/{automation.Info.Name}/stop");
+            return PostAsync($"api/run/{runInfo.Id}/stop");
         }
 
         public async Task BuildAndDeployAsync()

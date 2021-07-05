@@ -39,6 +39,16 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
             return Ok();
         }
 
+        [HttpPost("{runId}/stop")]
+        public async Task<ActionResult<AutomationInfoDto>> StopAutomationAsync([FromRoute] Guid runId)
+        {
+            await CallHostService(client => client.CallService<bool>((messageId, client) =>
+                client.StopAutomationRunAsync(messageId, runId)
+            ));
+
+            return Ok();
+        }
+
         private async Task<ActionResult<T>> CallHostService<T>(Func<IManagementHubCallService, Task<T?>> serviceCalls)
         {
             T? result;
