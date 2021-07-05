@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Automations.Automation;
 using hhnl.HomeAssistantNet.Shared.Configuration;
@@ -19,7 +21,9 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
         private readonly IAutomationService _automationService;
         private readonly HubConnection? _hubConnection;
         private readonly ILogger<SupervisorClient> _logger;
-        private readonly TaskCompletionSource _clientStarted = new ();
+        private readonly Channel<(string MethodName, object? arg1)> _pushMessageChannel = Channel.CreateUnbounded<(string MethodName, object? arg1)>();
+        private Task? _runTask;
+        private CancellationTokenSource? _cts;
 
         public SupervisorClient(
             IAutomationRegistry automationRegistry,
@@ -63,16 +67,23 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
 
             await _hubConnection.StartAsync(cancellationToken);
             _logger.LogInformation("Supervisor client started");
-            _clientStarted.SetResult();
+
+            _cts = new CancellationTokenSource();
+            _runTask = RunAsync();
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
-            if (_hubConnection is null)
-                return Task.CompletedTask;
+            _cts?.Cancel();
 
-            _logger.LogInformation("Stopping supervisor client ...");
-            return _hubConnection.StopAsync(cancellationToken);
+            if (_runTask is not null)
+                await _runTask;
+
+            if (_hubConnection is not null)
+            {
+                _logger.LogInformation("Stopping supervisor client ...");
+                await _hubConnection.StopAsync(cancellationToken);
+            }
         }
 
         public async Task StartAutomationAsync(long messageId, string name)
@@ -134,22 +145,34 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
         public async Task OnAutomationsChanged()
         {
             var automations = _automationRegistry.Automations.Values.Select(ToDto).ToArray();
-
-            // This can try to send messages before the client is connected so we have to wait first.
-            await _clientStarted.Task;
-            await _hubConnection.SendAsync("OnAutomationsChanged", automations);
+            await _pushMessageChannel.Writer.WriteAsync(("OnAutomationsChanged", automations));
         }
 
         public async Task OnNewLogMessage(LogMessageDto logMessageDto)
         {
-            // This can try to send messages before the client is connected so we have to wait first.
-            await _clientStarted.Task;
-            await _hubConnection.SendAsync("OnNewLogMessage", logMessageDto);
+            await _pushMessageChannel.Writer.WriteAsync(("OnNewLogMessage", logMessageDto));
         }
 
-        private static AutomationInfoDto ToDto(AutomationEntry entry)
+        private async Task RunAsync()
         {
-            return new AutomationInfoDto(entry.Info, entry.Runs);
+            if (_cts is null)
+                throw new InvalidOperationException("Cancellation token source is null.");
+
+            while(!_cts.IsCancellationRequested)
+            {
+                var next = await _pushMessageChannel.Reader.ReadAsync(_cts.Token);
+
+                try
+                {
+                    await _hubConnection.SendAsync(next.MethodName, next.arg1, cancellationToken: _cts.Token);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to invoke method {next.MethodName}");
+                }
+            }
         }
+
+        private static AutomationInfoDto ToDto(AutomationEntry entry) => new AutomationInfoDto(entry.Info, entry.Runs);
     }
 }
