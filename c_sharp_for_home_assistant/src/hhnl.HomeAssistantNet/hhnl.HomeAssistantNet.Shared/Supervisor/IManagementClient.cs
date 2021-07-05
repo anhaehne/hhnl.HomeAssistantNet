@@ -7,7 +7,7 @@ namespace hhnl.HomeAssistantNet.Shared.Supervisor
     {
         Task StartAutomationAsync(long messageId, string name);
         
-        Task StopAutomationAsync(long messageId, string name);
+        Task StopAutomationRunAsync(long messageId, Guid runId);
 
         Task StartListenToRunLog(long messageId, Guid runId);
 
