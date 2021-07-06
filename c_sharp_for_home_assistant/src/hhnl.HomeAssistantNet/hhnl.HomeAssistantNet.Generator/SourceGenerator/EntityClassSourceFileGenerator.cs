@@ -53,6 +53,10 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                     ? string.Join(" | ", GetSupportedFeatures(entity, supportedFeaturesType))
                     : "null";
 
+                // When the entity has a supported features but the collection is empty.
+                if (string.IsNullOrEmpty(supportedFeatures))
+                    supportedFeatures = "null";
+
                 var entityClassName = ToClassName(entity.EntityId);
 
                 entitiesFullNames.Add($"{EntityNamespace}.{className}.{entityClassName}");
@@ -88,13 +92,15 @@ namespace {EntityNamespace}
 
             string ToClassName(string entity)
             {
-                return string.Join("", RemoveDomain(entity).Split('.', '_', '-').Select(FirstToUpper));
+                return EnsureStartsWithValidCharacter(string.Join("", RemoveDomain(entity).Split('.', '_', '-').Select(FirstToUpper)));
             }
 
             static string FirstToUpper(string input)
             {
                 return input.First().ToString().ToUpper() + input.Substring(1);
             }
+
+            static string EnsureStartsWithValidCharacter(string input) => char.IsDigit(input[0]) ? "_" + input : input;
 
             string RemoveDomain(string entity)
             {

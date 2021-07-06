@@ -27,8 +27,6 @@ namespace hhnl.HomeAssistantNet.TestProject
         [Automation]
         public async Task StartScript(Lights.Buro t, Events.Current currentEvent)
         {
-            
-
         }
 
         [Automation]
@@ -43,7 +41,7 @@ namespace hhnl.HomeAssistantNet.TestProject
         {
             while (!ct.IsCancellationRequested)
             {
-                await Time.Wait(TimeSpan.FromSeconds(2));   
+                await Time.Wait(TimeSpan.FromSeconds(2));
             }
         }
 
