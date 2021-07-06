@@ -116,7 +116,11 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
             TimeSpan runIn = nextOccurence.Value - DateTime.Now;
 
-            System.Timers.Timer? t = new System.Timers.Timer(runIn.TotalMilliseconds);
+            // Make sure we don't get invalid intervals.
+            if(runIn.TotalMilliseconds < 1)
+                runIn = TimeSpan.FromMilliseconds(1);
+
+            System.Timers.Timer? t = new(runIn.TotalMilliseconds);
             t.Elapsed += ScheduleRun;
             t.Start();
 
