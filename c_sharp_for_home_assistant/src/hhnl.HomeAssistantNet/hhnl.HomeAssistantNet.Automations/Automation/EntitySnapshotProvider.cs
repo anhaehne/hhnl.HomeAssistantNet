@@ -12,5 +12,13 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
             return (T)AutomationRunContext.GetRunContextOrFail().CurrentRun.EntitySnapshot[typeof(T)];
         }
+
+        public object GetSnapshot(Type t)
+        {
+            if (!AutomationRunContext.GetRunContextOrFail().CurrentRun.EntitySnapshot.ContainsKey(t))
+                throw new InvalidOperationException($"Entity snapshot didn't include {t}");
+
+            return AutomationRunContext.GetRunContextOrFail().CurrentRun.EntitySnapshot[t];
+        }
     }
 }

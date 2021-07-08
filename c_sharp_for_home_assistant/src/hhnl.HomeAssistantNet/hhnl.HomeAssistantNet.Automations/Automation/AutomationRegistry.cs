@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Reflection;
+using hhnl.HomeAssistantNet.Shared.Automation;
 using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.SourceGenerator;
 
@@ -22,9 +24,9 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
     {
         private readonly Dictionary<string, List<AutomationEntry>> _automationsListeningToEntities = new();
 
-        public AutomationRegistry(IGeneratedMetaData generatedMetaData)
+        public AutomationRegistry(IGeneratedMetaData generatedMetaData, IAutomationInfoProvider automationInfoProvider, Assembly assembly)
         {
-            Automations = generatedMetaData.AutomationMetaData.Select(x => new AutomationEntry(x))
+            Automations = automationInfoProvider.DiscoverAutomations(assembly).Select(x => new AutomationEntry(x))
                 .ToDictionary(x => x.Info.Name);
 
             foreach (var automation in Automations.Values)

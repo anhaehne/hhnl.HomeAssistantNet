@@ -31,67 +31,9 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             // Add the Event types to the list so they get tracked.
             entitiesFullNames = entitiesFullNames.Concat(new[] { _eventAnyFullAccessName, _eventCurrentFullAccessName }).ToList();
 
-            var verifiedAutomationMethods =
-                AutomationMethodValidator.VerifyMethodSymbols(automationMethods, _context.ReportDiagnostic)
-                    .ToList();
-
-            var automationInfo = string.Join(Environment.NewLine,
-                verifiedAutomationMethods.Select(automationMethod =>
-                {
-                    var (method, error) = automationMethod;
-
-                    var attributeData = method.GetAttributes()
-                        .First(a => a.AttributeClass!.ToString() == _automationAttributeFullAccessName);
-
-                    var arguments = string.Join(",",
-                        method.Parameters.Select(p =>
-                        {
-                            var typeFullName = p.Type.GetFullName(entitiesFullNames);
-
-                            // Allow passing the cancellation token.
-                            if (typeFullName == typeof(CancellationToken).GetFullName())
-                                return "ct";
-
-                            // Request snapshot entites and the source event from the IEntitySnapshotProvider
-                            if (ParameterHasSnapshotAttribute(p) || IsEventFullName(typeFullName))
-                                return $"s.GetRequiredService<{typeof(IEntitySnapshotProvider).GetFullName()}>().{nameof(IEntitySnapshotProvider.GetSnapshot)}<{typeFullName}>()";
-
-                            return $"s.GetRequiredService<{typeFullName}>()";
-                        }));
-
-                    var classEntityDependencies = GetClassEntityDependencies(method, entitiesFullNames);
-                    var dependingOnEntities = GetMethodEntityDependencies(method, entitiesFullNames).ToList();
-
-                    var entityDependencies = classEntityDependencies.Concat(dependingOnEntities.Select(x => x.Entity));
-                    var listenToEntities = dependingOnEntities.Where(x => !x.NoTrack).Select(x => x.Entity);
-
-                    var snapshotEntities = GetMethodSnapshotEntities(method, entitiesFullNames);
-
-                    return $@"            new {typeof(AutomationInfo).GetFullName()}
-            {{
-                {nameof(AutomationInfo.GenerationError)} = ""{(error is null ? string.Empty : error.GetMessage())}"",
-                {nameof(AutomationInfo.Method)} = typeof({method.ContainingType.GetFullName(entitiesFullNames)}).GetMethod(""{method.Name}"", BindingFlags.Instance | BindingFlags.Public)!,
-                {nameof(AutomationInfo.DisplayName)} = ""{attributeData.ConstructorArguments[0].Value ?? method.Name}"",
-                {nameof(AutomationInfo.Name)} = ""{method.ContainingType.GetFullName(entitiesFullNames)}.{method.Name}"",
-                {nameof(AutomationInfo.RunOnStart)} = {(attributeData.ConstructorArguments[1].Value is true ? "true" : "false")},
-                {nameof(AutomationInfo.ReentryPolicy)} = ({typeof(ReentryPolicy).GetFullName()}){attributeData.ConstructorArguments[2].Value},
-                {nameof(AutomationInfo.DependsOnEntities)} = new Type[] {{ {string.Join(", ", entityDependencies)} }},
-                {nameof(AutomationInfo.ListenToEntities)} = new Type[] {{ {string.Join(", ", listenToEntities)} }},
-                {nameof(AutomationInfo.SnapshotEntities)} = new Type[] {{ {string.Join(", ", snapshotEntities)} }},
-                {nameof(AutomationInfo.RunAutomation)} = async (s, ct) => 
-                {{
-                    {(method.IsAsync ? "await " : string.Empty)}s.GetRequiredService<{method.ContainingType.GetFullName(entitiesFullNames)}>().{method.Name}({arguments});
-                }}
-            }},";
-                }));
-
             var registerEntities = string.Join(Environment.NewLine,
                 entitiesFullNames.Select(t =>
                     $"            serviceCollection.AddSingleton<{t}>();"));
-
-            var registerAutomationClasses = string.Join(Environment.NewLine,
-                verifiedAutomationMethods.Select(m => m.Method.ContainingType).Distinct()
-                    .Select(x => $"            serviceCollection.AddSingleton<{x}>();"));
 
             var entityTypes = string.Join(Environment.NewLine,
                 entitiesFullNames.Select(t => $"            typeof({t}),"));
@@ -113,14 +55,8 @@ namespace {nameof(hhnl)}.{nameof(HomeAssistantNet)}.Generated
     {{
         public void {nameof(IGeneratedMetaData.RegisterEntitiesAndAutomations)}(IServiceCollection serviceCollection)
         {{
-{registerEntities}
-{registerAutomationClasses}       
+{registerEntities} 
         }}
-
-        public IReadOnlyCollection<{typeof(AutomationInfo).GetFullName()}> {nameof(IGeneratedMetaData.AutomationMetaData)} {{ get; }} = new {typeof(AutomationInfo).GetFullName()}[]
-        {{
-{automationInfo}
-        }};
 
         public IReadOnlyCollection<Type> {nameof(IGeneratedMetaData.EntityTypes)} {{ get; }} = new Type[]
         {{
@@ -131,43 +67,5 @@ namespace {nameof(hhnl)}.{nameof(HomeAssistantNet)}.Generated
 
             _context.AddSource("GeneratedMetaData.cs", sourceText);
         }
-
-        private static IEnumerable<string> GetClassEntityDependencies(
-            IMethodSymbol methodSymbol,
-            IReadOnlyCollection<string> entitiesFullNames)
-        {
-            return methodSymbol.ContainingType.Constructors.SelectMany(c => c.Parameters
-                .Where(p => entitiesFullNames.Contains(p.Type.GetFullName(entitiesFullNames)))
-                .Select(p => $"typeof({p.Type.GetFullName(entitiesFullNames)})"));
-        }
-
-        private static IEnumerable<(string Entity, bool NoTrack)> GetMethodEntityDependencies(
-            IMethodSymbol methodSymbol,
-            IReadOnlyCollection<string> entitiesFullNames)
-        {
-            return methodSymbol.Parameters
-                .Where(p => entitiesFullNames.Contains(p.Type.GetFullName(entitiesFullNames)))
-                .Select(p => ($"typeof({p.Type.GetFullName(entitiesFullNames)})",
-                    p.GetAttributes().Any(a => a.AttributeClass!.ToString() == _outputOnlyAttributeFullAccessName)));
-        }
-
-        private static IEnumerable<string> GetMethodSnapshotEntities(
-            IMethodSymbol methodSymbol,
-            IReadOnlyCollection<string> entitiesFullNames) => methodSymbol.Parameters
-                .Where(p =>
-                {
-                    var fullName = p.Type.GetFullName(entitiesFullNames);
-
-                    // If the soure event is requested, we include it in the snapshot
-                    if (IsEventFullName(fullName))
-                        return true;
-
-                    return entitiesFullNames.Contains(fullName) && ParameterHasSnapshotAttribute(p);
-                })
-                .Select(p => $"typeof({p.Type.GetFullName(entitiesFullNames)})");
-
-        private static bool ParameterHasSnapshotAttribute(IParameterSymbol p) => p.GetAttributes().Any(a => a.AttributeClass!.ToString() == _snapshotAttributeFullAccessName);
-
-        private static bool IsEventFullName(string fullName) => fullName == _eventAnyFullAccessName || fullName == _eventCurrentFullAccessName; 
     }
 }

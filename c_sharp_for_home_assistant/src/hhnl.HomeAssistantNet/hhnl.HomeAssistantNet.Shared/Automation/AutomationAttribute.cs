@@ -21,6 +21,15 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
         /// </param>
         public AutomationAttribute(string? displayName = null, bool runOnStart = false, ReentryPolicy reentryPolicy = ReentryPolicy.QueueLatest)
         {
+            DisplayName = displayName;
+            RunOnStart = runOnStart;
+            ReentryPolicy = reentryPolicy;
         }
+
+        public string? DisplayName { get; }
+
+        public bool RunOnStart { get; }
+
+        public ReentryPolicy ReentryPolicy { get; }
     }
 }
