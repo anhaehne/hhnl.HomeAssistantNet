@@ -42,5 +42,6 @@ jobs:
         run: dotnet pack ../src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Generator/hhnl.HomeAssistantNet.Generator.csproj --version-suffix dev -c Release -o .
         
       - name: Push
-        run: dotnet nuget push "*.nupkg" --source nuget.org --skip-duplicate
-
+        run: dotnet nuget push "*.nupkg" --source nuget.org --skip-duplicate --api-key ${NUGET_TOKEN}
+        env:
+          NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
