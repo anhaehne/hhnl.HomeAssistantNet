@@ -53,7 +53,8 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    - run: |
+    - name: Build
+      run: |
         dotnet build ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Automations/hhnl.HomeAssistantNet.Automations.csproj -c Release
         dotnet build ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Generator/hhnl.HomeAssistantNet.Generator.csproj -c Release
         dotnet build ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.CSharpForHomeAssistant/hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj -c Release

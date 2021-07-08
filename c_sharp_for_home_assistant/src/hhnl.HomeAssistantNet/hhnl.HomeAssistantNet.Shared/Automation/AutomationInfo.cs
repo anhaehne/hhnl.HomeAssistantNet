@@ -17,19 +17,6 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 
         public string Name { get; set; }
 
-        [JsonIgnore]
-        public MethodInfo Method 
-        { 
-            get => _method; 
-            set 
-            {
-                _method = value;
-
-                if(value is not null)
-                    Schedules = GetSchedules(value);
-            }
-        }
-
         public bool RunOnStart { get; set; }
 
         public string DisplayName { get; set; }
@@ -61,14 +48,5 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 
         public ReentryPolicy ReentryPolicy { get; set; }
 
-        private IReadOnlyCollection<string> GetSchedules(MethodInfo methodInfo)
-        {
-            var attr = methodInfo.GetCustomAttributes<ScheduleAttribute>();
-
-            if (!attr.Any())
-                return Array.Empty<string>();
-
-            return attr.Select(x => x.CronExpression).ToList();
-        }
     }
 }

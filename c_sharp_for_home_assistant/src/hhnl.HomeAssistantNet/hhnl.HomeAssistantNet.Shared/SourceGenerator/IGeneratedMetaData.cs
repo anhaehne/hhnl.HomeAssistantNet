@@ -9,7 +9,7 @@ namespace hhnl.HomeAssistantNet.Shared.SourceGenerator
     {
         void RegisterEntitiesAndAutomations(IServiceCollection serviceCollection);
 
-        IReadOnlyCollection<AutomationInfo> AutomationMetaData { get; }
+        //IReadOnlyCollection<AutomationInfo> AutomationMetaData { get; }
         
         IReadOnlyCollection<Type> EntityTypes { get; }
     }

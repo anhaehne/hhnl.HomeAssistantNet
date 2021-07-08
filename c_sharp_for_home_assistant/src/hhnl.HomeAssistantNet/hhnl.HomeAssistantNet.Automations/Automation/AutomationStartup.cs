@@ -38,6 +38,10 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             services.AddSingleton(metaData);
             metaData.RegisterEntitiesAndAutomations(services);
 
+            var automationClasses = AutomationInfoProvider.GetAutomationClasses(_assembly);
+            foreach (var automationClass in automationClasses)
+                services.AddTransient(automationClass);
+
             services.Configure<HomeAssistantConfig>(builderContext.Configuration);
             services.PostConfigure<HomeAssistantConfig>(config =>
             {
@@ -64,7 +68,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             services.AddSingleton<IHostedService>(s => s.GetRequiredService<AutomationService>());
             services.AddSingleton<IAutomationService>(s => s.GetRequiredService<AutomationService>());
 
-            services.AddSingleton<IAutomationRegistry, AutomationRegistry>();
+            services.AddSingleton<IAutomationInfoProvider, AutomationInfoProvider>();
+            services.AddSingleton<IAutomationRegistry>(s => new AutomationRegistry(s.GetRequiredService<IGeneratedMetaData>(), s.GetRequiredService<IAutomationInfoProvider>(), _assembly));
             services.AddSingleton<IAutomationRunnerFactory, AutomationRunnerFactory>();
 
             services.AddSingleton<IEntitySnapshotProvider, EntitySnapshotProvider>();
