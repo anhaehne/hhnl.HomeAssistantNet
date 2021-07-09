@@ -72,7 +72,7 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 
         private string ToCron(WeekDay weekDay)
         {
-            return string.Join(",", _weekDays.Where(x => x.HasFlag(weekDay)).Select(x => Enum.GetName(typeof(WeekDay), x).Substring(0, 3).ToUpper()));
+            return string.Join(",", _weekDays.Where(x => weekDay.HasFlag(x)).Select(x => Enum.GetName(typeof(WeekDay), x).Substring(0, 3).ToUpper()));
         }
     }
 
@@ -87,7 +87,7 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
         Saturday = 32,
         Sunday = 64,
 
-        All = Monday & Tuesday & Wednesday & Thursday & Friday & Saturday & Sunday,
+        All = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday,
     }
 
     public enum Every
