@@ -64,7 +64,29 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             Assert.AreEqual(entity, instance.Entity);
         }
 
-        // TODO: Any and Current event
+        [TestMethod]
+        public async Task RunAutomation_should_pass_any_event()
+        {
+            var @event = new Events.Any(new Events.Current(default, default!, default, default!, default!));
+
+            // Act 
+            var instance = await RunAutomationFromClass<AnyEventAutomationRunClass>(snapshotProviderTypes: new[] { @event });
+
+            // Assert
+            Assert.AreEqual(@event, instance.Any);
+        }
+
+        [TestMethod]
+        public async Task RunAutomation_should_pass_current_event()
+        {
+            var @event = new Events.Current(default, default!, default, default!, default!);
+
+            // Act 
+            var instance = await RunAutomationFromClass<CurrentEventAutomationRunClass>(snapshotProviderTypes: new[] { @event });
+
+            // Assert
+            Assert.AreEqual(@event, instance.Current);
+        }
 
         private async Task<TAutomationClass> RunAutomationFromClass<TAutomationClass>(IEnumerable<object>? serviceProviderTypes = null, IEnumerable<object>? snapshotProviderTypes = null, CancellationToken ct = default) where TAutomationClass : class
         {
@@ -108,6 +130,16 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             services.AddSingleton<IEntitySnapshotProvider>(snapshotProviderMock.Object);
 
             return services.BuildServiceProvider();
+        }
+    }
+    public class CurrentEventAutomationRunClass
+    {
+        public Events.Current? Current { get; private set; }
+
+        [Automation]
+        public void Automation(Events.Current current)
+        {
+            Current = current;
         }
     }
 

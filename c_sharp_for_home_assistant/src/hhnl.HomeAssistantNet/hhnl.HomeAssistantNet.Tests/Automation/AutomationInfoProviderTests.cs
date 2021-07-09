@@ -344,6 +344,19 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         }
 
         [TestMethod]
+        public void DiscoverAutomations_should_ignore_generic_class()
+        {
+            // Arrange
+            var sut = GetSut();
+
+            // Act
+            var result = sut.DiscoverAutomations(new[] { typeof(GenericClassAutomationClass<>) });
+
+            // Assert
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [TestMethod]
         public void DiscoverAutomations_should_ignore_abstract_class()
         {
             // Arrange
@@ -544,6 +557,15 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
     }
 
     public abstract class AbstractClassAutomationClass
+    {
+        [Automation]
+        public void Automation()
+        {
+
+        }
+    }
+
+    public class GenericClassAutomationClass<T>
     {
         [Automation]
         public void Automation()
