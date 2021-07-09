@@ -15,7 +15,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 {
     public interface IAutomationInfoProvider
     {
-        IReadOnlyCollection<AutomationInfo> DiscoverAutomations(Assembly assembly);
+        IReadOnlyCollection<AutomationInfo> DiscoverAutomations(IEnumerable<Type> assemblyTypes);
     }
 
     public class AutomationInfoProvider : IAutomationInfoProvider
@@ -29,10 +29,10 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             _generatedMetaData = generatedMetaData;
         }
 
-        public IReadOnlyCollection<AutomationInfo> DiscoverAutomations(Assembly assembly)
+        public IReadOnlyCollection<AutomationInfo> DiscoverAutomations(IEnumerable<Type> assemblyTypes)
         {
             List<AutomationInfo> automations = new();
-            var results = DiscoverAutomationMethods(assembly);
+            var results = DiscoverAutomationMethods(assemblyTypes);
 
             foreach (var (type, automationMethod) in results)
             {
@@ -53,14 +53,14 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             return automations;
         }
 
-        public static IReadOnlyCollection<Type> GetAutomationClasses(Assembly assembly)
+        public static IReadOnlyCollection<Type> GetAutomationClasses(IEnumerable<Type> assemblyTypes)
         {
-            return DiscoverAutomationMethods(assembly).Where(r => Validate(r.Type, r.Method).IsValid).Select(r => r.Type).Distinct().ToList();
+            return DiscoverAutomationMethods(assemblyTypes).Where(r => Validate(r.Type, r.Method).IsValid).Select(r => r.Type).Distinct().ToList();
         }
 
-        private static IEnumerable<(Type Type, MethodInfo Method)> DiscoverAutomationMethods(Assembly assembly)
+        private static IEnumerable<(Type Type, MethodInfo Method)> DiscoverAutomationMethods(IEnumerable<Type> assemblyTypes)
         {
-            return assembly.GetTypes().SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Select(m => (Type: t, Method: m))).Where(x => x.Method.GetCustomAttribute<AutomationAttribute>() is not null);
+            return assemblyTypes.SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Select(m => (Type: t, Method: m))).Where(x => x.Method.GetCustomAttribute<AutomationAttribute>() is not null);
         }
 
         private AutomationInfo ToAutomationInfo(Type type, MethodInfo method)
@@ -119,10 +119,6 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         private static (bool IsValid, string? Error) Validate(Type type, MethodInfo method)
         {
-            // Validate class
-            if (type is null)
-                return (false, "Automation methods must be declared in a class.");
-
             var typeResult = Validate(type);
 
             if (!typeResult.IsValid)
@@ -137,9 +133,6 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
             if (method.IsGenericMethod)
                 return (false, "Automation methods can't be generic.");
-
-            if (method.IsAbstract)
-                return (false, "Automation methods can't be abstract.");
 
             if (method.ReturnType != typeof(void) && method.ReturnType != typeof(Task))
                 return (false, "Automation methods must either return 'void' or 'Task'.");
@@ -192,15 +185,6 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         private static bool HasNoTrackAttribute(ParameterInfo parameter) => parameter.GetCustomAttribute<NoTrackAttribute>() is not null;
 
         private static bool IsEventType(Type t) => t == typeof(Events.Any) || t == typeof(Events.Current);
-
-        private static IReadOnlyCollection<MethodInfo> DiscoverMethods(Assembly assembly)
-        {
-            return assembly.GetTypes().Where(IsValidType).SelectMany(t => t.GetMethods()).Where(IsValidMethod).ToList();
-
-            bool IsValidMethod(MethodInfo m) => !m.IsStatic && !m.IsGenericMethod && !m.IsAbstract && m.IsPublic;
-
-            bool IsValidType(Type t) => t.IsPublic && t.IsClass && !t.IsGenericType && !t.IsAbstract;
-        }
 
         private IReadOnlyCollection<string> GetSchedules(MethodInfo methodInfo)
         {
