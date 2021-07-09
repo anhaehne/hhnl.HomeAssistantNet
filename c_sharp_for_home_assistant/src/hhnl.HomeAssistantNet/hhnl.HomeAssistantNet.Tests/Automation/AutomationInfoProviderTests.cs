@@ -18,14 +18,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_return_simple_automation()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(SimpleAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(SimpleAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual($"{typeof(SimpleAutomationClass).FullName}.{nameof(Automation)}", automation.Name);
             Assert.AreEqual($"{typeof(SimpleAutomationClass).FullName}.{nameof(Automation)}", automation.DisplayName);
             Assert.AreEqual(0, automation.ListenToEntities.Count);
@@ -39,14 +39,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_return_simple_async_automation()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(AsyncAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(AsyncAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual($"{typeof(AsyncAutomationClass).FullName}.{nameof(Automation)}", automation.Name);
             Assert.AreEqual($"{typeof(AsyncAutomationClass).FullName}.{nameof(Automation)}", automation.DisplayName);
             Assert.AreEqual(0, automation.ListenToEntities.Count);
@@ -60,14 +60,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_set_run_on_start()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(RunOnStartAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(RunOnStartAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.IsTrue(automation.RunOnStart);
         }
 
@@ -75,14 +75,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_set_display_name()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(DisplayNameAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(DisplayNameAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual($"{typeof(DisplayNameAutomationClass).FullName}.{nameof(Automation)}", automation.Name);
             Assert.AreEqual(DisplayNameAutomationClass.TestValue, automation.DisplayName);
         }
@@ -91,14 +91,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_set_reentry_policy()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(ReentryPolicyAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(ReentryPolicyAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual(ReentryPolicyAutomationClass.TestValue, automation.ReentryPolicy);
         }
 
@@ -106,14 +106,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_discover_inherited_automations()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(InheritedAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(InheritedAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual($"{typeof(InheritedAutomationClass).FullName}.{nameof(Automation)}", automation.Name);
             Assert.AreEqual($"{typeof(InheritedAutomationClass).FullName}.{nameof(Automation)}", automation.DisplayName);
             Assert.AreEqual(0, automation.ListenToEntities.Count);
@@ -123,19 +123,18 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             Assert.IsFalse(automation.RunOnStart);
         }
 
-
         [TestMethod]
         public void DiscoverAutomations_should_set_parameter_entities()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(ParameterAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(ParameterAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual(1, automation.ListenToEntities.Count);
             Assert.AreEqual(0, automation.SnapshotEntities.Count);
             Assert.AreEqual(1, automation.DependsOnEntities.Count);
@@ -148,14 +147,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_set_parameter_entities_with_no_track_attribute()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(NoTrackParameterAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(NoTrackParameterAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual(0, automation.ListenToEntities.Count);
             Assert.AreEqual(0, automation.SnapshotEntities.Count);
             Assert.AreEqual(1, automation.DependsOnEntities.Count);
@@ -168,14 +167,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_set_parameter_entities_with_snapshot_attribute()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(SnapshotParameterAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(SnapshotParameterAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual(1, automation.SnapshotEntities.Count);
             Assert.IsTrue(automation.SnapshotEntities.Contains(typeof(MockEntity1)));
         }
@@ -184,14 +183,79 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_set_constructor_entities()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(ConstructorEntityAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(ConstructorEntityAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
+            Assert.AreEqual(1, automation.DependsOnEntities.Count);
+            Assert.AreEqual(0, automation.ListenToEntities.Count);
+            Assert.IsTrue(automation.DependsOnEntities.Contains(typeof(MockEntity1)));
+        }
+
+        [TestMethod]
+        public void DiscoverAutomations_should_set_inhertited_constructor_entities()
+        {
+            // Arrange
+            var sut = GetSut();
+
+            // Act
+            var result = sut.DiscoverAutomations(new[] { typeof(InheritedConstructorEntityAutomationClass) });
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            var automation = result.First();
+            Assert.AreEqual(1, automation.DependsOnEntities.Count);
+            Assert.AreEqual(0, automation.ListenToEntities.Count);
+            Assert.IsTrue(automation.DependsOnEntities.Contains(typeof(MockEntity1)));
+        }
+
+        [TestMethod]
+        public void DiscoverAutomations_should_set_schedules()
+        {
+            // Arrange
+            var sut = GetSut();
+
+            // Act
+            var result = sut.DiscoverAutomations(new[] { typeof(SchedulesAutomationClass) });
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            var automation = result.First();
+            Assert.AreEqual(3, automation.Schedules.Count);
+        }
+
+        [TestMethod]
+        public void DiscoverAutomations_should_ignore_entity_base_classes_in_constructor()
+        {
+            // Arrange
+            var sut = GetSut();
+
+            // Act
+            var result = sut.DiscoverAutomations(new[] { typeof(ConstructorBaseEntityAutomationClass) });
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            var automation = result.First();
+            Assert.AreEqual(0, automation.DependsOnEntities.Count);
+            Assert.AreEqual(0, automation.ListenToEntities.Count);
+        }
+
+        [TestMethod]
+        public void DiscoverAutomations_should_ignore_entity_base_classes_in_inherited_constructor()
+        {
+            // Arrange
+            var sut = GetSut();
+
+            // Act
+            var result = sut.DiscoverAutomations(new[] { typeof(InheritedConstructorBaseEntityAutomationClass) });
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            var automation = result.First();
             Assert.AreEqual(1, automation.DependsOnEntities.Count);
             Assert.AreEqual(0, automation.ListenToEntities.Count);
             Assert.IsTrue(automation.DependsOnEntities.Contains(typeof(MockEntity1)));
@@ -201,14 +265,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_combine_parameter_and_constructor_entities()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(ParameterAndConstructorEntityAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(ParameterAndConstructorEntityAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual(2, automation.DependsOnEntities.Count);
             Assert.AreEqual(1, automation.ListenToEntities.Count);
             Assert.IsTrue(automation.DependsOnEntities.Contains(typeof(MockEntity1)));
@@ -221,14 +285,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_include_any_event_in_snapshot()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
             var result = sut.DiscoverAutomations(new[] { typeof(AnyEventAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual(0, automation.DependsOnEntities.Count);
             Assert.AreEqual(0, automation.ListenToEntities.Count);
             Assert.AreEqual(1, automation.SnapshotEntities.Count);
@@ -239,14 +303,14 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_include_current_event_in_snapshot()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
             var result = sut.DiscoverAutomations(new[] { typeof(CurrentEventAutomationClass) });
 
             // Assert
             Assert.AreEqual(1, result.Count);
-            AutomationInfo? automation = result.First();
+            var automation = result.First();
             Assert.AreEqual(0, automation.DependsOnEntities.Count);
             Assert.AreEqual(0, automation.ListenToEntities.Count);
             Assert.AreEqual(1, automation.SnapshotEntities.Count);
@@ -257,10 +321,10 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_ignore_private_class()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(PrivateClassAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(PrivateClassAutomationClass) });
 
             // Assert
             Assert.AreEqual(0, result.Count);
@@ -270,10 +334,10 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_ignore_static_class()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(StaticClassAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(StaticClassAutomationClass) });
 
             // Assert
             Assert.AreEqual(0, result.Count);
@@ -283,10 +347,10 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_ignore_abstract_class()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(AbstractClassAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(AbstractClassAutomationClass) });
 
             // Assert
             Assert.AreEqual(0, result.Count);
@@ -296,10 +360,10 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_ignore_private_method()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(PrivateAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(PrivateAutomationClass) });
 
             // Assert
             Assert.AreEqual(0, result.Count);
@@ -309,10 +373,10 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_ignore_static_method()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(StaticAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(StaticAutomationClass) });
 
             // Assert
             Assert.AreEqual(0, result.Count);
@@ -322,10 +386,10 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_ignore_generic_method()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(GenericAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(GenericAutomationClass) });
 
             // Assert
             Assert.AreEqual(0, result.Count);
@@ -335,10 +399,10 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public void DiscoverAutomations_should_ignore_method_with_non_void_or_task_return_type()
         {
             // Arrange
-            IAutomationInfoProvider? sut = GetSut();
+            var sut = GetSut();
 
             // Act
-            System.Collections.Generic.IReadOnlyCollection<AutomationInfo>? result = sut.DiscoverAutomations(new[] { typeof(NonValidReturnTypeAutomationClass) });
+            var result = sut.DiscoverAutomations(new[] { typeof(NonValidReturnTypeAutomationClass) });
 
             // Assert
             Assert.AreEqual(0, result.Count);
@@ -346,10 +410,10 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
 
         private IAutomationInfoProvider GetSut()
         {
-            Mock<IGeneratedMetaData>? metaDataMock = new Mock<IGeneratedMetaData>();
+            var metaDataMock = new Mock<IGeneratedMetaData>();
             metaDataMock.SetupGet(x => x.EntityTypes).Returns(new[] { typeof(MockEntity1), typeof(MockEntity2) });
 
-            AutomationInfoProvider? sut = new AutomationInfoProvider(Mock.Of<ILogger<AutomationInfoProvider>>(), metaDataMock.Object);
+            var sut = new AutomationInfoProvider(Mock.Of<ILogger<AutomationInfoProvider>>(), metaDataMock.Object);
             return sut;
         }
 
@@ -362,6 +426,45 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             }
         }
     }
+
+    public class SchedulesAutomationClass
+    {
+        [Automation]
+        [Schedule(Every.Hour, 4)]
+        [Schedule(WeekDay.Tuesday | WeekDay.Sunday, 3, 5, 7)]
+        [Schedule("* * * * * *")]
+        public void Automation()
+        {
+        }
+    }
+
+    public class InheritedConstructorBaseEntityAutomationClass : ConstructorBaseEntityAutomationClass
+    {
+        public InheritedConstructorBaseEntityAutomationClass(MockEntity1 e) : base(e)
+        {
+        }
+    }
+
+    public class ConstructorBaseEntityAutomationClass
+    {
+        public ConstructorBaseEntityAutomationClass(Entity l)
+        {
+        }
+
+        [Automation]
+        public void Automation()
+        {
+
+        }
+    }
+
+    public class InheritedConstructorEntityAutomationClass : ConstructorEntityAutomationClass
+    {
+        public InheritedConstructorEntityAutomationClass() : base(null!)
+        {
+        }
+    }
+
     public class CurrentEventAutomationClass
     {
         [Automation]

@@ -71,14 +71,12 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             if (method.DeclaringType is not null && method.DeclaringType != type)
                 classDependencies = classDependencies.Concat(GetClassEntityDependencies(method.DeclaringType)).Distinct();
 
-            var methodDependencies = GetMethodEntityDependencies(method).ToList();
+            var methodParameterInfo = GetMethodEntityDependencies(method).ToList();
 
-            var entityDependencies = classDependencies.Concat(methodDependencies.Where(x => x.IsEntity).Select(x => x.Type));
-            var listenToEntities = methodDependencies.Where(x => x.IsEntity && !x.NoTrack).Select(x => x.Type);
+            var entityDependencies = classDependencies.Concat(methodParameterInfo.Where(x => x.IsEntity).Select(x => x.Type));
+            var listenToEntities = methodParameterInfo.Where(x => x.IsEntity && !x.NoTrack).Select(x => x.Type);
 
-            var snapshotTypes = methodDependencies.Where(x => x.Snapshot).Select(x => x.Type);
-
-            var methodParameters = method.GetParameters();
+            var snapshotTypes = methodParameterInfo.Where(x => x.Snapshot).Select(x => x.Type);
 
             var info = new AutomationInfo
             {
@@ -95,7 +93,16 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 RunAutomation = async (services, ct) =>
                 {
                     var instance = services.GetRequiredService(type);
-                    var args = methodParameters.Select(p => GetParameterArgument(services, ct, p)).ToArray();
+                    var args = methodParameterInfo.Select(parameter =>
+                    {
+                        if (parameter.Type == typeof(CancellationToken))
+                            return ct;
+
+                        if(parameter.Snapshot)
+                            return services.GetRequiredService<IEntitySnapshotProvider>().GetSnapshot(parameter.Type);
+
+                        return services.GetRequiredService(parameter.Type);
+                    }).ToArray();
                     var result = method.Invoke(instance, args);
 
                     if (result is Task t)
@@ -104,17 +111,6 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             };
 
             return info;
-        }
-
-        private static object GetParameterArgument(IServiceProvider s, CancellationToken ct, ParameterInfo parameter)
-        {
-            if (parameter.ParameterType == typeof(CancellationToken))
-                return ct;
-
-            if (IsEventType(parameter.ParameterType) || HasSnapshotAttribute(parameter))
-                return s.GetRequiredService<IEntitySnapshotProvider>().GetSnapshot(parameter.ParameterType);
-
-            return s.GetRequiredService(parameter.ParameterType);
         }
 
         private static (bool IsValid, string? Error) Validate(Type type, MethodInfo method)
@@ -174,10 +170,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                     continue;
                 }
 
-                if (!_generatedMetaData.EntityTypes.Contains(parameter.ParameterType))
-                    continue;
-
-                yield return (parameter.ParameterType, HasNoTrackAttribute(parameter), HasSnapshotAttribute(parameter), true);
+                yield return (parameter.ParameterType, HasNoTrackAttribute(parameter), HasSnapshotAttribute(parameter), _generatedMetaData.EntityTypes.Contains(parameter.ParameterType));
             }
         }
 
