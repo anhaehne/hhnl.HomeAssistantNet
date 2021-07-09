@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace hhnl.HomeAssistantNet.Shared.Automation
 {
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class ScheduleAttribute : Attribute
     {
         private readonly WeekDay[] _weekDays = new[] { WeekDay.Sunday, WeekDay.Monday, WeekDay.Tuesday, WeekDay.Wednesday, WeekDay.Thursday, WeekDay.Friday, WeekDay.Saturday };
