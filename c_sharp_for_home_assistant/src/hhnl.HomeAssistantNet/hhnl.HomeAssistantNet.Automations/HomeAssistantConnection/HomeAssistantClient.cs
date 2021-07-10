@@ -136,8 +136,17 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
             _logger.LogInformation("Connected to home assistant websocket api.");
 
-            _receiveTask = Task.Run(ReceiveLoopAsync);
-            _sendTask = Task.Run(SendLoopAsync);
+            _receiveTask = Task.Run(ReceiveLoopAsync).ContinueWith(task =>
+            {
+                if (!_cancellationTokenSource.IsCancellationRequested)
+                    _logger.LogError("The receive task has completed even though the runner hasn't been stopped.");
+            });
+
+            _sendTask = Task.Run(SendLoopAsync).ContinueWith(task =>
+            {
+                if (!_cancellationTokenSource.IsCancellationRequested)
+                    _logger.LogError("The send task has completed even though the runner hasn't been stopped.");
+            });
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
