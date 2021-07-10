@@ -5,6 +5,8 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using hhnl.HomeAssistantNet.Automations.Utils;
 using hhnl.HomeAssistantNet.Shared.Automation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 {
@@ -14,16 +16,23 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 
         private readonly
             Channel<AutomationRunInfo> _runs = Channel.CreateUnbounded<AutomationRunInfo>();
+        private readonly new ILogger<QueueAutomationRunner> _logger;
 
         private Task _runTask = Task.CompletedTask;
 
         public QueueAutomationRunner(AutomationEntry entry, IServiceProvider provider) : base(entry, provider)
         {
+            _logger = provider.GetRequiredService<ILogger<QueueAutomationRunner>>();
         }
 
         public override void Start()
         {
             _runTask = Run();
+            _runTask.ContinueWith(task =>
+            {
+                if (!_cts.IsCancellationRequested)
+                    _logger.LogError("The run task has completed even though the runner hasn't been stopped.");
+            });
         }
 
         public override async Task StopAsync()
