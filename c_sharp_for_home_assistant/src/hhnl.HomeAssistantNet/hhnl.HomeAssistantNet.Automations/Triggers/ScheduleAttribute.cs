@@ -1,24 +1,14 @@
 ﻿using Cronos;
-using hhnl.HomeAssistantNet.Automations.Automation;
-using hhnl.HomeAssistantNet.Shared.Automation;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Timers;
 
 namespace hhnl.HomeAssistantNet.Automations.Triggers
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class ScheduleAttribute : AutomationTriggerAttributeBase
+    public class ScheduleAttribute : ScheduleAttributeBase
     {
         private static readonly WeekDay[] _weekDays = new[] { WeekDay.Sunday, WeekDay.Monday, WeekDay.Tuesday, WeekDay.Wednesday, WeekDay.Thursday, WeekDay.Friday, WeekDay.Saturday };
         private readonly CronExpression _cronExpression;
-        private IAutomationService? _automationService;
-        private IHostApplicationLifetime? _lifetime;
-        private ILogger<ScheduleAttribute>? _logger;
 
         public CronExpression CronExpression => _cronExpression;
 
@@ -30,6 +20,7 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
         /// <param name="minute">The minute of the hour this automation should run. (0 - 59)</param>
         /// <param name="second">The second of the minute this automation should run. (0 - 59)</param>
         public ScheduleAttribute(WeekDay days, int hour, int minute = 0, int second = 0)
+            : base($"{ToCron(days)} {hour:00}:{minute:00}:{second:00}")
         {
             if (hour > 23 || hour < 0)
                 throw new ArgumentException("Hour must be between 0 and 23", nameof(hour));
@@ -51,6 +42,7 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
         /// timePart = Every.Minute; value = 100 => every 100 minutes; starting on the first second of the minute.
         /// </example>
         public ScheduleAttribute(Every timePart, int value = 1)
+            : base($"Every {value} {timePart}")
         {
             if (value < 1)
                 throw new ArgumentException("Value must greater than 0", nameof(value));
@@ -78,69 +70,19 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
         }
 
         public ScheduleAttribute(string cronExpression)
+            : base($"Cron expression '{cronExpression}'")
         {
             _cronExpression = CronExpression.Parse(cronExpression, CronFormat.IncludeSeconds);
         }
 
-        private string ToCron(WeekDay weekDay)
+        private static string ToCron(WeekDay weekDay)
         {
             return string.Join(",", _weekDays.Where(x => weekDay.HasFlag(x)).Select(x => Enum.GetName(typeof(WeekDay), x)!.Substring(0, 3).ToUpper()));
         }
 
-        public override Task RegisterTriggerAsync(AutomationEntry automation, IAutomationService automationService, IServiceProvider serviceProvider)
+        protected override DateTime? GetNextOccurrence()
         {
-            _automationService = automationService;
-            _logger = serviceProvider.GetRequiredService<ILogger<ScheduleAttribute>>();
-            _lifetime = serviceProvider.GetRequiredService<IHostApplicationLifetime>();
-            ScheduleNextRun(automation);
-            return Task.CompletedTask;
-        }
-
-        private void ScheduleNextRun(AutomationEntry entry)
-        {
-            var nextOccurence = CronExpression.GetNextOccurrence(DateTime.UtcNow);
-
-            if (!nextOccurence.HasValue)
-            {
-                _logger.LogWarning($"Automation {entry.Info.Name} has no next scheduled date for cron expression '{CronExpression}'.");
-                return;
-            }
-
-            var runIn = nextOccurence.Value - DateTime.Now;
-
-            // Make sure we don't get invalid intervals.
-            if (runIn.TotalMilliseconds < 1)
-                runIn = TimeSpan.FromMilliseconds(1);
-
-            Timer? t = new(runIn.TotalMilliseconds);
-            t.Elapsed += ScheduleRun;
-            t.Start();
-
-            async void ScheduleRun(object sender, ElapsedEventArgs e)
-            {
-                try
-                {
-                    t.Stop();
-                    t.Elapsed -= ScheduleRun;
-
-                    if ((_lifetime?.ApplicationStopping ?? default).IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    await _automationService!.EnqueueAutomationAsync(entry, AutomationRunInfo.StartReason.Schedule);
-
-                    ScheduleNextRun(entry);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"An error occured while enqueueing the scheduled next automation run of '{entry.Info.Name}'.");
-                }
-                finally
-                {
-                    t.Dispose();
-                }
-            }
+            return _cronExpression.GetNextOccurrence(DateTime.UtcNow)?.ToLocalTime();
         }
     }
 

@@ -23,11 +23,14 @@ namespace hhnl.HomeAssistantNet.TestProject
             _logger = logger;
         }
 
-        /// <summary>
-        /// Prevent the lights from being turned on before 8pm.
-        /// </summary>
         [Automation]
         public async Task StartScript(Lights.Buro t, Events.Current currentEvent)
+        {
+        }
+
+        [Automation]
+        [Schedule(Every.Minute)]
+        public async Task Test()
         {
         }
 
