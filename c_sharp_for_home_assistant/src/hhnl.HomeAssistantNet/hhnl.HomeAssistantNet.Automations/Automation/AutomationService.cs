@@ -75,7 +75,14 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Register all automation triggers
             foreach (var (automation, trigger) in GetTriggerAttributes())
             {
-                await trigger.RegisterTriggerAsync(automation, this, _serviceProvider);
+                try
+                {
+                    await trigger.RegisterTriggerAsync(automation, this, _serviceProvider);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to register trigger '{trigger.GetType()}' for automation '{automation.Info.Name}'.");
+                }
             }
             _logger.LogInformation("AutomationService started");
         }
@@ -89,7 +96,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Unregister all automation triggers
             foreach (var (automation, trigger) in GetTriggerAttributes())
             {
-                await trigger.UnregsisterTriggerAsync();
+                await trigger.UnregisterTriggerAsync();
             }
 
             var runners = _runners.Values.Where(v => v.IsValueCreated).Select(v => v.Value).ToList();

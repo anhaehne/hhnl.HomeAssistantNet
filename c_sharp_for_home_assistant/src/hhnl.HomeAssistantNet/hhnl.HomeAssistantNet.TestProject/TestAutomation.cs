@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using hhnl.HomeAssistantNet.Automations.Triggers;
 using hhnl.HomeAssistantNet.Automations.Automation;
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace hhnl.HomeAssistantNet.TestProject
 {
@@ -31,6 +32,12 @@ namespace hhnl.HomeAssistantNet.TestProject
         [Automation]
         [Schedule(Every.Minute)]
         public async Task Test()
+        {
+        }
+
+        [Automation]
+        [Schedule(WeekDay.All, 20)]
+        public async Task Test1()
         {
         }
 
