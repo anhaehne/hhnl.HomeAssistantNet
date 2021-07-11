@@ -67,7 +67,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 
                 // Skip cancelled runs.
                 if (next.State == AutomationRunInfo.RunState.Cancelled)
-                    continue; 
+                    continue;
 
                 next.Start();
                 next.State = AutomationRunInfo.RunState.Running;
