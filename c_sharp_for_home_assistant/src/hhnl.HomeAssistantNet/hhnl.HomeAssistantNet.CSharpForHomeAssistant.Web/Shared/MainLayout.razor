@@ -14,7 +14,7 @@
         <a class="navbar-brand" href="#">C# for Home Assistant</a>
         <div class="navbar-text">@NavBarText</div>
         <div class="d-flex">
-            <button disabled="@(_supervisorApiService.State != SupervisorApiService.ApplicationState.ConnectedToHost)" class="btn btn-primary mr-3" @onclick="ManageSecrets" type="submit">Manage Secrets</button>
+            <button disabled="@(_supervisorApiService.State != SupervisorApiService.ApplicationState.ConnectedToHost)" class="btn btn-primary me-3" @onclick="ManageSecrets" type="submit">Manage Secrets</button>
         <button disabled="@(_supervisorApiService.State == SupervisorApiService.ApplicationState.BuildAndDeploy)" class="btn btn-primary" @onclick="OnBuildClick" type="submit">Build & Deploy</button>
         </div>
     </div>

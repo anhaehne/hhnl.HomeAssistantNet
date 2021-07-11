@@ -45,11 +45,11 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 
         public override async Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
-            string? changedEntity,
+            string? reasonMessage,
             TaskCompletionSource? startTcs,
             IReadOnlyDictionary<Type, object> snapshot)
         {
-            var run = CreateAutomationRun(reason, changedEntity, startTcs, snapshot, AutomationRunInfo.RunState.WaitingInQueue);
+            var run = CreateAutomationRun(reason, reasonMessage, startTcs, snapshot, AutomationRunInfo.RunState.WaitingInQueue);
 
             await PublishRunChangedAsync(run);
 

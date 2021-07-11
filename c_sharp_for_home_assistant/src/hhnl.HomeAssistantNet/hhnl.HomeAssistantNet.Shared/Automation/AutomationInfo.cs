@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -13,13 +12,19 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 {
     public class AutomationInfo
     {
-        private MethodInfo _method;
-
         public string Name { get; set; }
 
-        public bool RunOnStart { get; set; }
-
         public string DisplayName { get; set; }
+
+        [JsonIgnore]
+        public string ClassName
+        {
+            get
+            {
+                var parts = Name.Split('.');
+                return string.Join(".", parts.Take(parts.Length - 1));
+            }
+        }
 
         public string? GenerationError { get; set; }
 
@@ -44,7 +49,8 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
         [JsonIgnore]
         public Func<IServiceProvider, CancellationToken, Task> RunAutomation { get; set; }
 
-        public IReadOnlyCollection<string> Schedules { get; set; } = Array.Empty<string>();
+        [JsonIgnore]
+        public MethodInfo Method { get; set; }
 
         public ReentryPolicy ReentryPolicy { get; set; }
 

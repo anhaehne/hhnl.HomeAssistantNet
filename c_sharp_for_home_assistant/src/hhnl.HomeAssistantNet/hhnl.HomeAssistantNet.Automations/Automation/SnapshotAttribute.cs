@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace hhnl.HomeAssistantNet.Shared.Automation
+namespace hhnl.HomeAssistantNet.Automations.Automation
 {
     /// <summary>
     /// When applied to a parameter, the entity will always be a snapshot created at the start of the automation.

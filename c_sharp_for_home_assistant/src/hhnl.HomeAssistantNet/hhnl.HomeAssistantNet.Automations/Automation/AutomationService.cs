@@ -1,5 +1,5 @@
-﻿using Cronos;
-using hhnl.HomeAssistantNet.Automations.Automation.Runner;
+﻿using hhnl.HomeAssistantNet.Automations.Automation.Runner;
+using hhnl.HomeAssistantNet.Automations.Triggers;
 using hhnl.HomeAssistantNet.Automations.Utils;
 using hhnl.HomeAssistantNet.Shared.Automation;
 using hhnl.HomeAssistantNet.Shared.Entities;
@@ -9,11 +9,10 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
+using static hhnl.HomeAssistantNet.Shared.Automation.AutomationRunInfo;
 
 namespace hhnl.HomeAssistantNet.Automations.Automation
 {
@@ -23,22 +22,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         /// Enqueues a new automation and waits for it's start.
         /// </summary>
         /// <param name="automation">The automation to start.</param>
-        /// <param name="changedEntity">The entity who's changes caused this automation to be enqueued.</param>
-        /// <param name="currentEvent">The current event.</param>
-        Task EnqueueAutomationForEntityChangeAsync(AutomationEntry automation, string changedEntity, Events.Current currentEvent);
-
-        /// <summary>
-        /// Enqueues a new automation and waits for it's start.
-        /// </summary>
-        /// <param name="automation">The automation to start.</param>
-        /// <param name="currentEvent">The current event.</param>
-        Task EnqueueAutomationForEventFiredAsync(AutomationEntry automation, Events.Current currentEvent);
-
-        /// <summary>
-        /// Enqueues a new automation and waits for it's start.
-        /// </summary>
-        /// <param name="automation">The automation to start.</param>
-        Task EnqueueAutomationForManualStartAsync(AutomationEntry automation);
+        Task EnqueueAutomationAsync(AutomationEntry automation, StartReason reason, string? reasonMessage = null, Events.Current? currentEvent = null, bool waitForStart = false);
 
         Task StopAutomationRunAsync(AutomationEntry automation, AutomationRunInfo run);
     }
@@ -66,22 +50,17 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             _serviceProvider = serviceProvider;
         }
 
-        public async Task EnqueueAutomationForEntityChangeAsync(AutomationEntry automation, string changedEntity, Events.Current currentEvent)
+        public async Task EnqueueAutomationAsync(AutomationEntry automation, StartReason reason, string? reasonMessage, Events.Current? currentEvent, bool waitForStart = false)
         {
-            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.EntityChanged, changedEntity, null, currentEvent);
-        }
+            TaskCompletionSource? tcs = null;
 
-        public async Task EnqueueAutomationForEventFiredAsync(AutomationEntry automation, Events.Current currentEvent)
-        {
-            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.EventFired, null, null, currentEvent);
-        }
+            if (waitForStart)
+                tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public async Task EnqueueAutomationForManualStartAsync(AutomationEntry automation)
-        {
-            TaskCompletionSource tcs =
-                new(TaskCreationOptions.RunContinuationsAsynchronously);
-            await EnqueueAutomationRunAsync(automation, AutomationRunInfo.StartReason.Manual, null, tcs, Events.Empty);
-            await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+            await EnqueueAutomationRunAsync(automation, reason, reasonMessage, tcs, currentEvent ?? Events.Empty);
+
+            if (tcs is not null)
+                await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)));
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -91,107 +70,27 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Move this stuff to a background task.
             await Initialization.WaitForEntitiesLoadedAsync();
 
-            // Start all automations that are configure to run on startup
-            foreach (var runOnStartAutomations in _automationRegistry.Automations.Values.Where(a => a.Info.RunOnStart))
+
+            _logger.LogInformation("Registering all triggers ...");
+            // Register all automation triggers
+            foreach (var (automation, trigger) in GetTriggerAttributes())
             {
-                await EnqueueAutomationRunAsync(runOnStartAutomations, AutomationRunInfo.StartReason.RunOnStart, null, null, Events.Empty);
+                await trigger.RegisterTriggerAsync(automation, this, _serviceProvider);
             }
-
-            // Start schedules
-            foreach (var scheduledAutomation in _automationRegistry.Automations.Values.Where(a => a.Info.Schedules.Any()))
-            {
-                ScheduleNextRun(scheduledAutomation);
-            }
-        }
-
-        private void ScheduleNextRun(AutomationEntry entry)
-        {
-            var nextOccurence = GetNextOccurance(entry);
-
-            if (!nextOccurence.HasValue)
-            {
-                _logger.LogWarning($"Automation {entry.Info.Name} has no next scheduled date. Cron expressions {string.Join(", ", entry.Info.Schedules)}");
-                return;
-            }
-
-            var runIn = nextOccurence.Value - DateTime.Now;
-
-            // Make sure we don't get invalid intervals.
-            if (runIn.TotalMilliseconds < 1)
-                runIn = TimeSpan.FromMilliseconds(1);
-
-            System.Timers.Timer? t = new(runIn.TotalMilliseconds);
-            t.Elapsed += ScheduleRun;
-            t.Start();
-
-            async void ScheduleRun(object sender, ElapsedEventArgs e)
-            {
-                try
-                {
-                    t.Stop();
-                    t.Elapsed -= ScheduleRun;
-
-                    if ((_serviceCts?.Token ?? default).IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    await EnqueueAutomationRunAsync(entry, AutomationRunInfo.StartReason.Schedule, null, null, Events.Empty);
-
-                    ScheduleNextRun(entry);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"An error occured while enqueueing the scheduled next automation run of '{entry.Info.Name}'.");
-                }
-                finally
-                {
-                    t.Dispose();
-                }
-            }
-        }
-
-        private DateTime? GetNextOccurance(AutomationEntry entry)
-        {
-            var nextOccurences = entry.Info.Schedules.Select(exp =>
-            {
-                if (TryParseExpression(exp, out var cronExpression))
-                {
-                    return (IsValid: true, CronExpression: (CronExpression?)cronExpression);
-                }
-
-                return (false, null);
-            }).Where(x => x.IsValid)
-            .Select(x => x.CronExpression!.GetNextOccurrence(DateTime.UtcNow))
-            .Where(x => x.HasValue)
-            .Select(x => x!.Value.ToLocalTime())
-            .ToList();
-
-            if (!nextOccurences.Any())
-            {
-                return null;
-            }
-
-            return nextOccurences.Min();
-
-            bool TryParseExpression(string expression, [NotNullWhen(true)] out CronExpression? cronExpression)
-            {
-                try
-                {
-                    cronExpression = CronExpression.Parse(expression, CronFormat.IncludeSeconds);
-                    return true;
-                }
-                catch (CronFormatException)
-                {
-                    cronExpression = null;
-                    return false;
-                }
-            }
+            _logger.LogInformation("AutomationService started");
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _serviceCts?.Cancel();
+
+
+            _logger.LogInformation("Unregistering all triggers ...");
+            // Unregister all automation triggers
+            foreach (var (automation, trigger) in GetTriggerAttributes())
+            {
+                await trigger.UnregsisterTriggerAsync();
+            }
 
             var runners = _runners.Values.Where(v => v.IsValueCreated).Select(v => v.Value).ToList();
 
@@ -208,10 +107,22 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             return Task.WhenAny(runner.Value.StopRunAsync(run), Task.Delay(TimeSpan.FromSeconds(2)));
         }
 
+        private IEnumerable<(AutomationEntry Automation, AutomationTriggerAttributeBase Trigger)> GetTriggerAttributes()
+        {
+            foreach (var automation in _automationRegistry.Automations.Values)
+            {
+                var triggerAttributes = automation.Info.Method.GetCustomAttributes(true).OfType<AutomationTriggerAttributeBase>();
+                foreach (var trigger in triggerAttributes)
+                {
+                    yield return (automation, trigger);
+                }
+            }
+        }
+
         private Task EnqueueAutomationRunAsync(
             AutomationEntry entry,
-            AutomationRunInfo.StartReason reason,
-            string? changedEntity,
+            StartReason reason,
+            string? reasonMessage,
             TaskCompletionSource? startTcs,
             Events.Current currentEvent)
         {
@@ -236,7 +147,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                     return runner;
                 }));
 
-            return runner.Value.EnqueueAsync(reason, changedEntity, startTcs, snapshot ?? _emptySnapshot);
+            return runner.Value.EnqueueAsync(reason, reasonMessage, startTcs, snapshot ?? _emptySnapshot);
 
             object CreateEntitySnapshot(Type entityType)
             {

@@ -1,4 +1,5 @@
-﻿using hhnl.HomeAssistantNet.Shared.Automation;
+﻿using hhnl.HomeAssistantNet.Automations.Triggers;
+using hhnl.HomeAssistantNet.Shared.Automation;
 using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.SourceGenerator;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,12 +83,11 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             {
                 Name = $"{type}.{method.Name}",
                 DisplayName = attribute.DisplayName ?? $"{type}.{method.Name}",
-                Schedules = GetSchedules(method),
                 ReentryPolicy = attribute.ReentryPolicy,
-                RunOnStart = attribute.RunOnStart,
                 DependsOnEntities = entityDependencies.ToList(),
                 ListenToEntities = listenToEntities.ToList(),
                 SnapshotEntities = snapshotTypes.ToList(),
+                Method = method,
 
                 // TODO: optimize
                 RunAutomation = async (services, ct) =>
@@ -178,15 +178,5 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         private static bool HasNoTrackAttribute(ParameterInfo parameter) => parameter.GetCustomAttribute<NoTrackAttribute>() is not null;
 
         private static bool IsEventType(Type t) => t == typeof(Events.Any) || t == typeof(Events.Current);
-
-        private IReadOnlyCollection<string> GetSchedules(MethodInfo methodInfo)
-        {
-            var attr = methodInfo.GetCustomAttributes<ScheduleAttribute>();
-
-            if (!attr.Any())
-                return Array.Empty<string>();
-
-            return attr.Select(x => x.CronExpression).ToList();
-        }
     }
 }

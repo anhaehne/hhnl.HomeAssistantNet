@@ -11,9 +11,6 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 {
     public class MetadataFileGenerator
     {
-        private static readonly string _automationAttributeFullAccessName = typeof(AutomationAttribute).ToString();
-        private static readonly string _outputOnlyAttributeFullAccessName = typeof(NoTrackAttribute).ToString();
-        private static readonly string _snapshotAttributeFullAccessName = typeof(SnapshotAttribute).ToString();
         private static readonly string _eventAnyFullAccessName = typeof(Events.Any).ToString().Replace("+", "."); 
         private static readonly string _eventCurrentFullAccessName = typeof(Events.Current).ToString().Replace("+", ".");
 

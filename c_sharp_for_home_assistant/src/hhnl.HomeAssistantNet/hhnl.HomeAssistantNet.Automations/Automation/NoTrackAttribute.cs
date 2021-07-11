@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace hhnl.HomeAssistantNet.Shared.Automation
+namespace hhnl.HomeAssistantNet.Automations.Automation
 {
     /// <summary>
     /// Marks a parameter as not being tracked by the change detection.
