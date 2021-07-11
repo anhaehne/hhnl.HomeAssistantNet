@@ -38,7 +38,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             services.AddSingleton(metaData);
             metaData.RegisterEntitiesAndAutomations(services);
 
-            var automationClasses = AutomationInfoProvider.GetAutomationClasses(_assembly);
+            var automationClasses = AutomationInfoProvider.GetAutomationClasses(_assembly.GetTypes());
             foreach (var automationClass in automationClasses)
                 services.AddTransient(automationClass);
 

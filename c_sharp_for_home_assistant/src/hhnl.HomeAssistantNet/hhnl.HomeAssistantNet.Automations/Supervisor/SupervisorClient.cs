@@ -69,7 +69,11 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             _logger.LogInformation("Supervisor client started");
 
             _cts = new CancellationTokenSource();
-            _runTask = RunAsync();
+            _runTask = RunAsync().ContinueWith(task =>
+            {
+                if (!_cts.IsCancellationRequested)
+                    _logger.LogError("The run task has completed even though the runner hasn't been stopped.");
+            });
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

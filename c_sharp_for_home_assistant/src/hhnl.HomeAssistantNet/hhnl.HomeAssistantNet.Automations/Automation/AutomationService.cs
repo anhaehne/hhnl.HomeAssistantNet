@@ -92,13 +92,13 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             await Initialization.WaitForEntitiesLoadedAsync();
 
             // Start all automations that are configure to run on startup
-            foreach (AutomationEntry? runOnStartAutomations in _automationRegistry.Automations.Values.Where(a => a.Info.RunOnStart))
+            foreach (var runOnStartAutomations in _automationRegistry.Automations.Values.Where(a => a.Info.RunOnStart))
             {
                 await EnqueueAutomationRunAsync(runOnStartAutomations, AutomationRunInfo.StartReason.RunOnStart, null, null, Events.Empty);
             }
 
             // Start schedules
-            foreach (AutomationEntry? scheduledAutomation in _automationRegistry.Automations.Values.Where(a => a.Info.Schedules.Any()))
+            foreach (var scheduledAutomation in _automationRegistry.Automations.Values.Where(a => a.Info.Schedules.Any()))
             {
                 ScheduleNextRun(scheduledAutomation);
             }
@@ -106,7 +106,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         private void ScheduleNextRun(AutomationEntry entry)
         {
-            DateTime? nextOccurence = GetNextOccurance(entry);
+            var nextOccurence = GetNextOccurance(entry);
 
             if (!nextOccurence.HasValue)
             {
@@ -114,10 +114,10 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 return;
             }
 
-            TimeSpan runIn = nextOccurence.Value - DateTime.Now;
+            var runIn = nextOccurence.Value - DateTime.Now;
 
             // Make sure we don't get invalid intervals.
-            if(runIn.TotalMilliseconds < 1)
+            if (runIn.TotalMilliseconds < 1)
                 runIn = TimeSpan.FromMilliseconds(1);
 
             System.Timers.Timer? t = new(runIn.TotalMilliseconds);
@@ -153,9 +153,9 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         private DateTime? GetNextOccurance(AutomationEntry entry)
         {
-            List<DateTime>? nextOccurences = entry.Info.Schedules.Select(exp =>
+            var nextOccurences = entry.Info.Schedules.Select(exp =>
             {
-                if (TryParseExpression(exp, out CronExpression? cronExpression))
+                if (TryParseExpression(exp, out var cronExpression))
                 {
                     return (IsValid: true, CronExpression: (CronExpression?)cronExpression);
                 }
@@ -193,7 +193,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
         {
             _serviceCts?.Cancel();
 
-            List<AutomationRunner>? runners = _runners.Values.Where(v => v.IsValueCreated).Select(v => v.Value).ToList();
+            var runners = _runners.Values.Where(v => v.IsValueCreated).Select(v => v.Value).ToList();
 
             _logger.LogInformation("Stopping running automations ...");
             await Task.WhenAll(runners.Select(r => r.StopAsync()));
@@ -220,7 +220,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Create entity snapshot
             if (entry.Info.SnapshotEntities.Any())
             {
-                IEnumerable<string>? snapshotEntities = entry.Info.SnapshotEntities.Select(e => e.ToString());
+                var snapshotEntities = entry.Info.SnapshotEntities.Select(e => e.ToString());
                 _logger.LogDebug($"Creating snapshot of entities {string.Join(", ", snapshotEntities)}.");
 
                 snapshot = entry.Info.SnapshotEntities.ToDictionary(x => x, x => CreateEntitySnapshot(x));
@@ -231,7 +231,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             Lazy<AutomationRunner>? runner = _runners.GetOrAdd(entry,
                 e => new Lazy<AutomationRunner>(() =>
                 {
-                    AutomationRunner? runner = _automationRunnerFactory.CreateRunnerFor(e);
+                    var runner = _automationRunnerFactory.CreateRunnerFor(e);
                     runner.Start();
                     return runner;
                 }));

@@ -26,7 +26,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         public AutomationRegistry(IGeneratedMetaData generatedMetaData, IAutomationInfoProvider automationInfoProvider, Assembly assembly)
         {
-            Automations = automationInfoProvider.DiscoverAutomations(assembly).Select(x => new AutomationEntry(x))
+            Automations = automationInfoProvider.DiscoverAutomations(assembly.GetTypes()).Select(x => new AutomationEntry(x))
                 .ToDictionary(x => x.Info.Name);
 
             foreach (var automation in Automations.Values)
