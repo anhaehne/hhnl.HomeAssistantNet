@@ -25,7 +25,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 
         public abstract Task EnqueueAsync(
             AutomationRunInfo.StartReason reason,
-            string? changedEntity,
+            string? reasonMessage,
             TaskCompletionSource? startTcs,
             IReadOnlyDictionary<Type, object> snapshot);
 
@@ -50,7 +50,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 
         protected AutomationRunInfo CreateAutomationRun(
             AutomationRunInfo.StartReason reason,
-            string? changedEntity,
+            string? reasonMessage,
             TaskCompletionSource? startTcs,
             IReadOnlyDictionary<Type, object> snapshot,
             AutomationRunInfo.RunState initialState = AutomationRunInfo.RunState.Running)
@@ -62,7 +62,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                 State = initialState,
                 CancellationTokenSource = new CancellationTokenSource(),
                 Reason = reason,
-                ChangedEntity = changedEntity,
+                ReasonMessage = reasonMessage,
                 EntitySnapshot = snapshot,
             };
 
@@ -81,7 +81,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                         AutomationRunContext.Current =
                             new AutomationRunContext(run.CancellationTokenSource.Token, scope.ServiceProvider, run);
 
-                        _logger.LogDebug($"Starting automation run '{run.Id}' at: {run.Started} Reasons: '{run.Reason}' ChangedEntity: '{run.ChangedEntity}'");
+                        _logger.LogDebug($"Starting automation run '{run.Id}' at: {run.Started} Reasons: '{run.Reason}' Message: '{run.ReasonMessage}'");
 
                         await Entry.Info.RunAutomation(scope.ServiceProvider, run.CancellationTokenSource.Token);
 

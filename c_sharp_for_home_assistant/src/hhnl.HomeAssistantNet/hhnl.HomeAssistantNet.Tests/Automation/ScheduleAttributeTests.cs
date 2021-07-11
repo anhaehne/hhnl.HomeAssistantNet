@@ -1,4 +1,4 @@
-﻿using hhnl.HomeAssistantNet.Shared.Automation;
+﻿using hhnl.HomeAssistantNet.Automations.Triggers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace hhnl.HomeAssistantNet.Tests.Automation
@@ -13,7 +13,7 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             var result = new ScheduleAttribute(WeekDay.All, 20, 14, 15);
 
             // Assert
-            Assert.AreEqual("15 14 20 ? * SUN,MON,TUE,WED,THU,FRI,SAT", result.CronExpression);
+            Assert.AreEqual("15 14 20 * * *", result.CronExpression.ToString());
         }
 
         [TestMethod]
@@ -23,7 +23,7 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             var result = new ScheduleAttribute(WeekDay.Monday | WeekDay.Tuesday | WeekDay.Wednesday | WeekDay.Thursday | WeekDay.Friday, 20);
 
             // Assert
-            Assert.AreEqual("0 0 20 ? * MON,TUE,WED,THU,FRI", result.CronExpression);
+            Assert.AreEqual("0 0 20 * * 1,2,3,4,5", result.CronExpression.ToString());
         }
     }
 }

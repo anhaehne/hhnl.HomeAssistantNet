@@ -1,5 +1,10 @@
 ﻿{
   "stryker-config": {
     "project-file": "hhnl.HomeAssistantNet.Automations.csproj"
-  }
+  },
+  "ignore-methods": [
+    "*Log*",
+    "ToString",
+    "*HashCode*"
+  ]
 }

@@ -9,30 +9,47 @@
 
 <h1>Automations</h1>
 
-<div class="list-group">
-    @if (Connection is not null)
-    {
-        @foreach (var automation in Connection.Automations)
+@if (Connection is not null)
+{
+    <div class="accordion" id="automationClassList">
+        @foreach(var automationClass in Connection.Automations.GroupBy(a => a.Info.ClassName))
         {
-            <a href="automation/@automation.Info.Name.Replace(".", "|")" class="list-group-item list-group-item-action">
-                <div class="w-100">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">@automation.Info.DisplayName</h5>
-                        <div>
-                            <small>@automation.Runs.Count Runs |</small>
-                            <span class="badge rounded-pill bg-info text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.WaitingInQueue).Count()</span>
-                            <span class="badge rounded-pill bg-success text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Running).Count()</span>
-                            <span class="badge rounded-pill bg-secondary text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Completed).Count()</span>
-                            <span class="badge rounded-pill bg-warning">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Cancelled).Count()</span>
-                            <span class="badge rounded-pill bg-danger text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Error).Count()</span>
-                        </div>
+            var key = automationClass.Key.Replace(".", "-");
+
+            <div class="accordion-item" id="@key">
+                <h2 class="accordion-header" id="heading-@key">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@key" aria-expanded="false" aria-controls="collapse-@key">
+                    @automationClass.Key
+                    </button>
+                </h2>
+                <div id="collapse-@key" class="accordion-collapse collapse" aria-labelledby="heading-@key">
+                    <div class="list-group list-group-flush">
+                        @foreach (var automation in automationClass)
+                        {
+                            <a href="automation/@automation.Info.Name.Replace(".", "|")" class="list-group-item list-group-item-action">
+                                <div class="w-100">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1 mt-1">@automation.Info.DisplayName</h5>
+                                        <div>
+                                            <small>@automation.Runs.Count Runs |</small>
+                                            <span class="badge rounded-pill bg-info text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.WaitingInQueue).Count()</span>
+                                            <span class="badge rounded-pill bg-success text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Running).Count()</span>
+                                            <span class="badge rounded-pill bg-secondary text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Completed).Count()</span>
+                                            <span class="badge rounded-pill bg-warning">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Cancelled).Count()</span>
+                                            <span class="badge rounded-pill bg-danger text-light">@automation.Runs.Where(r => r.State == AutomationRunInfo.RunState.Error).Count()</span>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">@automation.Info.Name</small>
+                                </div>
+                            </a>
+                        }
                     </div>
-                    <small class="text-muted">@automation.Info.Name</small>
                 </div>
-            </a>
+            </div>
         }
-    }
-</div>
+    </div>
+}
+
 
 @code
 {

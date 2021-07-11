@@ -9,6 +9,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
+using hhnl.HomeAssistantNet.Automations.Triggers;
+using hhnl.HomeAssistantNet.Automations.Automation;
 
 namespace hhnl.HomeAssistantNet.TestProject
 {
@@ -30,7 +32,8 @@ namespace hhnl.HomeAssistantNet.TestProject
         }
 
         [Automation]
-        public async Task MyFirstAutomation(Entities.SunSun sun, Events.Current currentEvent)
+        [RunOnStart]
+        public async Task MyFirstAutomation([Snapshot]Entities.SunSun sun, Events.Current currentEvent)
         {
             _logger.LogInformation($"This state_change event was triggered by {currentEvent.Context.UserId}");
         }

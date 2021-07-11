@@ -32,7 +32,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Run automations
             foreach (var automation in automations)
             {
-                await _automationService.EnqueueAutomationForEntityChangeAsync(automation, notification.EntityId, notification.SourceEvent);
+                await _automationService.EnqueueAutomationAsync(automation, Shared.Automation.AutomationRunInfo.StartReason.EntityChanged, $"Entity '{notification.EntityId}' changed.", notification.SourceEvent);
             }
         }
     }
