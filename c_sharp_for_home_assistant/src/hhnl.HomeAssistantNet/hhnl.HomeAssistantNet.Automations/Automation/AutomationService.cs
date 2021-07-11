@@ -70,20 +70,27 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Move this stuff to a background task.
             await Initialization.WaitForEntitiesLoadedAsync();
 
+
+            _logger.LogInformation("Registering all triggers ...");
             // Register all automation triggers
-            foreach (var automation in _automationRegistry.Automations.Values)
+            foreach (var (automation, trigger) in GetTriggerAttributes())
             {
-                var triggerAttributes = automation.Info.Method.GetCustomAttributes(true).OfType<AutomationTriggerAttributeBase>();
-                foreach (var trigger in triggerAttributes)
-                {
-                    await trigger.RegisterTriggerAsync(automation, this, _serviceProvider);
-                }
+                await trigger.RegisterTriggerAsync(automation, this, _serviceProvider);
             }
+            _logger.LogInformation("AutomationService started");
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _serviceCts?.Cancel();
+
+
+            _logger.LogInformation("Unregistering all triggers ...");
+            // Unregister all automation triggers
+            foreach (var (automation, trigger) in GetTriggerAttributes())
+            {
+                await trigger.UnregsisterTriggerAsync();
+            }
 
             var runners = _runners.Values.Where(v => v.IsValueCreated).Select(v => v.Value).ToList();
 
@@ -98,6 +105,18 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
                 throw new InvalidOperationException($"Can't find runner for automation {automation.Info.Name}.");
 
             return Task.WhenAny(runner.Value.StopRunAsync(run), Task.Delay(TimeSpan.FromSeconds(2)));
+        }
+
+        private IEnumerable<(AutomationEntry Automation, AutomationTriggerAttributeBase Trigger)> GetTriggerAttributes()
+        {
+            foreach (var automation in _automationRegistry.Automations.Values)
+            {
+                var triggerAttributes = automation.Info.Method.GetCustomAttributes(true).OfType<AutomationTriggerAttributeBase>();
+                foreach (var trigger in triggerAttributes)
+                {
+                    yield return (automation, trigger);
+                }
+            }
         }
 
         private Task EnqueueAutomationRunAsync(
