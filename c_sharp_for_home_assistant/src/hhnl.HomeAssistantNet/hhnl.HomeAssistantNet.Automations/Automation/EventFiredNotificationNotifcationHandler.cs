@@ -26,7 +26,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Run automations
             foreach (var automation in automations)
             {
-                await _automationService.EnqueueAutomationForEventFiredAsync(automation, notification.Event);
+                await _automationService.EnqueueAutomationAsync(automation, Shared.Automation.AutomationRunInfo.StartReason.EventFired, $"Event {notification.Event.EventType} fired.", notification.Event);
             }
         }
     }

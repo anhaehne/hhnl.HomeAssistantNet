@@ -1,4 +1,5 @@
 ﻿using hhnl.HomeAssistantNet.Automations.Automation;
+using hhnl.HomeAssistantNet.Automations.Triggers;
 using hhnl.HomeAssistantNet.Shared.Automation;
 using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
@@ -32,7 +33,6 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             Assert.AreEqual(0, automation.SnapshotEntities.Count);
             Assert.AreEqual(0, automation.DependsOnEntities.Count);
             Assert.AreEqual(ReentryPolicy.QueueLatest, automation.ReentryPolicy);
-            Assert.IsFalse(automation.RunOnStart);
         }
 
         [TestMethod]
@@ -53,22 +53,6 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             Assert.AreEqual(0, automation.SnapshotEntities.Count);
             Assert.AreEqual(0, automation.DependsOnEntities.Count);
             Assert.AreEqual(ReentryPolicy.QueueLatest, automation.ReentryPolicy);
-            Assert.IsFalse(automation.RunOnStart);
-        }
-
-        [TestMethod]
-        public void DiscoverAutomations_should_set_run_on_start()
-        {
-            // Arrange
-            var sut = GetSut();
-
-            // Act
-            var result = sut.DiscoverAutomations(new[] { typeof(RunOnStartAutomationClass) });
-
-            // Assert
-            Assert.AreEqual(1, result.Count);
-            var automation = result.First();
-            Assert.IsTrue(automation.RunOnStart);
         }
 
         [TestMethod]
@@ -120,7 +104,6 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             Assert.AreEqual(0, automation.SnapshotEntities.Count);
             Assert.AreEqual(0, automation.DependsOnEntities.Count);
             Assert.AreEqual(ReentryPolicy.QueueLatest, automation.ReentryPolicy);
-            Assert.IsFalse(automation.RunOnStart);
         }
 
         [TestMethod]
@@ -211,21 +194,6 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
             Assert.AreEqual(1, automation.DependsOnEntities.Count);
             Assert.AreEqual(0, automation.ListenToEntities.Count);
             Assert.IsTrue(automation.DependsOnEntities.Contains(typeof(MockEntity1)));
-        }
-
-        [TestMethod]
-        public void DiscoverAutomations_should_set_schedules()
-        {
-            // Arrange
-            var sut = GetSut();
-
-            // Act
-            var result = sut.DiscoverAutomations(new[] { typeof(SchedulesAutomationClass) });
-
-            // Assert
-            Assert.AreEqual(1, result.Count);
-            var automation = result.First();
-            Assert.AreEqual(3, automation.Schedules.Count);
         }
 
         [TestMethod]
@@ -440,17 +408,6 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         }
     }
 
-    public class SchedulesAutomationClass
-    {
-        [Automation]
-        [Schedule(Every.Hour, 4)]
-        [Schedule(WeekDay.Tuesday | WeekDay.Sunday, 3, 5, 7)]
-        [Schedule("* * * * * *")]
-        public void Automation()
-        {
-        }
-    }
-
     public class InheritedConstructorBaseEntityAutomationClass : ConstructorBaseEntityAutomationClass
     {
         public InheritedConstructorBaseEntityAutomationClass(MockEntity1 e) : base(e)
@@ -631,15 +588,6 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
         public const string TestValue = "test";
 
         [Automation(TestValue)]
-        public void Automation()
-        {
-
-        }
-    }
-
-    public class RunOnStartAutomationClass
-    {
-        [Automation(runOnStart: true)]
         public void Automation()
         {
 

@@ -24,7 +24,7 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
 
         public StartReason Reason { get; set; }
 
-        public string? ChangedEntity { get; set; }
+        public string? ReasonMessage { get; set; }
 
         [JsonIgnore]
         public List<LogMessageDto> Log { get; set; } = new List<LogMessageDto>();
@@ -57,6 +57,7 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
             Manual,
             Schedule,
             EventFired,
+            Custom,
         }
     }
 }

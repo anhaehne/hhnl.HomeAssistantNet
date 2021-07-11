@@ -1,4 +1,5 @@
-﻿using hhnl.HomeAssistantNet.Shared.Automation;
+﻿using hhnl.HomeAssistantNet.Automations.Triggers;
+using hhnl.HomeAssistantNet.Shared.Automation;
 using System;
 using System.Collections.Generic;
 using System.Linq;

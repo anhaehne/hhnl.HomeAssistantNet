@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-using hhnl.HomeAssistantNet.Automations.Automation;
+﻿using hhnl.HomeAssistantNet.Automations.Automation;
 using hhnl.HomeAssistantNet.Shared.Configuration;
 using hhnl.HomeAssistantNet.Shared.Supervisor;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace hhnl.HomeAssistantNet.Automations.Supervisor
 {
@@ -98,7 +97,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
                 return;
             }
 
-            await _automationService.EnqueueAutomationForManualStartAsync(automation);
+            await _automationService.EnqueueAutomationAsync(automation, Shared.Automation.AutomationRunInfo.StartReason.Manual, waitForStart: true);
             await _hubConnection.SendAsync("AutomationStarted", messageId, ToDto(automation));
         }
 
@@ -162,7 +161,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             if (_cts is null)
                 throw new InvalidOperationException("Cancellation token source is null.");
 
-            while(!_cts.IsCancellationRequested)
+            while (!_cts.IsCancellationRequested)
             {
                 var next = await _pushMessageChannel.Reader.ReadAsync(_cts.Token);
 
@@ -177,6 +176,9 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             }
         }
 
-        private static AutomationInfoDto ToDto(AutomationEntry entry) => new AutomationInfoDto(entry.Info, entry.Runs);
+        private static AutomationInfoDto ToDto(AutomationEntry entry)
+        {
+            return new AutomationInfoDto(entry.Info, entry.Runs);
+        }
     }
 }
