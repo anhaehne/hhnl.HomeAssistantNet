@@ -85,17 +85,21 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
 
                         await Entry.Info.RunAutomation(scope.ServiceProvider, run.CancellationTokenSource.Token);
 
-                        run.State = run.CancellationTokenSource.Token.IsCancellationRequested
+                        var endState = run.CancellationTokenSource.Token.IsCancellationRequested
                             ? AutomationRunInfo.RunState.Cancelled
                             : AutomationRunInfo.RunState.Completed;
+
+                        _logger.LogDebug($"Setting run to '{endState}'.");
+                        run.State = endState;
                     }
                     catch (Exception e) when (e is OperationCanceledException or TaskCanceledException)
                     {
+                        _logger.LogDebug($"Setting run to '{nameof(AutomationRunInfo.RunState.Cancelled)}'.");
                         run.State = AutomationRunInfo.RunState.Cancelled;
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError(e, "Unhandled exception occurred while executing automation.");
+                        _logger.LogError(e, $"Unhandled exception occurred while executing automation. Setting run to '{nameof(AutomationRunInfo.RunState.Error)}'.");
                         run.State = AutomationRunInfo.RunState.Error;
                         run.Error = e.ToString();
                     }

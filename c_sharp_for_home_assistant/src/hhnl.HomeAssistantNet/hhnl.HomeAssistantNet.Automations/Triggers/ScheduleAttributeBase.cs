@@ -23,6 +23,7 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
         private IAutomationService? _automationService;
         private IHostApplicationLifetime? _lifetime;
         private ILogger<ScheduleAttributeBase>? _logger;
+        private static readonly Random _r = new();
 
         private AutomationEntry? _automation;
         private CancellationTokenSource? _cts;
@@ -83,12 +84,19 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
 
             var runIn = nextOccurence.Value - DateTime.Now;
 
-            if(runIn.TotalMilliseconds < 1)
+            if(runIn.TotalMilliseconds < 0)
             {
-                _logger.LogWarning($"Automation {_automation!.Info.Name} next occurence is invalid: '{runIn}'. Waiting 5 seconds and trying again.");
-                await Task.Delay(TimeSpan.FromSeconds(5), _cts!.Token);
+                // Waiting a random amount of time, between 2 und 7 seconds, and trying again.
+                var wait = _r.Next(2, 7);
+                _logger.LogWarning($"Automation {_automation!.Info.Name} next occurence is invalid: '{runIn}'. Waiting {wait} seconds and trying again.");
+                await Task.Delay(TimeSpan.FromSeconds(wait), _cts!.Token);
                 _trigger!.Set();
                 return;
+            } 
+            else if (runIn.TotalMilliseconds < 1)
+            {
+                // Timer only accepts values >= 1
+                runIn = TimeSpan.FromMilliseconds(1);
             }
 
             System.Timers.Timer? t = new(runIn.TotalMilliseconds);
