@@ -425,27 +425,6 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         }
 
 #pragma warning disable 8618
-        private class WebsocketApiMessage
-        {
-            [JsonPropertyName("id")] public long Id { get; set; }
-
-            [JsonPropertyName("type")] public string? Type { get; set; }
-
-            [JsonPropertyName("success")] public bool? Success { get; set; }
-
-            [JsonPropertyName("event")] public JsonElement Event { get; set; }
-
-            [JsonPropertyName("result")] public JsonElement Result { get; set; }
-
-            [JsonPropertyName("error")] public WebsocketApiMessageError Error { get; set; }
-        }
-
-        private class WebsocketApiMessageError
-        {
-            [JsonPropertyName("code")] public string? Code { get; set; }
-
-            [JsonPropertyName("message")] public string? Message { get; set; }
-        }
 
         public class HomeAssistantCallFailedException : Exception
         {

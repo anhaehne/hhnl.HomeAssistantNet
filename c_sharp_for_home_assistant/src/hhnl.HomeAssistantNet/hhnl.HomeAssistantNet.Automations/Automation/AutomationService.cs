@@ -88,7 +88,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Unregister all automation triggers
             foreach (var (automation, trigger) in GetTriggerAttributes())
             {
-                await trigger.UnregsisterTriggerAsync();
+                await trigger.UnregisterTriggerAsync();
             }
 
             var runners = _runners.Values.Where(v => v.IsValueCreated).Select(v => v.Value).ToList();

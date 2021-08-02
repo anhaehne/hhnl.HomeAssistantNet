@@ -8,6 +8,6 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
     {
         public abstract Task RegisterTriggerAsync(AutomationEntry automation, IAutomationService automationService, IServiceProvider serviceProvider);
 
-        public virtual Task UnregsisterTriggerAsync() { return Task.CompletedTask;}
+        public virtual Task UnregisterTriggerAsync() { return Task.CompletedTask;}
     }
 }

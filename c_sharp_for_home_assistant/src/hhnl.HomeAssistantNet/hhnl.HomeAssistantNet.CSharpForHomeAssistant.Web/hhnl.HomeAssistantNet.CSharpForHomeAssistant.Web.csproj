@@ -9,7 +9,7 @@
         <PackageReference Include="Blazored.Modal" Version="6.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.5.21301.17" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.5.21301.17" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.0-preview.5.21301.17" />
         <PackageReference Include="Microsoft.Net.Http.Headers" Version="2.2.8" />
         <PackageReference Include="ReactiveUI.Blazor" Version="14.1.1" />
     </ItemGroup>
