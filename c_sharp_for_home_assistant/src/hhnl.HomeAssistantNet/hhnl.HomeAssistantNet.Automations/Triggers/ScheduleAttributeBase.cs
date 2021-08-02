@@ -126,7 +126,7 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
 
                     // If we don't have to reschedule, we can run the automation.
                     if(!reschedule)
-                        await _automationService!.EnqueueAutomationAsync(_automation!, AutomationRunInfo.StartReason.Schedule, $"Schedule: {_name}");
+                    await _automationService!.EnqueueAutomationAsync(_automation!, AutomationRunInfo.StartReason.Schedule, $"Schedule: {_name}");
 
                     _trigger!.Set();
                 }

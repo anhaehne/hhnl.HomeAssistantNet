@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:6.0.100-preview.5 AS base
+FROM mcr.microsoft.com/dotnet/sdk:6.0.100-preview.5 AS base
 WORKDIR /app
 EXPOSE 8099
 
@@ -12,6 +12,7 @@ ENV SupervisorConfig__DeployDirectory=/config/c-sharp-for-homeassistant/deploy/
 ENV SupervisorConfig__SourceDirectory=/config/c-sharp-for-homeassistant/source/
 ENV SupervisorConfig__ConfigDirectory=/config/c-sharp-for-homeassistant/config/
 ENV SupervisorConfig__BuildDirectory=/temp/build/
+ENV FileLogging__PathFormat=/config/c-sharp-for-homeassistant/logs/{Date}.log
 
 # Configure supervisor client
 ENV SupervisorUrl=http://localhost:8099

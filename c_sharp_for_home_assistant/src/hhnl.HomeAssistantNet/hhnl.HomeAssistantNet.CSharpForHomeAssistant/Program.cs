@@ -1,11 +1,7 @@
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant
 {
@@ -19,9 +15,13 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
+                .ConfigureLogging((context, builder) =>
+{
+                    builder.AddFile(context.Configuration.GetSection("FileLogging"));
+                })
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
         }
 
-        
+
     }
 }
