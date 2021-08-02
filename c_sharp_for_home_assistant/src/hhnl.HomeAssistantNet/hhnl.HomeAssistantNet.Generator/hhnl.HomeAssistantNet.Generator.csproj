@@ -6,7 +6,7 @@
         <LangVersion>9.0</LangVersion>
 
         <Authors>anhaehne</Authors>
-        <VersionPrefix>0.8.0</VersionPrefix>
+        <VersionPrefix>0.8.1</VersionPrefix>
         <PackageProjectUrl>https://github.com/anhaehne/hhnl.HomeAssistantNet</PackageProjectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -29,7 +29,7 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="5.0.0" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="5.0.0" GeneratePathProperty="true" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Primitives" Version="5.0.0" GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Primitives" Version="5.0.1" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="System.Text.Json" Version="5.0.2" GeneratePathProperty="true" PrivateAssets="all" />
 
         <PackageReference Include="HADotNet.Core" Version="1.5.1" GeneratePathProperty="true" PrivateAssets="all" />
@@ -37,8 +37,8 @@
         <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="all">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="RestSharp" Version="106.11.7" GeneratePathProperty="true" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="all" />
+        <PackageReference Include="RestSharp" Version="106.12.0" GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" PrivateAssets="all" />
     </ItemGroup>
     
     <ItemGroup>
@@ -49,22 +49,22 @@
 
     <ItemGroup>
        <!--Package DLLs--> 
-      <EmbeddedResource  Include="$(PKGHADotNet_Core)\lib\netstandard2.0\HADotNet.Core.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGRestSharp)\lib\netstandard2.0\RestSharp.dll"  Visible="false" />
-      <EmbeddedResource  Include="..\hhnl.HomeAssistantNet.Shared\bin\$(Configuration)\netstandard2.0\hhnl.HomeAssistantNet.Shared.dll"  Visible="false" />
+      <EmbeddedResource Include="$(PKGHADotNet_Core)\lib\netstandard2.0\HADotNet.Core.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGRestSharp)\lib\netstandard2.0\RestSharp.dll" Visible="false" />
+      <EmbeddedResource Include="..\hhnl.HomeAssistantNet.Shared\bin\$(Configuration)\netstandard2.0\hhnl.HomeAssistantNet.Shared.dll" Visible="false" />
 
-      <EmbeddedResource  Include="$(PKGSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration)\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_UserSecrets)\lib\netstandard2.0\Microsoft.Extensions.Configuration.UserSecrets.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_FileExtensions)\lib\netstandard2.0\Microsoft.Extensions.Configuration.FileExtensions.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_Json)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Json.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_EnvironmentVariables)\lib\netstandard2.0\Microsoft.Extensions.Configuration.EnvironmentVariables.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_Binder)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Binder.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Configuration_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_FileProviders_Physical)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Physical.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_FileProviders_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll"  Visible="false" />
-      <EmbeddedResource  Include="$(PKGMicrosoft_Extensions_Primitives)\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll"  Visible="false" />
+      <EmbeddedResource Include="$(PKGSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGMicrosoft_Extensions_Configuration)\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGMicrosoft_Extensions_Configuration_UserSecrets)\lib\netstandard2.0\Microsoft.Extensions.Configuration.UserSecrets.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGMicrosoft_Extensions_Configuration_FileExtensions)\lib\netstandard2.0\Microsoft.Extensions.Configuration.FileExtensions.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGMicrosoft_Extensions_Configuration_Json)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Json.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGMicrosoft_Extensions_Configuration_EnvironmentVariables)\lib\netstandard2.0\Microsoft.Extensions.Configuration.EnvironmentVariables.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGMicrosoft_Extensions_Configuration_Binder)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Binder.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGMicrosoft_Extensions_Configuration_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGMicrosoft_Extensions_FileProviders_Physical)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Physical.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGMicrosoft_Extensions_FileProviders_Abstractions)\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll" Visible="false" />
+      <EmbeddedResource Include="$(PKGMicrosoft_Extensions_Primitives)\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll" Visible="false" />
 
     </ItemGroup>
   

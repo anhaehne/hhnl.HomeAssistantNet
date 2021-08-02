@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using hhnl.HomeAssistantNet.Automations.Utils;
 using hhnl.HomeAssistantNet.Shared.Automation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,6 +83,15 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                             new AutomationRunContext(run.CancellationTokenSource.Token, scope.ServiceProvider, run);
 
                         _logger.LogDebug($"Starting automation run '{run.Id}' at: {run.Started} Reasons: '{run.Reason}' Message: '{run.ReasonMessage}'");
+
+
+                        if (!Initialization.IsHomeAssistantConnected)
+                        {
+                            _logger.LogWarning($"No home assistant connection. Setting run to '{nameof(AutomationRunInfo.RunState.Cancelled)}'.");
+                            run.State = AutomationRunInfo.RunState.Cancelled;
+                            await PublishRunChangedAsync(run);
+                            return;
+                        }
 
                         await Entry.Info.RunAutomation(scope.ServiceProvider, run.CancellationTokenSource.Token);
 
