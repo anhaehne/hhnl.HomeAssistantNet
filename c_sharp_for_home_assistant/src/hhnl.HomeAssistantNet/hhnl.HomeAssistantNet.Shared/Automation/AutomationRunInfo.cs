@@ -41,6 +41,9 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
         [JsonIgnore]
         public IReadOnlyDictionary<Type, object> EntitySnapshot { get; set; } = _emptySnapshot;
 
+        [JsonIgnore]
+        public int ServiceCallCount { get; set; }
+
         public enum RunState
         {
             Running,
@@ -58,6 +61,7 @@ namespace hhnl.HomeAssistantNet.Shared.Automation
             Schedule,
             EventFired,
             Custom,
+            RunOnConnect,
         }
     }
 }

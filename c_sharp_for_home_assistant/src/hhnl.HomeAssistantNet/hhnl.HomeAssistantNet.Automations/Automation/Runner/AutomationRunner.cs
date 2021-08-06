@@ -120,6 +120,8 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                         run.CancellationTokenSource = null;
                     }
 
+                    _logger.LogDebug($"The automation run made {run.ServiceCallCount} service calls.");
+
                     await PublishRunChangedAsync(run);
                 });
             };

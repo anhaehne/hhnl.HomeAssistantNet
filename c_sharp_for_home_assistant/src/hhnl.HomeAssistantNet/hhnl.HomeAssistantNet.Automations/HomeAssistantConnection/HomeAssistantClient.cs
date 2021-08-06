@@ -15,7 +15,6 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -29,10 +28,10 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         private readonly IOptions<HomeAssistantConfig> _haConfig;
         private readonly ILogger<HomeAssistantClient> _logger;
         private readonly IMediator _mediator;
-        private readonly Channel<byte[]> _messagesToSend;
         private readonly bool _publishEventNotification;
         private CancellationTokenSource? _cancellationTokenSource;
         private long _id;
+        private Channel<byte[]>? _messagesToSend;
         private Task? _receiveTask;
         private Task? _sendTask;
         private ClientWebSocket? _webSocket;
@@ -46,7 +45,6 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             _logger = logger;
             _haConfig = haConfig;
             _mediator = mediator;
-            _messagesToSend = Channel.CreateBounded<byte[]>(10);
             _publishEventNotification = automationRegistry.HasAutomationsTrackingAnyEvents;
         }
 
@@ -77,6 +75,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             if (cancellationToken == default && AutomationRunContext.Current is not null)
                 cancellationToken = AutomationRunContext.Current.CancellationToken;
 
+
             var response = await SendRequestAsync(id => new
             {
                 id,
@@ -87,6 +86,9 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             },
                 cancellationToken);
 
+            var currentRun = AutomationRunContext.Current?.CurrentRun;
+            if (currentRun is not null)
+                currentRun.ServiceCallCount++;
 
             return response.Result;
         }
@@ -115,32 +117,31 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             },
             cancellationToken);
 
+            var currentRun = AutomationRunContext.Current?.CurrentRun;
+            if (currentRun is not null)
+                currentRun.ServiceCallCount++;
 
             return response.Result;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _cancellationTokenSource = new CancellationTokenSource();
-
-            await ConnectAsync(cancellationToken);
-
-            _receiveTask = Task.Run(ReceiveLoopAsync).ContinueWith(task =>
-            {
-                if (!_cancellationTokenSource.IsCancellationRequested)
-                    _logger.LogError("The receive task has completed even though the runner hasn't been stopped.");
-            });
-
-            _sendTask = Task.Run(SendLoopAsync).ContinueWith(task =>
-            {
-                if (!_cancellationTokenSource.IsCancellationRequested)
-                    _logger.LogError("The send task has completed even though the runner hasn't been stopped.");
-            });
+            await Policy.Handle<Exception>(e => e is not TaskCanceledException && e is not OperationCanceledException)
+                .WaitAndRetryForeverAsync(
+                (_, _) => TimeSpan.FromSeconds(5),
+                (ex, retry, _, _) =>
+                {
+                    _logger.LogError(ex, $"Unable to connect to home assistant. Retry: {retry}");
+                })
+            .ExecuteAsync(ct => ConnectAsync(ct), cancellationToken);
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogDebug("Stopping HomeAssistantClient ...");
+
+            _webSocket?.Abort();
+            _webSocket?.Dispose();
 
             _cancellationTokenSource?.Cancel();
 
@@ -169,6 +170,12 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             }
 
             _logger.LogDebug("HomeAssistantClient stopped");
+
+            _webSocket = null;
+            _messagesToSend = null;
+            _receiveTask = null;
+            _sendTask = null;
+            _cancellationTokenSource = null;
         }
 
         private async Task ReceiveLoopAsync()
@@ -183,11 +190,10 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                     {
                         // Web socket connection disconnected. Reconnect and try again.
                         Initialization.HomeAssistantDisconnected();
-                        await ConnectAsync(default);
+                        StartReconnect();
                         continue;
                     }
 
-                    // If the server return a new message id, we increment our counter.
                     var incremented = received.Id + 1;
                     Interlocked.CompareExchange(ref _id, incremented, received.Id);
 
@@ -203,13 +209,24 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                     _logger.LogError(e, "Error occured while handling message from home assistant.");
                 }
             }
+
+            async void StartReconnect()
+            {
+                await Policy.Handle<Exception>().WaitAndRetryForeverAsync(
+                    (_, _) => TimeSpan.FromSeconds(5),
+                    (ex, retry, _, _) =>
+                    {
+                        _logger.LogError(ex, $"Unable to connect to home assistant. Retry: {retry}");
+                    })
+                    .ExecuteAsync(() => ConnectAsync(default));
+            }
         }
 
         private async Task SendLoopAsync()
         {
             while (!_cancellationTokenSource?.IsCancellationRequested ?? false)
             {
-                var bytes = await _messagesToSend.Reader.ReadAsync(_cancellationTokenSource?.Token ?? default);
+                var bytes = await _messagesToSend!.Reader.ReadAsync(_cancellationTokenSource?.Token ?? default);
 
                 await _webSocket!.SendAsync(bytes,
                     WebSocketMessageType.Text,
@@ -226,12 +243,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
                     _logger.LogDebug("Got auth_required; sending token.");
 
-                    await EnqueueMessageAsync(_ =>
-                        new
-                        {
-                            type = "auth",
-                            access_token = _haConfig.Value.SUPERVISOR_TOKEN
-                        });
+                    await EnqueueMessageAsync(_ => new WebSocketAuth(_haConfig.Value.SUPERVISOR_TOKEN));
 
                     break;
                 case "auth_ok":
@@ -239,6 +251,8 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                     _logger.LogDebug("Got auth_ok; Init complete.");
 
                     Initialization.HomeAssistantConnected();
+
+                    await _mediator.Publish(HomeAssistantClientConnectedNotification.Instance);
 
                     await EnqueueMessageAsync(i =>
                         new
@@ -277,7 +291,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                     if (eventData is null)
                         return;
 
-                    eventData.SourceEvent = apiEvent;
+                    eventData = eventData with { SourceEvent = apiEvent };
 
                     await _mediator.Publish(eventData);
                     break;
@@ -335,6 +349,15 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
         private async Task ConnectAsync(CancellationToken cancellationToken)
         {
+            // Close previous
+            if (_cancellationTokenSource is not null)
+                await StopAsync(cancellationToken);
+
+            _cancellationTokenSource = new CancellationTokenSource();
+            _messagesToSend = Channel.CreateBounded<byte[]>(10);
+            _id = 1;
+            _webSocket = new ClientWebSocket();
+
             var baseUri = new Uri(_haConfig.Value.HOME_ASSISTANT_API);
             var completeUri = new Uri(baseUri, "api/websocket");
 
@@ -344,28 +367,21 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             _logger.LogInformation(
                 $"Starting home assistant client. Url '{uriBuilder}' Token '{_haConfig.Value.SUPERVISOR_TOKEN.Substring(0, 10)}...'");
 
-            await Policy.Handle<Exception>(e => e is not TaskCanceledException && e is not OperationCanceledException)
-                .WaitAndRetryForeverAsync(
-                (_, _) => TimeSpan.FromSeconds(5),
-                (ex, retry, _, _) =>
-                {
-                    _logger.LogError(ex, $"Unable to connect to home assistant. Retry: {retry}");
-                })
-            .ExecuteAsync(ConnectInternalAsync, cancellationToken);
+            await _webSocket.ConnectAsync(uriBuilder.Uri, cancellationToken);
 
             _logger.LogInformation("Connected to home assistant websocket api.");
 
-            async Task ConnectInternalAsync(CancellationToken cancellationToken)
+            _receiveTask = Task.Run(ReceiveLoopAsync).ContinueWith(task =>
             {
-                // Make sure the previous connection is closed.
-                _webSocket?.Abort();
-                _webSocket?.Dispose();
+                if (!_cancellationTokenSource.IsCancellationRequested)
+                    _logger.LogError("The receive task has completed even though the runner hasn't been stopped.");
+            });
 
-                _webSocket = new ClientWebSocket();
-                _id = 1;
-
-                await _webSocket.ConnectAsync(uriBuilder.Uri, cancellationToken);
-            }
+            _sendTask = Task.Run(SendLoopAsync).ContinueWith(task =>
+            {
+                if (!_cancellationTokenSource.IsCancellationRequested)
+                    _logger.LogError("The send task has completed even though the runner hasn't been stopped.");
+            });
         }
 
         private async Task<WebsocketApiMessage> SendRequestAsync<T>(
@@ -374,6 +390,9 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
         {
             // Wait for init
             await Initialization.WaitForHomeAssistantConnectionAsync();
+
+            
+
 
             TaskCompletionSource<WebsocketApiMessage>? tcs = null;
 
@@ -392,7 +411,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
                 if (result.Success == false)
                 {
-                    var ex = new HomeAssistantCallFailedException(result.Error.Code!, result.Error.Message!);
+                    var ex = new HomeAssistantCallFailedException(result.Error!.Code!, result.Error.Message!);
                     _logger.LogError(ex, "Home assistant api doesn't indicate success.");
                     throw ex;
                 }
@@ -415,7 +434,7 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                 var messageId = Interlocked.Increment(ref _id);
                 var message = createMessageAsync(messageId);
                 var bytes = JsonSerializer.SerializeToUtf8Bytes(message);
-                await _messagesToSend.Writer.WriteAsync(bytes);
+                await _messagesToSend!.Writer.WriteAsync(bytes);
                 return messageId;
             }
             finally
@@ -423,8 +442,6 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
                 _enqueueLock.Release();
             }
         }
-
-#pragma warning disable 8618
 
         public class HomeAssistantCallFailedException : Exception
         {
@@ -437,16 +454,6 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             public string Code { get; }
         }
 
-        public class StateChangedNotification : INotification
-        {
-            [JsonPropertyName("entity_id")] public string EntityId { get; set; }
-
-            [JsonPropertyName("new_state")] public JsonElement NewState { get; set; }
-
-            [JsonIgnore]
-            public Events.Current SourceEvent { get; set; }
-        }
-
         public class EventFiredNotification : INotification
         {
             public EventFiredNotification(Events.Current @event)
@@ -456,6 +463,5 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
 
             public Events.Current Event { get; set; }
         }
-#pragma warning restore 8618
     }
 }

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace hhnl.HomeAssistantNet.Tests.HomeAssistantConnection
@@ -17,9 +19,9 @@ namespace hhnl.HomeAssistantNet.Tests.HomeAssistantConnection
         private HomeAssistantWebSocketServerMock? _serverMock;
 
         [TestCleanup]
-        public void TestCleanup()
+        public async Task TestCleanup()
         {
-            _serverMock?.Stop();
+            await (_serverMock?.StopAsync() ?? Task.CompletedTask);
         }
 
         [TestMethod]
@@ -35,10 +37,42 @@ namespace hhnl.HomeAssistantNet.Tests.HomeAssistantConnection
             Assert.IsTrue(_serverMock!.ClientConnected);
         }
 
+
+        [TestMethod]
+        public async Task StartAsync_should_complete_handshake()
+        {
+            // Arrange
+            var sut = GetSut();
+
+            // Act
+            await sut.StartAsync(default);
+
+            // Assert
+            await _serverMock!.WaitForAuthHandshakeCompletedAsync(TimeSpan.FromSeconds(5));
+            Assert.IsTrue(_serverMock!.ClientConnected);
+        }
+
+        [TestMethod]
+        public async Task StartAsync_should_reconnect()
+        {
+            // Arrange
+            var sut = GetSut();
+            await sut.StartAsync(default);
+            await _serverMock!.WaitForAuthHandshakeCompletedAsync(TimeSpan.FromSeconds(5));
+
+            // Act
+            await _serverMock!.StopAsync();
+            StartServer();
+
+            // Assert
+            await _serverMock!.WaitForAuthHandshakeCompletedAsync(TimeSpan.FromSeconds(999));
+            Assert.IsTrue(_serverMock!.ClientConnected);
+        }
+
         private HomeAssistantClient GetSut()
         {
             _serverMock = new HomeAssistantWebSocketServerMock();
-            _serverMock.Start("http://127.0.0.1:32246/api/websocket/");
+            StartServer();
 
             var haConfig = new HomeAssistantConfig { HOME_ASSISTANT_API = "http://127.0.0.1:32246", SUPERVISOR_TOKEN = HomeAssistantWebSocketServerMock.VALID_TOKEN };
 
@@ -46,5 +80,7 @@ namespace hhnl.HomeAssistantNet.Tests.HomeAssistantConnection
 
             return client;
         }
+
+        private void StartServer() => _serverMock!.Start("http://127.0.0.1:32246/api/websocket/");
     }
 }

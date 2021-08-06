@@ -42,7 +42,7 @@ namespace hhnl.HomeAssistantNet.TestProject
         }
 
         [Automation]
-        [RunOnStart]
+        [RunOnConnected]
         public async Task MyFirstAutomation([Snapshot]Entities.SunSun sun, Events.Current currentEvent)
         {
             _logger.LogInformation($"This state_change event was triggered by {currentEvent.Context.UserId}");
