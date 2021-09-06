@@ -3,10 +3,10 @@ using System.Text.Json.Serialization;
 
 namespace hhnl.HomeAssistantNet.Shared.Supervisor
 {
-    public class ConnectionInfo
+    public class SupervisorConnectionInfo
     {
         [JsonConstructor]
-        public ConnectionInfo(string id, bool isRemote, IReadOnlyCollection<AutomationInfoDto> automations, bool isComplete)
+        public SupervisorConnectionInfo(string id, bool isRemote, IReadOnlyCollection<AutomationInfoDto> automations, bool isComplete)
         {
             Id = id;
             IsRemote = isRemote;

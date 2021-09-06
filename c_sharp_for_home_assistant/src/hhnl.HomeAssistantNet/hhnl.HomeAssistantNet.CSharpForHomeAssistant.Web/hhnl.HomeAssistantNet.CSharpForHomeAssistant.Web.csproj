@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
@@ -7,9 +7,9 @@
 
     <ItemGroup>
         <PackageReference Include="Blazored.Modal" Version="6.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.5.21301.17" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.5.21301.17" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0-preview.7.21378.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0-preview.7.21378.6" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.0-preview.7.21378.6" />
         <PackageReference Include="Microsoft.Net.Http.Headers" Version="2.2.8" />
         <PackageReference Include="ReactiveUI.Blazor" Version="16.2.1" />
     </ItemGroup>

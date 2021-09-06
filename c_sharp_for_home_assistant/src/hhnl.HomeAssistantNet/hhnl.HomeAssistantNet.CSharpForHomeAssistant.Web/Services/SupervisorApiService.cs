@@ -29,7 +29,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
         private readonly AuthenticationService _authenticationService;
         private readonly NavigationManager _navigationManager;
         private readonly HttpClient _httpClient;
-        private readonly BehaviorSubject<ConnectionInfo?> _connectionInfoSubject = new(null);
+        private readonly BehaviorSubject<SupervisorConnectionInfo?> _connectionInfoSubject = new(null);
         private readonly ConcurrentDictionary<Guid, ReplaySubject<LogMessageDto>> _logMessageSubjects = new();
         private HubConnection? _hubConnection;
 
@@ -42,7 +42,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 
         public ApplicationState State { get; private set; } = ApplicationState.ConnectedToHost;
 
-        public IObservable<ConnectionInfo?> Connection => _connectionInfoSubject.Throttle(TimeSpan.FromMilliseconds(50));
+        public IObservable<SupervisorConnectionInfo?> Connection => _connectionInfoSubject.Throttle(TimeSpan.FromMilliseconds(50));
 
         public async Task<IObservable<LogMessageDto>> ListenToLogMessagesAsync(Guid runId)
         {
@@ -91,7 +91,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
                 return Task.CompletedTask;
             };
 
-            _hubConnection.On<ConnectionInfo?>(nameof(ISupervisorApiClient.OnConnectionChanged),
+            _hubConnection.On<SupervisorConnectionInfo?>(nameof(ISupervisorApiClient.OnConnectionChanged),
                 info => _connectionInfoSubject.OnNext(info));
             _hubConnection.On<LogMessageDto>(nameof(ISupervisorApiClient.OnNewLogMessage), message =>
             {

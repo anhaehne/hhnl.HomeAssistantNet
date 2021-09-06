@@ -64,7 +64,7 @@
         _realName = Name?.Replace("|", ".");
     }
 
-    private void OnNewConnection(ConnectionInfo? connection)
+    private void OnNewConnection(SupervisorConnectionInfo? connection)
     {
         Model = connection?.Automations.SingleOrDefault(a => a.Info.Name == _realName);
         StateHasChanged();

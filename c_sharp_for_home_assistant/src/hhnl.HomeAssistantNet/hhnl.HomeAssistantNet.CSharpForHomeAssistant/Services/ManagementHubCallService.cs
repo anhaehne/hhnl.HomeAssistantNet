@@ -12,7 +12,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 {
     public interface IManagementHubCallService
     {
-        ConnectionInfo? DefaultConnection { get; set; }
+        SupervisorConnectionInfo? DefaultConnection { get; set; }
 
         Task<T?> CallService<T>(
             Func<long, IManagementClient, Task> call,
@@ -78,7 +78,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             });
         }
 
-        public ConnectionInfo? DefaultConnection { get; set; }
+        public SupervisorConnectionInfo? DefaultConnection { get; set; }
 
         public void SetResult(string connectionId, long messageId, object? result)
         {
