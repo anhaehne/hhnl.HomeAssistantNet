@@ -35,8 +35,11 @@ namespace hhnl.HomeAssistantNet.Tests.Automation
                                            throw new InvalidOperationException(
                                                "Test base not initialized.");
 
-        protected void Initialize(bool waitForManualCompletion, Exception? throwException = null)
+        protected void Initialize(bool waitForManualCompletion, Exception? throwException = null, bool homeAsisstantClientIsConnected = true)
         {
+            if (homeAsisstantClientIsConnected)
+                Initialization.HomeAssistantConnected();
+
             _automationInfo = new AutomationInfo
             {
                 RunAutomation = (s, ct) => s.GetRequiredService<MockAutomationClass>().MockAutomation(ct)

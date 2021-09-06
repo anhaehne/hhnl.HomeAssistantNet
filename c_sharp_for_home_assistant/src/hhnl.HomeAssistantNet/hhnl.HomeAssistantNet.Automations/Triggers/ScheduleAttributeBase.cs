@@ -83,6 +83,7 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
             }
 
             var runIn = nextOccurence.Value - DateTime.Now;
+            var reschedule = false;
 
             if(runIn.TotalMilliseconds < 0)
             {
@@ -97,6 +98,13 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
             {
                 // Timer only accepts values >= 1
                 runIn = TimeSpan.FromMilliseconds(1);
+            }
+            else if(runIn.TotalMilliseconds > int.MaxValue)
+            {
+                // The intervall is greater than the maximimum value. 
+                // We set it to the maximum value and reschedule when the timer elapses.
+                reschedule = true;
+                runIn = TimeSpan.FromMilliseconds(int.MaxValue);
             }
 
             System.Timers.Timer? t = new(runIn.TotalMilliseconds);
@@ -116,6 +124,8 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
                         return;
                     }
 
+                    // If we don't have to reschedule, we can run the automation.
+                    if(!reschedule)
                     await _automationService!.EnqueueAutomationAsync(_automation!, AutomationRunInfo.StartReason.Schedule, $"Schedule: {_name}");
 
                     _trigger!.Set();

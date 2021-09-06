@@ -70,7 +70,6 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             // Move this stuff to a background task.
             await Initialization.WaitForEntitiesLoadedAsync();
 
-
             _logger.LogInformation("Registering all triggers ...");
             // Register all automation triggers
             foreach (var (automation, trigger) in GetTriggerAttributes())

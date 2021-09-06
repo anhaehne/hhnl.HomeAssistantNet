@@ -6,7 +6,7 @@ using MediatR;
 
 namespace hhnl.HomeAssistantNet.Automations.Automation
 {
-    public class StateChangedNotificationHandler : INotificationHandler<HomeAssistantClient.StateChangedNotification>
+    public class StateChangedNotificationHandler : INotificationHandler<StateChangedNotification>
     {
         private readonly IAutomationRegistry _automationRegistry;
         private readonly IAutomationService _automationService;
@@ -22,7 +22,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
             _automationService = automationService;
         }
 
-        public async Task Handle(HomeAssistantClient.StateChangedNotification notification, CancellationToken cancellationToken)
+        public async Task Handle(StateChangedNotification notification, CancellationToken cancellationToken)
         {
             // Update entities
             await _entityRegistry.UpdateEntityAsync(notification.EntityId, notification.NewState);

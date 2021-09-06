@@ -72,7 +72,23 @@ namespace hhnl.HomeAssistantNet.Tests.Automation.Runner
             Assert.AreEqual(2, Entry.Runs.Count, "Second run has not been added.");
             Assert.AreNotEqual(firstRun, Entry.LatestRun, "First run is not the latest anymore.");
         }
-        
+
+        [TestMethod]
+        public async Task EnqueueAsync_should_set_run_cancelled_when_home_assistant_client_is_not_connected()
+        {
+            // Arrange
+            Initialize(false, homeAsisstantClientIsConnected: false);
+
+            var sut = new DiscardAutomationRunner(Entry, ServiceProvider);
+
+            // Act
+            await sut.EnqueueAsync(AutomationRunInfo.StartReason.Manual, null, null, EmptySnapshot);
+            
+            // Assert
+            Assert.IsNotNull(Entry.LatestRun, "No run has been added to the entry.");
+            Assert.AreNotEqual(AutomationRunInfo.RunState.Cancelled, Entry.LatestRun.State, "Run wasn't cancelled.");
+        }
+
         [TestMethod]
         public async Task StopAsync_should_cancel_current_run()
         {
@@ -171,7 +187,7 @@ namespace hhnl.HomeAssistantNet.Tests.Automation.Runner
             Assert.IsNotNull(Entry.LatestRun, "No run has been added to the entry.");
             Assert.AreEqual(AutomationRunInfo.RunState.Cancelled, Entry.LatestRun!.State, "Run is not in state cancelled.");
         }
-        
+
         private async Task StartAutomation_should_set_correct_run_info_when_cancelled(Exception ex)
         {
             // Arrange
