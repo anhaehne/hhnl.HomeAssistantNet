@@ -5,7 +5,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 {
     public interface ISupervisorApiClient
     {
-        Task OnConnectionChanged(ConnectionInfo? connection);
+        Task OnConnectionChanged(SupervisorConnectionInfo? connection);
 
         Task OnNewLogMessage(LogMessageDto logMessageDto);
     }

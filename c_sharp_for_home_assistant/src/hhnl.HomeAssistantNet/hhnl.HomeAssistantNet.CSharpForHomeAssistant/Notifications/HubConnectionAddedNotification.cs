@@ -51,7 +51,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Notifications
                 _logger.LogDebug($"Got new connection {notification.ConnectionId}.");
                 var previousConnection = _managementHubCallService.DefaultConnection;
 
-                _managementHubCallService.DefaultConnection = new ConnectionInfo(notification.ConnectionId,
+                _managementHubCallService.DefaultConnection = new SupervisorConnectionInfo(notification.ConnectionId,
                     notification.IsRemote,
                     ArraySegment<AutomationInfoDto>.Empty, false);
 
