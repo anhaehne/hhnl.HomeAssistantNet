@@ -1,6 +1,6 @@
 {
   "name": "C#",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "slug": "c_sharp_for_home-assistant",
   "description": "C# environment for developing Home Assistant automations.",
   "arch": [ "armv7", "aarch64", "amd64"],
