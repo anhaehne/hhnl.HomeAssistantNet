@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0.100-preview.5 AS base
+FROM mcr.microsoft.com/dotnet/sdk:6.0.100-preview.7 AS base
 WORKDIR /app
 EXPOSE 8099
 
