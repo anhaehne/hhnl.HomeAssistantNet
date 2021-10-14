@@ -8,8 +8,8 @@
     
   <ItemGroup>
     <PackageReference Include="hhnl.HomeAssistantNet.Automations" Version="0.10.0" />
-    <PackageReference Include="hhnl.HomeAssistantNet.Generator" Version="0.11.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
+    <PackageReference Include="hhnl.HomeAssistantNet.Generator" Version="0.10.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.0-rc.2.21480.5" />
 
   </ItemGroup>
 </Project>
