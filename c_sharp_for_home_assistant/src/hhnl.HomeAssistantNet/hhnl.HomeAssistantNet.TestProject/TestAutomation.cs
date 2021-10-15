@@ -48,6 +48,13 @@ namespace hhnl.HomeAssistantNet.TestProject
             _logger.LogInformation($"This state_change event was triggered by {currentEvent.Context.UserId}");
         }
 
+        [Automation]
+        [RunOnConnected]
+        public async Task MyFirstAutomation2(Events.Current currentEvent)
+        {
+            _logger.LogInformation($"This state_change event was triggered by {currentEvent.Context.UserId}");
+        }
+
 
         [Automation(displayName: "Infinate run automation")]
         public async Task InfiniteRun(CancellationToken ct)

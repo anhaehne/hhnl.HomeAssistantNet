@@ -6,7 +6,7 @@
         <LangVersion>9.0</LangVersion>
         
         <Authors>anhaehne</Authors>
-        <VersionPrefix>0.10.0</VersionPrefix>
+        <VersionPrefix>0.11.0</VersionPrefix>
         <PackageProjectUrl>https://github.com/anhaehne/hhnl.HomeAssistantNet</PackageProjectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
