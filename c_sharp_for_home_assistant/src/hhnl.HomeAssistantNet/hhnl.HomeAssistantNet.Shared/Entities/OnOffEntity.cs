@@ -4,7 +4,7 @@ using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
 
 namespace hhnl.HomeAssistantNet.Shared.Entities
 {
-    public abstract class OnOffEntity : Entity
+    public abstract class OnOffEntity : BinaryEntity
     {
         private readonly string _domain;
 
@@ -13,11 +13,6 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
         {
             _domain = domain;
         }
-
-        public bool IsOn => State == "on";
-
-        public bool IsOff => State == "off";
-
 
         public async Task TurnOffAsync(CancellationToken cancellationToken = default)
         {

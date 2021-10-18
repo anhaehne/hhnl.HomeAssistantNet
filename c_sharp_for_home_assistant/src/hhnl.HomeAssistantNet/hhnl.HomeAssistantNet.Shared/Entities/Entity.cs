@@ -6,13 +6,22 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
     /// <summary>
     /// The entity base class has a few properties that are common among all entities in Home Assistant.
     /// </summary>
-    public class Entity
+    public class Entity : EntityPoco
     {
         public const string AllEntityId = "all";
 
-        public Entity(string uniqueId, IHomeAssistantClient assistantClient)
+        public Entity(string uniqueId, IHomeAssistantClient assistantClient) : base(uniqueId)
         {
             HomeAssistantClient = assistantClient;
+        }
+
+        protected IHomeAssistantClient HomeAssistantClient { get; }
+    }
+
+    public class EntityPoco
+    {
+        public EntityPoco(string uniqueId)
+        {
             UniqueId = uniqueId;
         }
 
@@ -36,14 +45,6 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
             var attribute = CurrentState?.GetPropertyOrNull("attributes")?.GetPropertyOrNull(attributeName);
             return attribute.ToObject<T>() ?? default;
         }
-
-        //public T? GetAttributeOrDefault<T>(string attributeName) where T : class
-        //{
-        //    var attribute = CurrentState?.GetPropertyOrNull("attributes")?.GetPropertyOrNull(attributeName);
-        //    return attribute?.ToObject<T>() ?? default;
-        //}
-
-        protected IHomeAssistantClient HomeAssistantClient { get; }
 
         public JsonElement? CurrentState { get; set; }
     }

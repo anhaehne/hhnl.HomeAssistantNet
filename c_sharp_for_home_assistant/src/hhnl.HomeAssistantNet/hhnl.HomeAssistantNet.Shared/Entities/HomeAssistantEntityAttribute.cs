@@ -9,12 +9,14 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
             string domain,
             string containingEntityClass,
             Type? supportedFeaturesEnumType = null,
-            bool supportsAllEntity = false)
+            bool supportsAllEntity = false,
+            int priority = 0)
         {
             Domain = domain;
             ContainingEntityClass = containingEntityClass;
             SupportedFeaturesEnumType = supportedFeaturesEnumType;
             SupportsAllEntity = supportsAllEntity;
+            Priority = priority;
         }
 
         public string Domain { get; }
@@ -24,5 +26,7 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
         public Type? SupportedFeaturesEnumType { get; }
 
         public bool SupportsAllEntity { get; }
+
+        public int Priority { get; }
     }
 }

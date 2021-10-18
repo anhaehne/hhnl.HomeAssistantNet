@@ -19,20 +19,16 @@ namespace hhnl.HomeAssistantNet.Tests.Mocks
     {
         public const string VALID_TOKEN = "TEST_TOKEN";
 
-        private readonly List<Entity> _entities;
         private CancellationTokenSource? _cts;
         private WebSocket? _webSocket;
         private TaskCompletionSource? _authTcs;
         private HttpListener? _listener;
-        private int _messageCounter;
         private Task? _runTask;
-
         private Task? _sendTask;
         private Channel<byte[]>? _messagesToSend;
 
-        public HomeAssistantWebSocketServerMock(List<Entity>? entities = null)
+        public HomeAssistantWebSocketServerMock()
         {
-            _entities = entities ?? new List<Entity>();
         }
 
         public bool ClientConnected { get; private set; }
@@ -64,7 +60,6 @@ namespace hhnl.HomeAssistantNet.Tests.Mocks
 
                 _cts = new CancellationTokenSource();
                 _authTcs = new TaskCompletionSource();
-                _messageCounter = 1;
 
                 _messagesToSend = Channel.CreateBounded<byte[]>(10);
                 _sendTask = SendLoopAsync();

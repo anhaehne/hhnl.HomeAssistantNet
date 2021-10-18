@@ -8,15 +8,15 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
     public static class AutomationMethodValidator
     {
         private static readonly DiagnosticDescriptor _invalidAutomationDeclaration = new("HHNLHAN003",
-            "Automation method is invalid.",
-            "{0} The automation will be ignored.",
+            "Automation method is invalid",
+            "{0} The automation will be ignored",
             "Setup",
             DiagnosticSeverity.Warning,
             true);
 
         private static readonly DiagnosticDescriptor _invalidAutomationClassDeclaration = new("HHNLHAN004",
-            "Class containing automation methods is invalid.",
-            "{0} All automations will be ignored.",
+            "Class containing automation methods is invalid",
+            "{0} All automations will be ignored",
             "Setup",
             DiagnosticSeverity.Warning,
             true);
@@ -100,7 +100,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             IEnumerable<IMethodSymbol> methods,
             Action<Diagnostic> reportFunc)
         {
-            var groups = methods.GroupBy(m => m.Name);
+            var groups = methods.GroupBy(m => m, SymbolEqualityComparer.Default);
 
             foreach (var group in groups)
             {

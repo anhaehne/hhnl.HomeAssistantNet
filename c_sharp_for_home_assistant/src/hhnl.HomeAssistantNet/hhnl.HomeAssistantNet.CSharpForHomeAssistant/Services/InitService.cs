@@ -54,7 +54,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             if (!deployFolder.EnumerateFiles().Any())
             {
                 _logger.LogInformation("Running initial build.");
-                await _buildService.BuildAndDeployAsync();
+                await _buildService.StartBuildAndDeployAsync();
+                await _buildService.WaitForBuildAndDeployAsync();
             }
         }
         

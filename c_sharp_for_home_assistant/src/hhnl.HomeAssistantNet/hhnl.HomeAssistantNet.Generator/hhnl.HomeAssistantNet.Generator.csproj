@@ -20,6 +20,7 @@
 
     <ItemGroup>
         <!-- Generator dependencies -->
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0-rc.2.21480.5" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-rc.2.21480.5" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0-rc.2.21480.5" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.0-rc.2.21480.5" GeneratePathProperty="true" PrivateAssets="all" />
@@ -55,6 +56,7 @@
       <EmbeddedResource Include="$(PKGRestSharp)\lib\netstandard2.0\RestSharp.dll" Visible="false" />
       <EmbeddedResource Include="..\hhnl.HomeAssistantNet.Shared\bin\$(Configuration)\netstandard2.0\hhnl.HomeAssistantNet.Shared.dll" Visible="false" />
 
+      <EmbeddedResource Include="$(PKGMicrosoft_Bcl_AsyncInterfaces)\lib\netstandard2.0\Microsoft.Bcl.AsyncInterfaces.dll" Visible="false" />
       <EmbeddedResource Include="$(PKGSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" Visible="false" />
       <EmbeddedResource Include="$(PKGSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" Visible="false" />
       <EmbeddedResource Include="$(PKGMicrosoft_Extensions_Configuration)\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll" Visible="false" />

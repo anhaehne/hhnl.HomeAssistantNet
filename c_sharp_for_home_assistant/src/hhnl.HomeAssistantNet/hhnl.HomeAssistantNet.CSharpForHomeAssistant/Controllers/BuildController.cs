@@ -16,12 +16,25 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Controllers
             _buildService = buildService;
         }
 
-        [HttpPost("deploy")]
-        public async Task<ActionResult> Deploy()
+        [HttpPost("start-deploy")]
+        public async Task<ActionResult<Guid>> StartDeploy()
         {
             try
             {
-                await _buildService.BuildAndDeployAsync();
+                return await _buildService.StartBuildAndDeployAsync();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpPost("wait-for-deploy")]
+        public async Task<ActionResult> WaitForDeploy()
+        {
+            try
+            {
+                await _buildService.WaitForBuildAndDeployAsync();
             }
             catch (Exception ex)
             {
