@@ -145,19 +145,22 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                     filteredEntites,
                     supportsAllEntity: baseClass.SupportsAllEntity);
 
-                    generated.AddRange(classes);
-
-                    foreach (var e in filteredEntites)
+                    foreach(var (code, fullName, containingClass, entity, success) in classes)
                     {
-                        entitiesOfDomain.Remove(e);
-                        entities.Remove(e.EntityId);
+                        // Filter unsuccessful entities
+                        if (!success)
+                            continue;
+
+                        generated.Add((code, fullName, containingClass));
+                        entitiesOfDomain.Remove(entity);
+                        entities.Remove(entity.EntityId);
                     }
                 }
             }
 
             // Generate all unknown entities inside the "Entities" class.
-            var fullNames = entityClassGenerator.CreateEntityClasses("Entities", typeof(Entity), null, entities.Values, false);
-            generated.AddRange(fullNames);
+            var unkownEntityClasses = entityClassGenerator.CreateEntityClasses("Entities", typeof(Entity), null, entities.Values, false);
+            generated.AddRange(unkownEntityClasses.Select(c => (c.Code, c.FullName, c.ContainingClass)));
 
             entityClassGenerator.WriteSourceFiles(generated);
 

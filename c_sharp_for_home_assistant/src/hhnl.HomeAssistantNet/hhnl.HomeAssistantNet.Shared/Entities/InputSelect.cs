@@ -69,12 +69,12 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
 
     public class InputSelectGenericTypeClassGeneratorAttribute : GenericTypeClassGeneratorAttribute
     {
-        public override (string GenericTypeName, string GenericTypeCode) GenerateGenericType(string parentName, EntityPoco entity)
+        public override (string GenericTypeName, string GenericTypeCode, bool Success) GenerateGenericType(string parentName, EntityPoco entity)
         {
             var options = entity.GetAttributeOrDefault<string[]>("options");
 
             if (options is null)
-                throw new InvalidOperationException($"Unable to get options for entity: '{entity.FriendlyName ?? entity.UniqueId}'.");
+                return (string.Empty, string.Empty, false);
 
             var source = @$"public enum Options 
             {{
@@ -96,7 +96,7 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
                 return Regex.Replace(withoutSpaces, "[^a-zA-Z0-9_]", "");
             }
 
-            return (parentName + ".Options", source);
+            return (parentName + ".Options", source, true);
         }
     }
 

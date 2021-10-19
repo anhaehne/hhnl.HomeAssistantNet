@@ -35,7 +35,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             _context = context;
         }
 
-        public IReadOnlyCollection<(string Code, string FullName, string ContainingClass)> CreateEntityClasses(
+        public IReadOnlyCollection<(string Code, string FullName, string ContainingClass, StateObject Entity, bool Success)> CreateEntityClasses(
             string className,
             Type entityBaseClass,
             Type? supportedFeaturesType,
@@ -72,7 +72,11 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                         throw new InvalidOperationException($"Only one generic parameter is allowed. Type '{currentEntityBaseClassName}'.");
 
                     string subClassName;
-                    (subClassName, genericTypeSubClass) = GenerateGenericType(entityBaseClass, entityClassName, entity);
+                    bool success;
+                    (subClassName, genericTypeSubClass, success) = GenerateGenericType(entityBaseClass, entityClassName, entity);
+
+                    if (!success)
+                        return (string.Empty, string.Empty, string.Empty, entity, false);
 
                     currentEntityBaseClassName = currentEntityBaseClassName.Replace("`1", $"<{subClassName}>");
                 }
@@ -90,7 +94,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             }}
 
             {genericTypeSubClass}
-        }}", $"{EntityNamespace}.{className}.{entityClassName}", className);
+        }}", $"{EntityNamespace}.{className}.{entityClassName}", className, entity, true);
             }).ToList();
 
             string ToClassName(string entity)
@@ -159,7 +163,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                 return t.DeclaringType is null ? t.GetFullName() : $"{GetFullAccessName(t.DeclaringType)}.{t.Name}";
             }
 
-            static (string GenericTypeName, string GenericTypeCode) GenerateGenericType(Type entityBaseClass, string parentName, StateObject stateObject)
+            static (string GenericTypeName, string GenericTypeCode, bool Success) GenerateGenericType(Type entityBaseClass, string parentName, StateObject stateObject)
             {
                 var genericTypeClassGenerator = (GenericTypeClassGeneratorAttribute)entityBaseClass.GetCustomAttribute(typeof(GenericTypeClassGeneratorAttribute), false);
 
