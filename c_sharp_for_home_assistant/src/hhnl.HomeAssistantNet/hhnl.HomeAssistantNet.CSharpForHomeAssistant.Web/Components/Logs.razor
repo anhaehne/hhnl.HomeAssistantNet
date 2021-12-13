@@ -25,7 +25,7 @@
 
     [Parameter] public bool IsBuildLog { get; set; }
 
-    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; } = default!;
 
     private List<LogMessageDto> Log { get; } = new();
 

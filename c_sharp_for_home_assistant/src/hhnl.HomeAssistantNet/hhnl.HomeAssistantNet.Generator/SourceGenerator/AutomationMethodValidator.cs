@@ -26,7 +26,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             IReadOnlyCollection<IMethodSymbol> automationMethods,
             Action<Diagnostic> reportFunc)
         {
-            var groupedByType = automationMethods.GroupBy(x => x.ContainingType);
+            var groupedByType = automationMethods.GroupBy<IMethodSymbol, INamedTypeSymbol>(x => x.ContainingType, SymbolEqualityComparer.Default);
 
             foreach (var group in groupedByType)
             {

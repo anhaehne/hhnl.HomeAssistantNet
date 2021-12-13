@@ -43,6 +43,8 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             bool removeDomain = true,
             bool supportsAllEntity = false)
         {
+            var generatedClassNames = new HashSet<string>();
+
             if (supportsAllEntity)
                 entities = entities.Append(_allEntity);
 
@@ -60,7 +62,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                 if (string.IsNullOrEmpty(supportedFeatures))
                     supportedFeatures = "null";
 
-                var entityClassName = ToClassName(entity.EntityId);
+                var entityClassName = ToUniqueClassName(entity.EntityId);
 
                 var currentEntityBaseClassName = entityBaseClass.GetFullName();
                 var genericTypeSubClass = string.Empty;
@@ -96,6 +98,21 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             {genericTypeSubClass}
         }}", $"{EntityNamespace}.{className}.{entityClassName}", className, entity, true);
             }).ToList();
+
+            string ToUniqueClassName(string entity)
+            {
+                var counter = 0;
+                var className = ToClassName(entity);
+
+                while(generatedClassNames!.Contains(className))
+                {
+                    counter++;
+                    className = ToClassName(entity + "-" + counter);
+                }
+
+                generatedClassNames.Add(className);
+                return className;
+            }
 
             string ToClassName(string entity)
             {

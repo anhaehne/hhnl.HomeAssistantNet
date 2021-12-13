@@ -51,11 +51,11 @@ namespace hhnl.HomeAssistantNet.TestProject
 
         [Automation]
         [RunOnConnected]
-        public async Task MyFirstAutomation2(Events.Current currentEvent, InputSelects.LueftungSteuerungBedroomUi bedroomUi)
+        public async Task MyFirstAutomation2(Events.Current currentEvent)
         {
-            var t = bedroomUi.GetValue();
+            //var t = bedroomUi.GetValue();
 
-            await bedroomUi.SelectOptionAsync(InputSelects.LueftungSteuerungBedroomUi.Options.Aus);
+            //await bedroomUi.SelectOptionAsync(InputSelects.LueftungSteuerungBedroomUi.Options.Aus);
             _logger.LogInformation($"This state_change event was triggered by {currentEvent.Context.UserId}");
         }
 
