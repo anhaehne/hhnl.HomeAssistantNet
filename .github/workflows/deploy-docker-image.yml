@@ -48,7 +48,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: ./c_sharp_for_home_assistant
           file: ./c_sharp_for_home_assistant/Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/armv7
+          platforms: linux/amd64,linux/arm64,linux/arm32
           push: true
           tags: ${{ fromJson(steps.set_var.outputs.configJson).image }}
           secrets: |
