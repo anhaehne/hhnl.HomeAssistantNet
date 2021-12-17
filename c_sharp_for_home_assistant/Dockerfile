@@ -22,7 +22,7 @@ ENV IsLocal=true
 ENV Logging__LogLevel__Default=Debug
 
 # Build CSharpForHomeAssistant
-FROM mcr.microsoft.com/dotnet/sdk:6.0-buster-slim-amd64 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim-amd64 AS build
 ARG TARGETPLATFORM
 WORKDIR /src
 COPY ["src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.CSharpForHomeAssistant/hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj", "hhnl.HomeAssistantNet.CSharpForHomeAssistant/"]
