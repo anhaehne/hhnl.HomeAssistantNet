@@ -29,11 +29,18 @@ COPY ["src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.CSharpForHomeAssistant/hh
 RUN dotnet restore "hhnl.HomeAssistantNet.CSharpForHomeAssistant/hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj"
 COPY src/hhnl.HomeAssistantNet .
 WORKDIR "/src/hhnl.HomeAssistantNet.CSharpForHomeAssistant"
-#RUN dotnet build "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -c Release -o /app/build
-# RUN dotnet build "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -o /app/build
+
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+        RID=linux-x64 ; \
+    elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+        RID=linux-arm64 ; \
+    elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
+        RID=linux-arm ; \
+    fi \
+    && dotnet build "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -c Release -o /app/build -r $RID --self-contained false
 
 # Publish
-#FROM build AS publish
+FROM build AS publish
 #RUN dotnet publish "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -c Release -o /app/publish
 
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
@@ -43,10 +50,10 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
         RID=linux-arm ; \
     fi \
-    && dotnet publish "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -c release -o /app/publish -r $RID --self-contained false
+    && dotnet publish "hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj" -c Release -o /app/publish -r $RID --self-contained false
 
 # Copy to final
 FROM base AS final
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "hhnl.HomeAssistantNet.CSharpForHomeAssistant.dll"]
