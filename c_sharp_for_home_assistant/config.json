@@ -16,5 +16,6 @@
   "ports": {
     "20777/tcp": 20777
   },
-  "map": ["config:rw"]
+  "map": ["config:rw"],
+  "image": "limeray/c-sharp-for-homeassistant:dev"
 }
