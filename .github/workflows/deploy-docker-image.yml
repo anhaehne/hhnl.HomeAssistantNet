@@ -16,6 +16,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - id: set_var
         run: |
           content=`cat ./c_sharp_for_home_assistant/config.json`
@@ -25,13 +28,10 @@ jobs:
           content="${content//$'\r'/'%0D'}"
           # end of optional handling for multi line json
           echo "::set-output name=configJson::$content"
-      -  id: echo_vars
-         run: |
+
+      - run: |
           echo "Version ${{fromJson(steps.set_var.outputs.configJson).version}}"
           echo "Image ${{fromJson(steps.set_var.outputs.configJson).image}}"
-
-      - name: Checkout
-        uses: actions/checkout@v2
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
