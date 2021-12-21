@@ -17,5 +17,5 @@
     "20777/tcp": 20777
   },
   "map": ["config:rw"],
-  "image": "limeray/c-sharp-for-homeassistant:dev"
+  "image": "limeray/c-sharp-for-homeassistant:0.11.0"
 }
