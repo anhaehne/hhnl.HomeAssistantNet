@@ -56,4 +56,4 @@ jobs:
           file: ./c_sharp_for_home_assistant/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ fromJson(steps.set_var.outputs.configJson).image }}
+          tags: ${{ fromJson(steps.set_var.outputs.configJson).image }}:${{ fromJson(steps.set_var.outputs.configJson).version }}
