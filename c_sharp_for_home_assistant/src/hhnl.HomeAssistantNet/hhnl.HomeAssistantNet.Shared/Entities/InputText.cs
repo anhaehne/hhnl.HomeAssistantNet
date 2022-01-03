@@ -1,4 +1,6 @@
 ﻿using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace hhnl.HomeAssistantNet.Shared.Entities
 {
@@ -17,6 +19,11 @@ namespace hhnl.HomeAssistantNet.Shared.Entities
                 return null;
 
             return State;
+        }
+
+        public async Task SetValueAsync(string value, CancellationToken cancellationToken = default)
+        {
+            await HomeAssistantClient.CallServiceAsync("input_text", "set_value", new { entity_id = UniqueId, value }, cancellationToken);
         }
     }
 }
