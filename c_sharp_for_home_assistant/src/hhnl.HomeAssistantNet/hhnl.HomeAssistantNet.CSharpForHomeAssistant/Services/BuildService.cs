@@ -22,6 +22,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         Task<Guid> StartBuildAndDeployAsync();
         Task WaitForBuildAndDeployAsync();
         void RunDeployedApplication();
+        void StopDeployedApplication();
     }
 
     public class BuildService : IBuildService
@@ -33,11 +34,12 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         private readonly ISecretsService _secretsService;
         private readonly IHubContext<SupervisorApiHub, ISupervisorApiClient> _supervisorHub;
         private readonly IMediator _mediator;
+        private Process? _automationProcess;
 
         private Task _buildAndDeployTask = Task.CompletedTask;
         private Guid _currentBuildLogId = Guid.Empty;
 
-        private static readonly Regex _automationRefRegex = new Regex("<\\s*(ProjectReference|PackageReference)\\s*Include\\s*=\\s*\".*hhnl\\.HomeAssistantNet\\.Automations.*\"");
+        private static readonly Regex _automationRefRegex = new("<\\s*(ProjectReference|PackageReference)\\s*Include\\s*=\\s*\".*hhnl\\.HomeAssistantNet\\.Automations.*\"");
 
 
         public BuildService(
@@ -83,9 +85,9 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         public void RunDeployedApplication()
         {
             if (_config.Value.SuppressAutomationDeploy)
-            {
                 return;
-            }
+
+            StopDeployedApplication();
 
             var deployPath = Path.GetFullPath(_config.Value.DeployDirectory);
             var dllPath = Path.Combine(deployPath, $"{GetProjectFileName()}.dll");
@@ -97,9 +99,13 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
                 FileName = "dotnet",
                 Arguments = $"{dllPath} Token={_haConfig.Value.SUPERVISOR_TOKEN} SupervisorUrl=http://localhost:20777",
                 WorkingDirectory = deployPath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
             };
-            Process.Start(runStartInfo);
+            _automationProcess = Process.Start(runStartInfo);
         }
+
+        public void StopDeployedApplication() => _automationProcess?.Close();
 
         private async Task BuildAndDeployAsyncInternal()
         {
