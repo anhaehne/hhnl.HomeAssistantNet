@@ -8,6 +8,7 @@
 @using System.Reactive.Disposables
 @inherits LayoutComponentBase
 @implements IDisposable
+@inject NavigationManager NavigationManager
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
     <div class="container-fluid">
@@ -15,7 +16,7 @@
         <div class="navbar-text">@NavBarText</div>
         <div class="d-flex">
             <button disabled="@(_supervisorApiService.State != SupervisorApiService.ApplicationState.ConnectedToHost)" class="btn btn-primary me-3" @onclick="ManageSecrets" type="submit">Manage Secrets</button>
-        <button disabled="@(_supervisorApiService.State == SupervisorApiService.ApplicationState.BuildAndDeploy)" class="btn btn-primary" @onclick="OnBuildClick" type="submit">Build & Deploy</button>
+            <button disabled="@(_supervisorApiService.State == SupervisorApiService.ApplicationState.BuildAndDeploy)" class="btn btn-primary" @onclick="OnBuildClick" type="submit">Build & Deploy</button>
         </div>
     </div>
 </nav>
@@ -57,7 +58,18 @@
 
     private async Task OnBuildClick()
     {
-        await _supervisorApiService.BuildAndDeployAsync();
+        var logId = await _supervisorApiService.StartBuildAndDeployAsync();
+
+        if (logId == Guid.Empty)
+            return; // Error occured.
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(Logs.LogId), logId);
+        parameters.Add(nameof(Logs.IsBuildLog), true);
+
+        _modalService.Show<Logs>("Log", parameters, new ModalOptions { HideCloseButton = true });
+
+        await _supervisorApiService.WaitForBuildAndDeployAsync();
     }
 
     private async Task ManageSecrets()

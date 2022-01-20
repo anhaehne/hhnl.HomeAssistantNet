@@ -55,7 +55,7 @@
     private string? _realName;
 
     private AutomationInfoDto? Model { get; set; }
-    
+
     private IDisposable? _connectionChangedSubscription;
 
     protected override void OnInitialized()
@@ -97,9 +97,9 @@
     private void ShowLogs(AutomationRunInfo automationRun)
     {
         var parameters = new ModalParameters();
-        parameters.Add(nameof(Logs.RunId), automationRun.Id);
+        parameters.Add(nameof(Logs.LogId), automationRun.Id);
 
-        _modalService.Show<Logs>("Log", parameters);
+        _modalService.Show<Logs>("Log", parameters, new ModalOptions { HideCloseButton = true });
     }
 
 

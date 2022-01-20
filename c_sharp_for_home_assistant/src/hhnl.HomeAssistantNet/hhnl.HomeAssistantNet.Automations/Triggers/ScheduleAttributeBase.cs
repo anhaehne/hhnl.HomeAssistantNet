@@ -78,7 +78,7 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
 
             if (!nextOccurence.HasValue)
             {
-                _logger.LogWarning($"Automation {_automation!.Info.Name} has no next scheduled date for the schedule '{_name}'.");
+                _logger?.LogWarning($"Automation {_automation!.Info.Name} has no next scheduled date for the schedule '{_name}'.");
                 return;
             }
 
@@ -89,7 +89,7 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
             {
                 // Waiting a random amount of time, between 2 und 7 seconds, and trying again.
                 var wait = _r.Next(2, 7);
-                _logger.LogWarning($"Automation {_automation!.Info.Name} next occurence is invalid: '{runIn}'. Waiting {wait} seconds and trying again.");
+                _logger?.LogWarning($"Automation {_automation!.Info.Name} next occurence is invalid: '{runIn}'. Waiting {wait} seconds and trying again.");
                 await Task.Delay(TimeSpan.FromSeconds(wait), _cts!.Token);
                 _trigger!.Set();
                 return;
@@ -132,7 +132,7 @@ namespace hhnl.HomeAssistantNet.Automations.Triggers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"An error occured while enqueueing the scheduled next automation run of '{_automation!.Info.Name}'.");
+                    _logger?.LogError(ex, $"An error occured while enqueueing the scheduled next automation run of '{_automation!.Info.Name}'.");
                 }
                 finally
                 {

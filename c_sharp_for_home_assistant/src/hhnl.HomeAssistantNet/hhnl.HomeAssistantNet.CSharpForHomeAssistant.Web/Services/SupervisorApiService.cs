@@ -44,7 +44,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 
         public IObservable<SupervisorConnectionInfo?> Connection => _connectionInfoSubject.Throttle(TimeSpan.FromMilliseconds(50));
 
-        public async Task<IObservable<LogMessageDto>> ListenToLogMessagesAsync(Guid runId)
+        public async Task<IObservable<LogMessageDto>> ListenToRunLogMessagesAsync(Guid runId)
         {
             var subject = _logMessageSubjects.GetOrAdd(runId, runId => new ReplaySubject<LogMessageDto>());
 
@@ -56,6 +56,11 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
             }
 
             return subject;
+        }
+
+        public async Task<IObservable<LogMessageDto>> ListenToBuildLogMessagesAsync(Guid runId)
+        {
+            return _logMessageSubjects.GetOrAdd(runId, runId => new ReplaySubject<LogMessageDto>());
         }
 
         public async Task StopListenToLogMessagesAsync(Guid runId)
@@ -71,8 +76,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
 
         public async Task StartAsync()
         {
-            var builder = new HubConnectionBuilder()
-                .WithAutomaticReconnect();
+            var builder = new HubConnectionBuilder();
+                //.WithAutomaticReconnect();
 
             var needToken = await _authenticationService.NeedsTokenAsync();
 
@@ -112,10 +117,19 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services
             return PostAsync($"api/run/{runInfo.Id}/stop");
         }
 
-        public async Task BuildAndDeployAsync()
+        public async Task<Guid> StartBuildAndDeployAsync()
         {
-            State = ApplicationState.BuildAndDeploy;
-            await PostAsync("api/build/deploy");
+            var guid = await PostAsync<Guid>("api/build/start-deploy");
+
+            if(guid != Guid.Empty)
+                State = ApplicationState.BuildAndDeploy;
+
+            return guid;
+        }
+
+        public async Task WaitForBuildAndDeployAsync()
+        {
+            await PostAsync("api/build/wait-for-deploy");
             State = ApplicationState.Connecting;
         }
 

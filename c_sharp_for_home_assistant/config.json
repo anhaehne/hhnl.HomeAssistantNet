@@ -1,9 +1,9 @@
 {
   "name": "C#",
-  "version": "0.10.0",
+  "version": "0.11.3",
   "slug": "c_sharp_for_home-assistant",
   "description": "C# environment for developing Home Assistant automations.",
-  "arch": [ "armv7", "aarch64", "amd64"],
+  "arch": [ "aarch64", "amd64"],
   "startup": "application",
   "boot": "auto",
   "homeassistant_api": true,
@@ -16,5 +16,6 @@
   "ports": {
     "20777/tcp": 20777
   },
-  "map": ["config:rw"]
+  "map": ["config:rw"],
+  "image": "limeray/c-sharp-for-homeassistant"
 }

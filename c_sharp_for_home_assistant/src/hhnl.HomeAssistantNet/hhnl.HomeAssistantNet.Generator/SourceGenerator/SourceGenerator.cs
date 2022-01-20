@@ -8,10 +8,14 @@ using System.Threading.Tasks;
 using HADotNet.Core;
 using HADotNet.Core.Clients;
 using HADotNet.Core.Domain;
+using HADotNet.Core.Models;
 using hhnl.HomeAssistantNet.Generator.Configuration;
 using hhnl.HomeAssistantNet.Shared.Entities;
+using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 {
@@ -57,8 +61,6 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             //    Debugger.Launch();
             //}
 #endif
-
-
             if (!HomeAssistantConfigReader.TryGetConfig(context,
                 out var config,
                 out var diagnostic,
@@ -113,15 +115,15 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             var entityClient = ClientFactory.GetClient<StatesClient>();
             var entities = (await entityClient.GetStates()).ToDictionary(x => x.EntityId);
 
-            List<string> entitiesFullNames = new();
+            List<(string Code, string FullName, string ContainingClass)> generated = new();
 
             // Get the type of entities with a HomeAssistantEntityAttribute and load their meta data.
             var knownEntityDomains = typeof(Entity).Assembly.GetTypes().Where(t => typeof(Entity).IsAssignableFrom(t))
                 .Select(t => (Type: t, Attribute: t.GetCustomAttribute<HomeAssistantEntityAttribute>()))
                 .Where(t => t.Attribute is not null)
-                .ToDictionary(t => t.Attribute.Domain,
+                .GroupBy(t => t.Attribute.Domain,
                     t => (t.Attribute.ContainingEntityClass, EntityBaseClass: t.Type,
-                        t.Attribute.SupportedFeaturesEnumType, t.Attribute.SupportsAllEntity));
+                        t.Attribute.SupportedFeaturesEnumType, t.Attribute.SupportsAllEntity, t.Attribute.Priority));
 
             // Group entities by domain and generate their classes.
             foreach (var knownEntityDomain in knownEntityDomains)
@@ -129,25 +131,50 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                 var entitiesOfDomain =
                     entities.Where(x => x.Key.StartsWith(knownEntityDomain.Key)).Select(x => x.Value).ToList();
 
-                var typedFullNames = entityClassGenerator.AddEntityClass(knownEntityDomain.Value.ContainingEntityClass,
-                    knownEntityDomain.Value.EntityBaseClass,
-                    knownEntityDomain.Value.SupportedFeaturesEnumType,
-                    entitiesOfDomain,
-                    supportsAllEntity: knownEntityDomain.Value.SupportsAllEntity);
+                var baseClasses = knownEntityDomain.OrderByDescending(e => e.Priority);
 
-                entitiesFullNames.AddRange(typedFullNames);
-
-                foreach (var e in entitiesOfDomain)
+                foreach (var baseClass in baseClasses)
                 {
-                    entities.Remove(e.EntityId);
+                    // Apply filter
+                    var filter = GetFilter(baseClass.EntityBaseClass);
+                    var filteredEntites = entitiesOfDomain.Where(e => filter(e.Attributes)).ToList();
+
+                    var classes = entityClassGenerator.CreateEntityClasses(baseClass.ContainingEntityClass,
+                    baseClass.EntityBaseClass,
+                    baseClass.SupportedFeaturesEnumType,
+                    filteredEntites,
+                    supportsAllEntity: baseClass.SupportsAllEntity);
+
+                    foreach(var (code, fullName, containingClass, entity, success) in classes)
+                    {
+                        // Filter unsuccessful entities
+                        if (!success)
+                            continue;
+
+                        generated.Add((code, fullName, containingClass));
+                        entitiesOfDomain.Remove(entity);
+                        entities.Remove(entity.EntityId);
+                    }
                 }
             }
 
             // Generate all unknown entities inside the "Entities" class.
-            var fullNames = entityClassGenerator.AddEntityClass("Entities", typeof(Entity), null, entities.Values, false);
-            entitiesFullNames.AddRange(fullNames);
+            var unkownEntityClasses = entityClassGenerator.CreateEntityClasses("Entities", typeof(Entity), null, entities.Values, false);
+            generated.AddRange(unkownEntityClasses.Select(c => (c.Code, c.FullName, c.ContainingClass)));
 
-            return entitiesFullNames;
+            entityClassGenerator.WriteSourceFiles(generated);
+
+            return generated.Select(x => x.FullName).ToList();
+        }
+
+        private static Func<IReadOnlyDictionary<string, object?>, bool> GetFilter(Type baseClass)
+        {
+            var methodInfo = baseClass.GetMethod("Filter", BindingFlags.Public | BindingFlags.Static, null, new[] {typeof(IReadOnlyDictionary<string, object?>) }, null);
+
+            if(methodInfo == null)
+                return (attr) => true;
+
+            return (attr) => (bool)methodInfo.Invoke(null, new object[] { attr });
         }
     }
 }

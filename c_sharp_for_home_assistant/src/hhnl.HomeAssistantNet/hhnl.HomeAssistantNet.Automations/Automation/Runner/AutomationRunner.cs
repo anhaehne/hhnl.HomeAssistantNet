@@ -115,12 +115,13 @@ namespace hhnl.HomeAssistantNet.Automations.Automation.Runner
                     }
                     finally
                     {
+                        _logger.LogDebug($"The automation run made {run.ServiceCallCount} service calls.");
+
                         run.Ended = DateTimeOffset.Now;
                         run.CancellationTokenSource.Dispose();
                         run.CancellationTokenSource = null;
+                        AutomationLogger.CloseLog();
                     }
-
-                    _logger.LogDebug($"The automation run made {run.ServiceCallCount} service calls.");
 
                     await PublishRunChangedAsync(run);
                 });
