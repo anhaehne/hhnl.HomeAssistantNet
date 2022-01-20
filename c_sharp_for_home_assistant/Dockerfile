@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0.100-rc.2 AS base
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS base
 WORKDIR /app
 EXPOSE 8099
 
@@ -22,7 +22,7 @@ ENV IsLocal=true
 ENV Logging__LogLevel__Default=Debug
 
 # Build CSharpForHomeAssistant
-FROM mcr.microsoft.com/dotnet/sdk:6.0.100-rc.2 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.CSharpForHomeAssistant/hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj", "hhnl.HomeAssistantNet.CSharpForHomeAssistant/"]
 RUN dotnet restore "hhnl.HomeAssistantNet.CSharpForHomeAssistant/hhnl.HomeAssistantNet.CSharpForHomeAssistant.csproj"

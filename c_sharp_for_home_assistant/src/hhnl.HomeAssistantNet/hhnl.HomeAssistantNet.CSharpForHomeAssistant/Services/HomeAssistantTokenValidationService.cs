@@ -173,6 +173,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             return response.StatusCode switch
             {
                 HttpStatusCode.Unauthorized => false,
+                HttpStatusCode.Forbidden => false,
                 HttpStatusCode.OK => true,
                 _ => throw new InvalidOperationException($"Got unexpected status code {response.StatusCode}")
             };

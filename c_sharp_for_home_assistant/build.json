@@ -1,8 +1,0 @@
-{
-    "build_from": {
-      "armhf": "mcr.microsoft.com/dotnet/aspnet:5.0",
-      "armv7": "mcr.microsoft.com/dotnet/aspnet:5.0",
-      "aarch64": "mcr.microsoft.com/dotnet/aspnet:5.0",
-      "amd64": "mcr.microsoft.com/dotnet/aspnet:5.0"
-    }
-} 

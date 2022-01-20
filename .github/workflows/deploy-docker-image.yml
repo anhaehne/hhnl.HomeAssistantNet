@@ -1,0 +1,59 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Deploy docker image
+
+on:
+  push:
+    branches:
+      - 'build'
+      - 'dev'
+    paths:
+      - 'c_sharp_for_home_assistant/config.json'
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - id: set_var
+        run: |
+          content=`cat ./c_sharp_for_home_assistant/config.json`
+          # the following lines are only required for multi line json
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          # end of optional handling for multi line json
+          echo "::set-output name=configJson::$content"
+
+      - run: |
+          echo "Version ${{fromJson(steps.set_var.outputs.configJson).version}}"
+          echo "Image ${{fromJson(steps.set_var.outputs.configJson).image}}"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./c_sharp_for_home_assistant
+          file: ./c_sharp_for_home_assistant/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ fromJson(steps.set_var.outputs.configJson).image }}:${{ fromJson(steps.set_var.outputs.configJson).version }}

@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using HADotNet.Core.Models;
 using hhnl.HomeAssistantNet.Shared.Entities;
 using hhnl.HomeAssistantNet.Shared.HomeAssistantConnection;
+using hhnl.HomeAssistantNet.Shared.SourceGenerator;
 using Microsoft.CodeAnalysis;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
 {
@@ -30,7 +35,7 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             _context = context;
         }
 
-        public IReadOnlyCollection<string> AddEntityClass(
+        public IReadOnlyCollection<(string Code, string FullName, string ContainingClass, StateObject Entity, bool Success)> CreateEntityClasses(
             string className,
             Type entityBaseClass,
             Type? supportedFeaturesType,
@@ -38,12 +43,12 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
             bool removeDomain = true,
             bool supportsAllEntity = false)
         {
-            List<string> entitiesFullNames = new();
+            var generatedClassNames = new HashSet<string>();
 
             if (supportsAllEntity)
                 entities = entities.Append(_allEntity);
 
-            var entityClasses = entities.Select(entity =>
+            return entities.Select(entity =>
             {
                 var entityName = entity.Attributes.ContainsKey("friendly_name")
                     ? $"{entity.Attributes["friendly_name"]} ({entity.EntityId})"
@@ -57,38 +62,57 @@ namespace hhnl.HomeAssistantNet.Generator.SourceGenerator
                 if (string.IsNullOrEmpty(supportedFeatures))
                     supportedFeatures = "null";
 
-                var entityClassName = ToClassName(entity.EntityId);
+                var entityClassName = ToUniqueClassName(entity.EntityId);
 
-                entitiesFullNames.Add($"{EntityNamespace}.{className}.{entityClassName}");
+                var currentEntityBaseClassName = entityBaseClass.GetFullName();
+                var genericTypeSubClass = string.Empty;
 
-                return $@"
+                // Check for open generics
+                if(entityBaseClass.IsGenericType && entityBaseClass.GetGenericTypeDefinition() == entityBaseClass)
+                {
+                    if (entityBaseClass.GetGenericArguments().Length != 1)
+                        throw new InvalidOperationException($"Only one generic parameter is allowed. Type '{currentEntityBaseClassName}'.");
+
+                    string subClassName;
+                    bool success;
+                    (subClassName, genericTypeSubClass, success) = GenerateGenericType(entityBaseClass, entityClassName, entity);
+
+                    if (!success)
+                        return (string.Empty, string.Empty, string.Empty, entity, false);
+
+                    currentEntityBaseClassName = currentEntityBaseClassName.Replace("`1", $"<{subClassName}>");
+                }
+
+                return ($@"
         /// <summary>
         /// The entity {entityName}
         /// </summary>
         [{typeof(UniqueIdAttribute).GetFullName()}(""{entity.EntityId}"")]
         [{typeof(SupportedFeaturesAttribute).GetFullName()}({supportedFeatures})]
-        public class {entityClassName}: {entityBaseClass.GetFullName()}
+        public class {entityClassName}: {currentEntityBaseClassName}
         {{
             public {entityClassName}({typeof(IHomeAssistantClient)} client) : base(""{entity.EntityId}"", client)
             {{
             }}
-        }}";
-            });
 
+            {genericTypeSubClass}
+        }}", $"{EntityNamespace}.{className}.{entityClassName}", className, entity, true);
+            }).ToList();
 
-            var source = @$"
-using System;
-namespace {EntityNamespace}
-{{
-    public static class {className}
-    {{
-        {string.Join(Environment.NewLine, entityClasses)}
-    }}
-}}";
+            string ToUniqueClassName(string entity)
+            {
+                var counter = 0;
+                var className = ToClassName(entity);
 
-            _context.AddSource($"HomeAssistant_{className}", source);
+                while(generatedClassNames!.Contains(className))
+                {
+                    counter++;
+                    className = ToClassName(entity + "-" + counter);
+                }
 
-            return entitiesFullNames;
+                generatedClassNames.Add(className);
+                return className;
+            }
 
             string ToClassName(string entity)
             {
@@ -154,6 +178,40 @@ namespace {EntityNamespace}
             static string GetFullAccessName(Type t)
             {
                 return t.DeclaringType is null ? t.GetFullName() : $"{GetFullAccessName(t.DeclaringType)}.{t.Name}";
+            }
+
+            static (string GenericTypeName, string GenericTypeCode, bool Success) GenerateGenericType(Type entityBaseClass, string parentName, StateObject stateObject)
+            {
+                var genericTypeClassGenerator = (GenericTypeClassGeneratorAttribute)entityBaseClass.GetCustomAttribute(typeof(GenericTypeClassGeneratorAttribute), false);
+
+                // convert the object state back to json so we can bass the system.text.json.jsonelemnt
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(stateObject, new JsonSerializerSettings { ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                }
+                });
+                var jsonState = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true});
+
+                return genericTypeClassGenerator.GenerateGenericType(parentName, new EntityPoco(stateObject.EntityId) {  CurrentState = jsonState });
+            }
+        }
+
+        public void WriteSourceFiles(IEnumerable<(string Code, string FullName, string ContainingClass)> classes)
+        {
+            foreach(var containgClass in classes.GroupBy(x => x.ContainingClass))
+            {
+
+                var source = @$"
+using System;
+namespace {EntityNamespace}
+{{
+    public static class {containgClass.Key}
+    {{
+        {string.Join(Environment.NewLine, containgClass.Select(x => x.Code))}
+    }}
+}}";
+
+                _context.AddSource($"HomeAssistant_{containgClass.Key}", source);
             }
         }
     }

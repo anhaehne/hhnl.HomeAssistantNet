@@ -24,22 +24,22 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Build hhnl.HomeAssistantNet.Automations.csproj
-        run: dotnet build ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Automations/hhnl.HomeAssistantNet.Automations.csproj --version-suffix dev -c Release
+        run: dotnet build ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Automations/hhnl.HomeAssistantNet.Automations.csproj --version-suffix dev-${{ github.run_number }} -c Release
       
       - name: Build hhnl.HomeAssistantNet.Shared.csproj
-        run: dotnet build ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Shared/hhnl.HomeAssistantNet.Shared.csproj --version-suffix dev -c Release
+        run: dotnet build ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Shared/hhnl.HomeAssistantNet.Shared.csproj --version-suffix dev-${{ github.run_number }} -c Release
       
       - name: Build hhnl.HomeAssistantNet.Generator.csproj
-        run: dotnet build ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Generator/hhnl.HomeAssistantNet.Generator.csproj --version-suffix dev -c Release
+        run: dotnet build ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Generator/hhnl.HomeAssistantNet.Generator.csproj --version-suffix dev-${{ github.run_number }} -c Release
       
       - name: Pack hhnl.HomeAssistantNet.Automations.csproj
-        run: dotnet pack ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Automations/hhnl.HomeAssistantNet.Automations.csproj --version-suffix dev -c Release -o .
+        run: dotnet pack ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Automations/hhnl.HomeAssistantNet.Automations.csproj --version-suffix dev-${{ github.run_number }} -c Release -o .
       
       - name: Pack hhnl.HomeAssistantNet.Shared.csproj
-        run: dotnet pack ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Shared/hhnl.HomeAssistantNet.Shared.csproj --version-suffix dev -c Release -o .
+        run: dotnet pack ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Shared/hhnl.HomeAssistantNet.Shared.csproj --version-suffix dev-${{ github.run_number }} -c Release -o .
       
       - name: Pack hhnl.HomeAssistantNet.Generator.csproj
-        run: dotnet pack ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Generator/hhnl.HomeAssistantNet.Generator.csproj --version-suffix dev -c Release -o .
+        run: dotnet pack ./c_sharp_for_home_assistant/src/hhnl.HomeAssistantNet/hhnl.HomeAssistantNet.Generator/hhnl.HomeAssistantNet.Generator.csproj --version-suffix dev-${{ github.run_number }} -c Release -o .
         
       - name: Push
         run: dotnet nuget push "*.nupkg" --source nuget.org --skip-duplicate --api-key ${NUGET_TOKEN}

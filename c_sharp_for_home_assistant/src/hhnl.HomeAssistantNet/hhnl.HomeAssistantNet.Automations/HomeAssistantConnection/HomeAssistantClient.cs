@@ -391,9 +391,6 @@ namespace hhnl.HomeAssistantNet.Automations.HomeAssistantConnection
             // Wait for init
             await Initialization.WaitForHomeAssistantConnectionAsync();
 
-            
-
-
             TaskCompletionSource<WebsocketApiMessage>? tcs = null;
 
             var id = await EnqueueMessageAsync(innerId =>

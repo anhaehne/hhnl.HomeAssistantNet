@@ -43,8 +43,19 @@ namespace hhnl.HomeAssistantNet.TestProject
 
         [Automation]
         [RunOnConnected]
-        public async Task MyFirstAutomation([Snapshot]Entities.SunSun sun, Events.Current currentEvent)
+        public async Task MyFirstAutomation(Sensors.JaninaHandyNachsterWecker wecker)
         {
+            var t = wecker.GetValue();
+            //_logger.LogInformation($"This state_change event was triggered by {currentEvent.Context.UserId}");
+        }
+
+        [Automation]
+        [RunOnConnected]
+        public async Task MyFirstAutomation2(Events.Current currentEvent)
+        {
+            //var t = bedroomUi.GetValue();
+
+            //await bedroomUi.SelectOptionAsync(InputSelects.LueftungSteuerungBedroomUi.Options.Aus);
             _logger.LogInformation($"This state_change event was triggered by {currentEvent.Context.UserId}");
         }
 

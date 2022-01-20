@@ -1,6 +1,9 @@
-﻿using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests;
+﻿using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Hubs;
+using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests;
+using hhnl.HomeAssistantNet.CSharpForHomeAssistant.Web.Services;
 using hhnl.HomeAssistantNet.Shared.Configuration;
 using MediatR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -16,9 +19,10 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 {
     public interface IBuildService
     {
-        Task<bool> BuildAndDeployAsync();
+        Task<Guid> StartBuildAndDeployAsync();
         Task WaitForBuildAndDeployAsync();
         void RunDeployedApplication();
+        void StopDeployedApplication();
     }
 
     public class BuildService : IBuildService
@@ -28,10 +32,14 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
         private readonly IOptions<HomeAssistantConfig> _haConfig;
         private readonly IManagementHubCallService _managementHubCallService;
         private readonly ISecretsService _secretsService;
+        private readonly IHubContext<SupervisorApiHub, ISupervisorApiClient> _supervisorHub;
         private readonly IMediator _mediator;
-        private Task<bool> _buildAndDeployTask = Task.FromResult(true);
+        private Process? _automationProcess;
 
-        private static readonly Regex _automationRefRegex = new Regex("<\\s*(ProjectReference|PackageReference)\\s*Include\\s*=\\s*\".*hhnl\\.HomeAssistantNet\\.Automations.*\"");
+        private Task _buildAndDeployTask = Task.CompletedTask;
+        private Guid _currentBuildLogId = Guid.Empty;
+
+        private static readonly Regex _automationRefRegex = new("<\\s*(ProjectReference|PackageReference)\\s*Include\\s*=\\s*\".*hhnl\\.HomeAssistantNet\\.Automations.*\"");
 
 
         public BuildService(
@@ -40,7 +48,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             ILogger<BuildService> logger, 
             IOptions<HomeAssistantConfig> haConfig, 
             IManagementHubCallService managementHubCallService,
-            ISecretsService secretsService)
+            ISecretsService secretsService,
+            IHubContext<SupervisorApiHub, ISupervisorApiClient> supervisorHub)
         {
             _config = config;
             _mediator = mediator;
@@ -48,6 +57,7 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             _haConfig = haConfig;
             _managementHubCallService = managementHubCallService;
             _secretsService = secretsService;
+            _supervisorHub = supervisorHub;
         }
 
         public Task WaitForBuildAndDeployAsync()
@@ -55,23 +65,29 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
             return _buildAndDeployTask;
         }
 
-        public Task<bool> BuildAndDeployAsync()
+        public Task<Guid> StartBuildAndDeployAsync()
         {
             if (_config.Value.SuppressAutomationDeploy)
             {
-                return Task.FromResult(true);
+                return Task.FromResult(Guid.Empty);
             }
 
-            _buildAndDeployTask = BuildAndDeployAsyncInternal();
-            return _buildAndDeployTask;
+            // Start a new build if no build is running.
+            if (_buildAndDeployTask.IsCompleted)
+            {
+                _currentBuildLogId = Guid.NewGuid();
+                _buildAndDeployTask = BuildAndDeployAsyncInternal();
+            }
+
+            return Task.FromResult(_currentBuildLogId);
         }
 
         public void RunDeployedApplication()
         {
             if (_config.Value.SuppressAutomationDeploy)
-            {
                 return;
-            }
+
+            StopDeployedApplication();
 
             var deployPath = Path.GetFullPath(_config.Value.DeployDirectory);
             var dllPath = Path.Combine(deployPath, $"{GetProjectFileName()}.dll");
@@ -83,70 +99,99 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
                 FileName = "dotnet",
                 Arguments = $"{dllPath} Token={_haConfig.Value.SUPERVISOR_TOKEN} SupervisorUrl=http://localhost:20777",
                 WorkingDirectory = deployPath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
             };
-            Process.Start(runStartInfo);
+            _automationProcess = Process.Start(runStartInfo);
         }
 
-        private async Task<bool> BuildAndDeployAsyncInternal()
+        public void StopDeployedApplication() => _automationProcess?.Close();
+
+        private async Task BuildAndDeployAsyncInternal()
         {
-            _logger.LogDebug("Starting build and deploy");
-
-            var srcDirectory = Path.GetFullPath(_config.Value.SourceDirectory);
-            var buildDirectory = Path.GetFullPath(_config.Value.BuildDirectory);
-            var deployDirectory = Path.GetFullPath(_config.Value.DeployDirectory);
-
-            // Copy source to build directory
-            if(Directory.Exists(buildDirectory))
-                Directory.Delete(buildDirectory, true);
-
-            DirectoryCopy(srcDirectory, buildDirectory);
-
-            // The src directory is the solution directory so we have to find the automation project.
-            if (!TryFindAutomationProject(buildDirectory, out string? projectDirectory))
-            {
-                _logger.LogError($"Unable to determine automation project. Make sure the project directly references hhnl.HomeAssistantNet.Automations. SourceDirectory: '{srcDirectory}'");
-                return false;
-            }
-
-            if (_managementHubCallService.DefaultConnection is not null)
-            {
-                _logger.LogDebug("Stopping connection");
-
-                await _mediator.Send(new StopProcessRequest(_managementHubCallService.DefaultConnection.Id));
-            }
-
-            _logger.LogDebug("Starting dotnet publish");
-
-            ProcessStartInfo? buildStartInfo = new ProcessStartInfo
-            {
-                WorkingDirectory = projectDirectory,
-                FileName = "dotnet",
-                Arguments = $"publish --force -c Release -o {deployDirectory}"
-            };
-
-            Process? buildProcess = Process.Start(buildStartInfo);
-
-            using CancellationTokenSource? cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(3));
-
             try
             {
-                await buildProcess!.WaitForExitAsync(cancellationTokenSource.Token);
+                _logger.LogDebug("Starting build and deploy");
+
+                var srcDirectory = Path.GetFullPath(_config.Value.SourceDirectory);
+                var buildDirectory = Path.GetFullPath(_config.Value.BuildDirectory);
+                var deployDirectory = Path.GetFullPath(_config.Value.DeployDirectory);
+
+                // Copy source to build directory
+                if (Directory.Exists(buildDirectory))
+                    Directory.Delete(buildDirectory, true);
+
+                DirectoryCopy(srcDirectory, buildDirectory);
+
+                // The src directory is the solution directory so we have to find the automation project.
+                if (!TryFindAutomationProject(buildDirectory, out string? projectDirectory))
+                {
+                    _logger.LogError($"Unable to determine automation project. Make sure the project directly references hhnl.HomeAssistantNet.Automations. SourceDirectory: '{srcDirectory}'");
+                    return;
+                }
+
+                if (_managementHubCallService.DefaultConnection is not null)
+                {
+                    _logger.LogDebug("Stopping connection");
+
+                    await _mediator.Send(new StopProcessRequest(_managementHubCallService.DefaultConnection.Id));
+                }
+
+                _logger.LogDebug("Starting dotnet publish");
+
+                ProcessStartInfo? buildStartInfo = new ProcessStartInfo
+                {
+                    WorkingDirectory = projectDirectory,
+                    FileName = "dotnet",
+                    Arguments = $"publish --force -c Release -o {deployDirectory}",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                };
+
+                var buildProcess = Process.Start(buildStartInfo);
+
+                if (buildProcess is null)
+                {
+                    _logger.LogError($"Unable to start build process");
+                    return;
+                }
+
+                var stdOutTask = Task.Factory.StartNew(async () =>
+                {
+                    while (!buildProcess.StandardOutput.EndOfStream)
+                    {
+                        var line = await buildProcess.StandardOutput.ReadLineAsync();
+
+                        if(!string.IsNullOrEmpty(line))
+                            await _supervisorHub.Clients.All.OnNewLogMessage(new Shared.Supervisor.LogMessageDto(_currentBuildLogId, line, 0, 0, false));
+                    }
+
+                }, TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach);
+
+                using CancellationTokenSource? cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+
+                try
+                {
+                    await buildProcess.WaitForExitAsync(cancellationTokenSource.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                    _logger.LogError("Build timed out.");
+                    return;
+                }
+
+                if (buildProcess.ExitCode != 0)
+                {
+                    _logger.LogError($"dotnet published finished with exit code {buildProcess.ExitCode}.");
+                    return;
+                }
+
+                _secretsService.DeploySecretsFile();
             }
-            catch (TaskCanceledException)
+            finally
             {
-                _logger.LogError("Build timed out.");
-                return false;
+                await _supervisorHub.Clients.All.OnNewLogMessage(new Shared.Supervisor.LogMessageDto(_currentBuildLogId, string.Empty, 0, 0, true));
             }
-
-            if (buildProcess.ExitCode != 0)
-            {
-                _logger.LogError($"dotnet published finished with exit code {buildProcess.ExitCode}.");
-                return false;
-            }
-
-            _secretsService.DeploySecretsFile();
-
-            return true;
         }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName)
@@ -214,6 +259,29 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Services
 
             return fileInfo.Name.Replace(fileInfo.Extension, "");
         }
+    }
 
+
+
+    public record BuildContext(Guid LogId, IHubContext<SupervisorApiHub, ISupervisorApiClient> HubContext);
+
+    public class BuildServiceLogger : ILogger
+    {
+        private static AsyncLocal<BuildContext?> _buildContext = new AsyncLocal<BuildContext?>();
+
+        public static BuildContext? BuildContext
+        {
+            get {  return _buildContext.Value; }
+            set {  _buildContext.Value = value; }
+        }
+
+        public IDisposable BeginScope<TState>(TState state) => default!;
+
+        public bool IsEnabled(LogLevel logLevel) => BuildContext is not null;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+
+        }
     }
 }
