@@ -6,7 +6,7 @@
         <LangVersion>9.0</LangVersion>
 
         <Authors>anhaehne</Authors>
-        <VersionPrefix>0.11.3</VersionPrefix>
+        <VersionPrefix>0.11.4</VersionPrefix>
         <PackageProjectUrl>https://github.com/anhaehne/hhnl.HomeAssistantNet</PackageProjectUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -39,7 +39,7 @@
         <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="all">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="RestSharp" Version="107.1.1" GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="RestSharp" Version="106.15.0" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" PrivateAssets="all" />
     </ItemGroup>
     
