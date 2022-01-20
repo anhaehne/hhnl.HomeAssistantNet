@@ -5,7 +5,7 @@ name: Deploy docker image
 on:
   push:
     branches:
-      - 'main'
+      - 'build'
       - 'dev'
     paths:
       - 'c_sharp_for_home_assistant/config.json'

@@ -1,8 +1,24 @@
 # Changelog
-All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+!! MAKE SURE TO UPDATE TO THE LATEST NUGET PACKAGES !! 
+
+## [0.11.3] - 2022-01-20
+
+### Added
+- Build log is now displayed during "Build & Deploy"
+- InputDateTime
+- InputNumber
+- InputSelect
+- InputText
+- Lock
+- NumericSensor
+
+### Changed
+- Using pre compiled docker images should make updates faster
+- Moved to .net 6 release version
+
+### Fixed
+- Multiple instances of the automation hosts run simultaneously
 
 ## [0.6.0] - 2021-07-05
 ### Changed
