@@ -14,6 +14,7 @@
 - NumericSensor
 
 ### Changed
+- All sensors are now available in the `Sensors` class.
 - Using pre compiled docker images should make updates faster
 - Moved to .net 6 release version
 
