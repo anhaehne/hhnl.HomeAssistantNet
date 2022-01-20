@@ -9,29 +9,50 @@
     {
         <h6>@message.Message</h6>
     }
+    @if(IsComplete)
+    {
+        <h5> -- Log complete --</h5>
+    }
+
+    <button disabled="@(IsBuildLog && !IsComplete)" @onclick="OnCloseClick" class="btn btn-primary"  type="submit">Close</button>
 </div>
 
 
 @code {
     private IDisposable? _subscription;
 
-    [Parameter] public Guid RunId { get; set; }
+    [Parameter] public Guid LogId { get; set; }
+
+    [Parameter] public bool IsBuildLog { get; set; }
+
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; } = default!;
 
     private List<LogMessageDto> Log { get; } = new();
 
+    public bool IsComplete { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        var observable = await _supervisorApiService.ListenToLogMessagesAsync(RunId);
+        var observable = await (IsBuildLog ? _supervisorApiService.ListenToBuildLogMessagesAsync(LogId) :_supervisorApiService.ListenToRunLogMessagesAsync(LogId));
         _subscription = observable.Buffer(TimeSpan.FromMilliseconds(50)).Subscribe(nextBatch =>
         {
             Log.AddRange(nextBatch);
+
+            if (nextBatch.Any() && nextBatch.Last().LogComplete)
+                IsComplete = true;
+
             StateHasChanged();
         });
     }
 
     public async ValueTask DisposeAsync()
     {
-        await _supervisorApiService.StopListenToLogMessagesAsync(RunId);
+        await _supervisorApiService.StopListenToLogMessagesAsync(LogId);
         _subscription?.Dispose();
+    }
+
+    private async Task OnCloseClick()
+    {
+        await ModalInstance.CloseAsync();
     }
 }

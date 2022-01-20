@@ -4,12 +4,13 @@ namespace hhnl.HomeAssistantNet.Shared.Supervisor
 {
     public class LogMessageDto
     {
-        public LogMessageDto(Guid runId, string message, int logLevel, int notificationId)
+        public LogMessageDto(Guid runId, string message, int logLevel, int notificationId, bool logComplete)
         {
             RunId = runId;
             Message = message;
             LogLevel = logLevel;
             NotificationId = notificationId;
+            LogComplete = logComplete;
         }
 
         public Guid RunId { get; }
@@ -19,5 +20,7 @@ namespace hhnl.HomeAssistantNet.Shared.Supervisor
         public int LogLevel { get; }
 
         public int NotificationId { get; }
+
+        public bool LogComplete { get; }
     }
 }

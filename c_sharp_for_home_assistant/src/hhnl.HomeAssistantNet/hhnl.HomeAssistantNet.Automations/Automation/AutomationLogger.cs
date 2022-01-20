@@ -24,7 +24,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         public bool IsEnabled(LogLevel logLevel) => AutomationRunContext.Current is not null;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             var runContext = AutomationRunContext.Current;
 
@@ -35,7 +35,7 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
             var message = $"[{logLevel,-12};{_name};{runTime}]{formatter(state, exception)}";
 
-            var messageDto = new LogMessageDto(runContext.CurrentRun.Id, message, (int)logLevel, Interlocked.Increment(ref _notificationId));
+            var messageDto = new LogMessageDto(runContext.CurrentRun.Id, message, (int)logLevel, Interlocked.Increment(ref _notificationId), false);
 
             lock(runContext.CurrentRun)
                 runContext.CurrentRun.Log.Add(messageDto);
@@ -46,7 +46,26 @@ namespace hhnl.HomeAssistantNet.Automations.Automation
 
         public static void RegisterRun(Guid runId) => _subscribedRuns.TryAdd(runId, false);
 
-        public static void UnregisterRun(Guid runId) => _subscribedRuns.TryRemove(runId, out _);
+        public static void UnregisterRun(Guid runId)
+        {
+            _subscribedRuns.TryRemove(runId, out _);
+        }
+
+        public static void CloseLog()
+        {
+            var runContext = AutomationRunContext.Current;
+
+            if (runContext is null)
+                return;
+
+            var messageDto = new LogMessageDto(runContext.CurrentRun.Id, string.Empty, (int)LogLevel.None, Interlocked.Increment(ref _notificationId), true);
+
+            lock (runContext.CurrentRun)
+                runContext.CurrentRun.Log.Add(messageDto);
+
+            if (_subscribedRuns.ContainsKey(runContext.CurrentRun.Id))
+                _ = runContext.ServiceProvider.GetRequiredService<SupervisorClient>().OnNewLogMessage(messageDto);
+        }
 
         public class Provider : ILoggerProvider
         {

@@ -48,7 +48,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
 
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(connectUri,
-                    options => options.AccessTokenProvider = () => Task.FromResult(haConfig.Value.SUPERVISOR_TOKEN))
+                    options => options.AccessTokenProvider = () => Task.FromResult<string?>(haConfig.Value.SUPERVISOR_TOKEN))
                 .WithAutomaticReconnect()
                 .Build();
             _hubConnection.On<long>(nameof(IManagementClient.GetAutomationsAsync), GetAutomationsAsync);
@@ -58,6 +58,8 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
             _hubConnection.On<long>(nameof(IManagementClient.GetProcessId), GetProcessId);
             _hubConnection.On<long, Guid>(nameof(IManagementClient.StartListenToRunLog), StartListenToRunLog);
         }
+
+        private HubConnection HubConnection => _hubConnection ?? throw new InvalidOperationException("HubConnection hasn't been esteblished.");
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -93,12 +95,12 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
         {
             if (!_automationRegistry.Automations.TryGetValue(name, out var automation))
             {
-                await _hubConnection.SendAsync("AutomationStarted", messageId, null);
+                await HubConnection.SendAsync("AutomationStarted", messageId, null);
                 return;
             }
 
             await _automationService.EnqueueAutomationAsync(automation, Shared.Automation.AutomationRunInfo.StartReason.Manual, waitForStart: true);
-            await _hubConnection.SendAsync("AutomationStarted", messageId, ToDto(automation));
+            await HubConnection.SendAsync("AutomationStarted", messageId, ToDto(automation));
         }
 
         public async Task StopAutomationRunAsync(long messageId, Guid runId)
@@ -107,31 +109,31 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
 
             if (entry == default)
             {
-                await _hubConnection.SendAsync("AutomationRunStopped", messageId);
+                await HubConnection.SendAsync("AutomationRunStopped", messageId);
                 return;
             }
 
             await _automationService.StopAutomationRunAsync(entry.Automation, entry.Run);
-            await _hubConnection.SendAsync("AutomationRunStopped", messageId);
+            await HubConnection.SendAsync("AutomationRunStopped", messageId);
         }
 
         public Task GetAutomationsAsync(long messageId)
         {
             var automations = _automationRegistry.Automations.Values.Select(ToDto).ToArray();
-            return _hubConnection.SendAsync("AutomationsGot", messageId, automations);
+            return HubConnection.SendAsync("AutomationsGot", messageId, automations);
         }
 
         public async Task StartListenToRunLog(long messageId, Guid runId)
         {
             var result = _automationRegistry.Automations.SelectMany(x => x.Value.Runs).SingleOrDefault(r => r.Id == runId)?.Log;
-            await _hubConnection.SendAsync("StartedListingToRunLog", messageId, result);
+            await HubConnection.SendAsync("StartedListingToRunLog", messageId, result);
             AutomationLogger.RegisterRun(runId);
         }
 
         public Task StopListenToRunLog(long messageId, Guid runId)
         {
             AutomationLogger.UnregisterRun(runId);
-            return _hubConnection.SendAsync("StoppedListingToRunLog", messageId, true);
+            return HubConnection.SendAsync("StoppedListingToRunLog", messageId, true);
         }
 
         public Task Shutdown()
@@ -142,7 +144,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
 
         public Task GetProcessId(long messageId)
         {
-            return _hubConnection.SendAsync("ProcessIdGot", messageId, Process.GetCurrentProcess().Id);
+            return HubConnection.SendAsync("ProcessIdGot", messageId, Process.GetCurrentProcess().Id);
         }
 
         public async Task OnAutomationsChanged()
@@ -167,7 +169,7 @@ namespace hhnl.HomeAssistantNet.Automations.Supervisor
 
                 try
                 {
-                    await _hubConnection.SendAsync(next.MethodName, next.arg1, cancellationToken: _cts.Token);
+                    await HubConnection.SendAsync(next.MethodName, next.arg1, cancellationToken: _cts.Token);
                 }
                 catch (Exception ex)
                 {

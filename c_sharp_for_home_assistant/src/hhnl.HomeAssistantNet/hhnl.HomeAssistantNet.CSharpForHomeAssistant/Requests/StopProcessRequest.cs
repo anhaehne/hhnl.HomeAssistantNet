@@ -20,11 +20,13 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests
         {
             private readonly IManagementHubCallService _callService;
             private readonly IOptions<SupervisorConfig> _config;
+            private readonly IBuildService _buildService;
 
-            public Handler(IManagementHubCallService callService, IOptions<SupervisorConfig> config)
+            public Handler(IManagementHubCallService callService, IOptions<SupervisorConfig> config, IBuildService buildService)
             {
                 _callService = callService;
                 _config = config;
+                _buildService = buildService;
             }
 
             public async Task<Unit> Handle(StopProcessRequest request, CancellationToken cancellationToken)
@@ -37,6 +39,8 @@ namespace hhnl.HomeAssistantNet.CSharpForHomeAssistant.Requests
                 {
                     // Expected. The called client might not have enough time to answer the shutdown request.
                 }
+
+                _buildService.StopDeployedApplication();
 
                 return Unit.Value;
             }
